@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+
+# Java
+target/
+*.class
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Docker
+*.pid
