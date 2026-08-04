@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: transmoney-postgres
+    environment:
+      POSTGRES_USER: transmoney_user
+      POSTGRES_PASSWORD: transmoney_password
+      POSTGRES_DB: transmoney_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

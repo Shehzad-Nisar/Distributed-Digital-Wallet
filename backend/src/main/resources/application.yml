@@ -1,6 +1,19 @@
 spring:
   application:
-    name: transmoney
+    name: transmoney-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/transmoney_db
+    username: transmoney_user
+    password: transmoney_password
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        "[format_sql]": true
 
 server:
   port: 8080
