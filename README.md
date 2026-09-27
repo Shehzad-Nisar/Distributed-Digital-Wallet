@@ -1,38 +1,222 @@
 # Distributed Digital Wallet Transaction System
+# Distributed Digital Wallet Transaction System (TransMoney)
 
 ## Team Members
+A high-performance, fault-tolerant distributed digital wallet backend architecture built with **Java 21**, **Spring Boot**, and **PostgreSQL**. Features an ACID-compliant **Two-Phase Commit (2PC) Coordinator** for cross-shard transfers, double-entry ledger bookkeeping, and pessimistic lock concurrency controls.
 
 - Shehzad Nisar
 - Muhammad Ashraf
 - Daniyal Ahmed
+---
 
 ## Tech Stack
+## 👥 Team Members
 
 ### Backend
+- **Shehzad Nisar**
+- **Muhammad Ashraf**
+- **Daniyal Ahmed**
 
 - Java 21
 - Spring Boot
+---
 
 ### Frontend
+## 🏛️ System Architecture
 
 - React
 - TypeScript
 - Vite
+The project strictly follows the industry-standard **Layered / MVCS (Model-View-Controller-Service)** architecture:
 
 ### Database
+```
+backend/src/main/java/com/transmoney/backend/
+├── controller/            # API Endpoints (Routing & HTTP request handlers)
+│   ├── AccountController.java
+│   ├── HealthController.java
+│   ├── TransferController.java
+│   └── UserController.java
+├── service/               # Core Business Logic & Orchestration
+│   ├── AccountService.java
+│   ├── TransferService.java
+│   ├── UserService.java
+│   └── coordinator/
+│       └── TwoPhaseCommitCoordinator.java   # 2PC Coordinator (Prepare, Vote, Commit)
+├── repository/            # Data Access Layer (Spring Data JPA)
+│   ├── AccountRepository.java
+│   ├── LedgerEntryRepository.java
+│   ├── MerchantRepository.java
+│   ├── TransactionRepository.java
+│   └── UserRepository.java
+├── entity/                # Data Models & Schemas
+│   ├── Account.java
+│   ├── LedgerEntry.java
+│   ├── Merchant.java
+│   ├── Transaction.java
+│   ├── User.java
+│   └── enums/
+│       ├── LedgerEntryType.java             # DEBIT, CREDIT
+│       ├── ShardType.java                   # SHARD_1_NORTH, SHARD_2_CENTRAL, etc.
+│       ├── TransactionStatus.java           # INITIATED, PREPARED, COMMITTED, FAILED
+│       └── TransactionType.java             # P2P_TRANSFER, MERCHANT_PAYMENT, etc.
+├── dto/                   # Data Transfer Objects
+│   ├── request/
+│   │   ├── CreateAccountRequest.java
+│   │   ├── CreateUserRequest.java
+│   │   └── TransferRequest.java
+│   └── response/
+│       ├── AccountBalanceResponse.java
+│       ├── ApiResponse.java
+│       ├── TransactionResponse.java
+│       └── TransferResponse.java
+└── exception/             # Centralized Exception Handling
+    ├── GlobalExceptionHandler.java
+    ├── InsufficientBalanceException.java
+    ├── ResourceNotFoundException.java
+    └── TransactionException.java
+```
 
 - PostgreSQL
 - Redis
+---
 
 ### Messaging
+## ⚡ Core Features & Distributed Protocols
 
 - RabbitMQ
+### 1. Two-Phase Commit (2PC) Coordinator
+When a transfer occurs between accounts (especially across different geographical shards):
+1. **Phase 1 (Prepare / Vote):**
+   - Atomically acquires pessimistic locks on sender and receiver accounts in sorted deterministic order (preventing deadlocks).
+   - Validates active status, currency compatibility, and verifies sufficient balance.
+   - All participants cast a `VOTE_COMMIT`.
+2. **Phase 2 (Commit / Rollback):**
+   - If all parties vote commit: Sender account is debited, receiver account is credited, and transaction status moves to `COMMITTED`.
+   - If any participant fails: Entire transaction transitions to `FAILED` and changes are rolled back.
 
 ### DevOps
+### 2. Double-Entry Bookkeeping Ledger
+Every transfer generates two immutably recorded ledger entries:
+- A `DEBIT` entry against the sender's account.
+- A `CREDIT` entry against the recipient's account.
+- Mathematically satisfies: $\sum \text{Debits} == \sum \text{Credits}$ for auditability and regulatory compliance.
 
 - Docker
 - Kubernetes
+### 3. Sharding Strategy
+Accounts are mapped to geographical/domain shards:
+- `SHARD_1_NORTH`
+- `SHARD_2_CENTRAL`
+- `SHARD_3_SOUTH`
+- `SHARD_4_ENTERPRISE`
 
 ## Status
+---
 
 Project Initialized
+## 🛠️ Tech Stack & Prerequisites
+
+- **Language:** Java 21 LTS (OpenJDK 21.0.12.1)
+- **Framework:** Spring Boot 3.4.3
+- **ORM / Persistence:** Spring Data JPA / Hibernate
+- **Database:** PostgreSQL 17.2
+- **Build Tool:** Maven 3.x (with included `mvnw.cmd` wrapper)
+
+---
+
+## 🚀 Local Development Setup
+
+### 1. Database Configuration
+PostgreSQL is running natively on `localhost:5432`:
+- **Database:** `transmoney_db`
+- **Username:** `transmoney_user`
+- **Password:** `transmoney_password`
+
+Configured in `backend/src/main/resources/application.yml`.
+
+### 2. Running the Backend Server
+From the `backend` directory, launch the Spring Boot application:
+
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+The application starts on port `8080` with context path `/`.
+
+---
+
+## 📡 API Reference & Verification
+
+### 1. Health Check
+```http
+GET http://localhost:8080/api/health
+```
+**Response:**
+```json
+{
+  "status": "UP",
+  "service": "TransMoney Digital Wallet Backend",
+  "database": "Connected (PostgreSQL)"
+}
+```
+
+### 2. Create User
+```http
+POST http://localhost:8080/api/users
+Content-Type: application/json
+
+{
+  "fullName": "Alice Johnson",
+  "email": "alice@example.com",
+  "phoneNumber": "+923001234567"
+}
+```
+
+### 3. Create Account
+```http
+POST http://localhost:8080/api/accounts
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "accountNumber": "ACC-ALICE-001",
+  "currency": "PKR",
+  "initialBalance": 10000.00,
+  "shard": "SHARD_3_SOUTH"
+}
+```
+
+### 4. Execute Cross-Shard 2PC Transfer
+```http
+POST http://localhost:8080/api/transfers
+Content-Type: application/json
+
+{
+  "senderAccountId": 1,
+  "receiverAccountId": 2,
+  "amount": 2500.00,
+  "currency": "PKR",
+  "description": "Cross-shard P2P settlement"
+}
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Transfer completed successfully via 2PC coordinator",
+  "data": {
+    "transactionId": "TX-42bcfdbe-3ea4-48f8-a006-25f190e29b18",
+    "status": "COMMITTED",
+    "amount": 2500.00,
+    "currency": "PKR",
+    "timestamp": "2026-09-27T14:48:47.387994"
+  }
+}
+```
+
+### 5. Check Balance
+```http
+GET http://localhost:8080/api/accounts/1/balance
+```
