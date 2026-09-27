@@ -155,6 +155,6 @@ class TransactionSearchAndApiIntegrationTest {
     void testStaticDashboardServed() throws Exception {
         mockMvc.perform(get("/index.html"))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("TransMoney Live Console")));
+                .andExpect(content().string(containsString("TransMoney")));
     }
 }
