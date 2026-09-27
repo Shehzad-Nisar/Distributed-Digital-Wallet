@@ -206,3 +206,55 @@ Content-Type: application/json
 ```http
 GET http://localhost:8080/api/accounts/1/balance
 ```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Account balance retrieved successfully",
+  "data": {
+    "accountId": 1,
+    "accountNumber": "ACC-ALICE-001",
+    "balance": 7500.00,
+    "currency": "PKR",
+    "shard": "SHARD_3_SOUTH",
+    "status": "ACTIVE"
+  }
+}
+```
+
+### 6. Get Transaction Status & Ledger Audit
+```http
+GET http://localhost:8080/api/transactions/TX-42bcfdbe-3ea4-48f8-a006-25f190e29b18
+```
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Transaction retrieved successfully",
+  "data": {
+    "transactionId": "TX-42bcfdbe-3ea4-48f8-a006-25f190e29b18",
+    "status": "COMMITTED",
+    "amount": 2500.00,
+    "currency": "PKR",
+    "senderAccountId": 1,
+    "receiverAccountId": 2,
+    "ledgerEntries": [
+      {
+        "id": 1,
+        "type": "DEBIT",
+        "accountId": 1,
+        "amount": 2500.00,
+        "timestamp": "2026-09-27T14:48:47.387994"
+      },
+      {
+        "id": 2,
+        "type": "CREDIT",
+        "accountId": 2,
+        "amount": 2500.00,
+        "timestamp": "2026-09-27T14:48:47.387994"
+      }
+    ],
+    "timestamp": "2026-09-27T14:48:47.387994"
+  }
+}
+```
