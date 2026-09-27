@@ -1,5 +1,7 @@
 package com.transmoney.backend.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -10,6 +12,7 @@ import java.sql.Connection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Tag(name = "System Health", description = "Liveness and readiness probes for load balancers and system monitoring")
 @RestController
 @RequestMapping("/api/health")
 public class HealthController {
@@ -20,6 +23,7 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
+    @Operation(summary = "Check backend and database health", description = "Verifies Spring Boot application responsiveness and live PostgreSQL connection pool status.")
     @GetMapping
     public ResponseEntity<Map<String, String>> healthCheck() {
         Map<String, String> health = new HashMap<>();

@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TransMoney - Distributed Digital Wallet Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0B0F19;
+            --bg-surface: #111827;
+            --bg-elevated: #1F2937;
+            --border: #374151;
+            --border-glow: #3B82F6;
+            --text-main: #F9FAFB;
+            --text-muted: #9CA3AF;
+            --primary: #3B82F6;
+            --primary-hover: #2563EB;
+            --emerald: #10B981;
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+            --purple: #8B5CF6;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding-bottom: 60px;
+        }
+
+        code, pre, .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Header */
+        header {
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .brand-text h1 {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--emerald);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--emerald);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+
+        .btn-swagger {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-swagger:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        /* Banner info */
+        .team-banner {
+            background: linear-gradient(90deg, #111827 0%, #1E1B4B 100%);
+            border: 1px solid #4338CA;
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .team-banner p {
+            font-size: 13px;
+            color: #C7D2FE;
+        }
+
+        .team-tags {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .team-tag {
+            background: rgba(99, 102, 241, 0.15);
+            border: 1px solid rgba(99, 102, 241, 0.4);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #E0E7FF;
+        }
+
+        /* Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .grid-4 { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Shard Card */
+        .shard-card {
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid var(--primary);
+            transition: all 0.2s;
+        }
+
+        .shard-card:hover {
+            transform: translateY(-2px);
+            border-color: #60A5FA;
+        }
+
+        .shard-tag {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .shard-1 { border-left-color: #06B6D4; }
+        .shard-1 .shard-tag { background: rgba(6, 182, 212, 0.15); color: #22D3EE; }
+
+        .shard-2 { border-left-color: #3B82F6; }
+        .shard-2 .shard-tag { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+
+        .shard-3 { border-left-color: #8B5CF6; }
+        .shard-3 .shard-tag { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
+
+        .shard-4 { border-left-color: #EC4899; }
+        .shard-4 .shard-tag { background: rgba(236, 72, 153, 0.15); color: #F472B6; }
+
+        .balance-amount {
+            font-size: 22px;
+            font-weight: 800;
+            color: #F9FAFB;
+            margin: 8px 0;
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .balance-currency {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        .account-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input {
+            width: 100%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .btn-quick {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-quick:hover {
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* 2PC Protocol Visualizer */
+        .protocol-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .step-box {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background: var(--bg-elevated);
+            border-radius: 8px;
+            border-left: 3px solid var(--border);
+            font-size: 12px;
+        }
+
+        .step-box.active {
+            border-left-color: var(--amber);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .step-box.success {
+            border-left-color: var(--emerald);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .step-box.failed {
+            border-left-color: var(--rose);
+            background: rgba(244, 63, 94, 0.1);
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+
+        /* Filter Controls */
+        .filter-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .filter-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        .btn-filter {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-filter:hover {
+            border-color: var(--primary);
+            background: #2D3748;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--bg-elevated);
+            padding: 12px 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-success { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+        .badge-danger { background: rgba(244, 63, 94, 0.15); color: #FB7185; }
+        .badge-info { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .pagination-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-page {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-page:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        /* Alert message */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+        }
+
+        .alert-error {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #FB7185;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="brand-logo">TM</div>
+            <div class="brand-text">
+                <h1>TransMoney Live Console</h1>
+                <p>Distributed Digital Wallet • PostgreSQL 2PC Cluster</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="status-badge" id="cluster-status">
+                <div class="pulse-dot"></div>
+                <span id="health-text">PostgreSQL: Connected</span>
+            </div>
+            <a href="/swagger-ui.html" target="_blank" class="btn-swagger">
+                <span>⚡ Interactive API Docs (Swagger)</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- Course & Team Handover Banner -->
+        <div class="team-banner">
+            <div>
+                <p><strong>Course:</strong> Distributed Database Systems | <strong>Instructor:</strong> Sir Umair | <strong>Target Submission:</strong> Sep 28, 2026</p>
+            </div>
+            <div class="team-tags">
+                <span class="team-tag">👤 Shehzad Nisar (B22110006147)</span>
+                <span class="team-tag">👤 Muhammad Ashraf (B22110006090)</span>
+                <span class="team-tag">👤 Daniyal Ahmed (B21110006024)</span>
+            </div>
+        </div>
+
+        <!-- Distributed Shards Architecture Overview -->
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px;">
+                <h2 style="font-size: 16px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted);">
+                    Distributed Shards Topology (Active Partitions)
+                </h2>
+                <button onclick="loadAccounts()" style="background: none; border: none; color: var(--primary); font-size: 12px; cursor: pointer; text-decoration: underline;">
+                    🔄 Refresh Balances
+                </button>
+            </div>
+
+            <div class="grid-4" id="shards-grid">
+                <!-- Dynamically filled by JS -->
+            </div>
+        </div>
+
+        <!-- 2PC Execution & Protocol Visualizer -->
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>⚡ Execute Cross-Shard 2PC Transfer</span>
+                    </div>
+                    <span class="badge badge-info">Pessimistic Locking</span>
+                </div>
+
+                <div id="transfer-alert" class="alert"></div>
+
+                <form id="transfer-form" onsubmit="executeTransfer(event)">
+                    <div class="form-group">
+                        <label for="senderAccount">Sender Account (Debit Leg)</label>
+                        <select id="senderAccount" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="receiverAccount">Receiver Account (Credit Leg)</label>
+                        <select id="receiverAccount" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="amount">Transfer Amount (PKR)</label>
+                        <input type="number" id="amount" step="0.01" min="1" placeholder="e.g. 500.00" required>
+                        <div class="quick-amounts">
+                            <span class="btn-quick" onclick="setAmount(100)">100</span>
+                            <span class="btn-quick" onclick="setAmount(500)">500</span>
+                            <span class="btn-quick" onclick="setAmount(1000)">1,000</span>
+                            <span class="btn-quick" onclick="setAmount(2500)">2,500</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">Memo / Note</label>
+                        <input type="text" id="description" placeholder="e.g. Salary split, Coffee payment" value="Cross-shard real-time settlement">
+                    </div>
+
+                    <button type="submit" id="btn-submit-transfer" class="btn-primary">
+                        <span>Initiate Distributed 2PC Transfer</span>
+                    </button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <span>🛡️ 2PC Coordinator Protocol Lifecycle</span>
+                    </div>
+                    <span class="badge badge-success">ACID Guaranteed</span>
+                </div>
+
+                <div class="protocol-steps">
+                    <div class="step-box" id="step-0">
+                        <div class="step-num">0</div>
+                        <div>
+                            <strong>Deadlock Prevention via Sorted Pessimistic Locking</strong>
+                            <p style="color: var(--text-muted); margin-top: 2px;">
+                                Locks both participant accounts deterministically in ascending ID order (<code>SELECT ... FOR UPDATE</code>).
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="step-box" id="step-1">
+                        <div class="step-num">1</div>
+                        <div>
+                            <strong>Phase 1: Prepare & Vote Protocol</strong>
+                            <p style="color: var(--text-muted); margin-top: 2px;">
+                                Validates shard status, active accounts, matching currency, and checks sender balance sufficiency.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="step-box" id="step-2">
+                        <div class="step-num">2</div>
+                        <div>
+                            <strong>Phase 2: Atomic Commit & Double-Entry Ledger</strong>
+                            <p style="color: var(--text-muted); margin-top: 2px;">
+                                Updates balances atomically across shards and writes matching DEBIT and CREDIT ledger audit rows.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tx-result-box" style="margin-top: 16px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--border); display: none;">
+                    <div style="display: flex; justify-content: space-between; font-size: 12px;">
+                        <span style="color: var(--text-muted);">Last TX:</span>
+                        <strong class="mono" id="tx-res-id" style="color: #60A5FA;">-</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 12px; margin-top: 4px;">
+                        <span style="color: var(--text-muted);">Status:</span>
+                        <span id="tx-res-status" class="badge badge-success">COMMITTED</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 6 & 7: Search, Sort & Filtering Table -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>🔍 Transaction Search, Sort & Audit Ledger</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span id="double-entry-badge" class="badge badge-success">Double-Entry Parity: Balanced</span>
+                </div>
+            </div>
+
+            <!-- Dynamic Search / Filter Bar -->
+            <div class="filter-grid">
+                <div>
+                    <label>Keyword Search</label>
+                    <input type="text" id="filter-search" placeholder="Search memo, TX ID...">
+                </div>
+
+                <div>
+                    <label>Filter by Account</label>
+                    <select id="filter-account">
+                        <option value="">All Accounts (Global)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Min Amount</label>
+                    <input type="number" id="filter-min" placeholder="0.00">
+                </div>
+
+                <div>
+                    <label>Max Amount</label>
+                    <input type="number" id="filter-max" placeholder="99999.00">
+                </div>
+
+                <div>
+                    <label>Sort By</label>
+                    <select id="filter-sort">
+                        <option value="createdAt:desc">Date (Newest First)</option>
+                        <option value="createdAt:asc">Date (Oldest First)</option>
+                        <option value="amount:desc">Amount (High to Low)</option>
+                        <option value="amount:asc">Amount (Low to High)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <button class="btn-filter" onclick="applyFilters()">
+                        <span>Apply Filters</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Transactions Table -->
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Timestamp</th>
+                            <th>From Account</th>
+                            <th>To Account</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Description</th>
+                            <th>Audit Ledger</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tx-table-body">
+                        <tr>
+                            <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                Loading transactions...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination">
+                <span id="page-info">Showing page 1</span>
+                <div class="pagination-buttons">
+                    <button class="btn-page" id="btn-prev" onclick="changePage(-1)" disabled>Previous</button>
+                    <button class="btn-page" id="btn-next" onclick="changePage(1)" disabled>Next</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let accountsCache = [];
+        let currentPage = 0;
+        const pageSize = 10;
+
+        async function init() {
+            await checkHealth();
+            await loadAccounts();
+            await loadTransactions();
+            setInterval(checkHealth, 15000);
+        }
+
+        async function checkHealth() {
+            try {
+                const res = await fetch('/api/health');
+                const data = await res.json();
+                const healthEl = document.getElementById('health-text');
+                if (data.database && data.database.includes('Connected')) {
+                    healthEl.textContent = 'PostgreSQL: Connected';
+                    healthEl.parentElement.className = 'status-badge';
+                } else {
+                    healthEl.textContent = 'DB: ' + (data.database || 'Unreachable');
+                    healthEl.parentElement.style.borderColor = 'var(--rose)';
+                    healthEl.parentElement.style.color = '#FB7185';
+                }
+            } catch (e) {
+                console.error('Health check failed', e);
+            }
+        }
+
+        async function loadAccounts() {
+            try {
+                const res = await fetch('/api/accounts');
+                const json = await res.json();
+                if (json.success && json.data) {
+                    accountsCache = json.data;
+                    renderShards(accountsCache);
+                    renderAccountSelects(accountsCache);
+                }
+            } catch (e) {
+                console.error('Error fetching accounts', e);
+            }
+        }
+
+        function renderShards(accounts) {
+            const grid = document.getElementById('shards-grid');
+            grid.innerHTML = '';
+
+            const shardClassMap = {
+                'SHARD_1_NORTH': 'shard-1',
+                'SHARD_2_CENTRAL': 'shard-2',
+                'SHARD_3_SOUTH': 'shard-3',
+                'SHARD_4_ENTERPRISE': 'shard-4'
+            };
+
+            accounts.forEach(acc => {
+                const card = document.createElement('div');
+                const shardClass = shardClassMap[acc.shard] || 'shard-1';
+                card.className = `card shard-card ${shardClass}`;
+
+                const userName = acc.user ? acc.user.fullName : `User #${acc.userId || ''}`;
+                const formattedBalance = Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                card.innerHTML = `
+                    <div class="card-header" style="margin-bottom: 8px;">
+                        <span class="shard-tag">${acc.shard}</span>
+                        <span class="badge badge-success">${acc.status}</span>
+                    </div>
+                    <div style="font-weight: 700; font-size: 14px;">${userName}</div>
+                    <div class="balance-amount">
+                        ${formattedBalance} <span class="balance-currency">${acc.currency}</span>
+                    </div>
+                    <div class="account-meta">
+                        <span><strong>Account:</strong> ${acc.accountNumber}</span>
+                        <span><strong>ID:</strong> #${acc.id}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderAccountSelects(accounts) {
+            const senderSelect = document.getElementById('senderAccount');
+            const receiverSelect = document.getElementById('receiverAccount');
+            const filterSelect = document.getElementById('filter-account');
+
+            senderSelect.innerHTML = '';
+            receiverSelect.innerHTML = '';
+            filterSelect.innerHTML = '<option value="">All Accounts (Global)</option>';
+
+            accounts.forEach((acc, index) => {
+                const userName = acc.user ? acc.user.fullName : `Account #${acc.id}`;
+                const optionText = `#${acc.id} - ${userName} (${acc.shard}) [${Number(acc.balance).toFixed(0)} PKR]`;
+
+                const opt1 = new Option(optionText, acc.id);
+                const opt2 = new Option(optionText, acc.id);
+                const opt3 = new Option(`#${acc.id} - ${userName} (${acc.accountNumber})`, acc.id);
+
+                senderSelect.add(opt1);
+                receiverSelect.add(opt2);
+                filterSelect.add(opt3);
+            });
+
+            // Set default sender to Alice (Shard 3) and receiver to Bob (Shard 2) if present
+            if (accounts.length > 1) {
+                senderSelect.selectedIndex = 0;
+                receiverSelect.selectedIndex = 1;
+            }
+        }
+
+        function setAmount(val) {
+            document.getElementById('amount').value = val;
+        }
+
+        async function executeTransfer(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-transfer');
+            const alertBox = document.getElementById('transfer-alert');
+            const senderId = document.getElementById('senderAccount').value;
+            const receiverId = document.getElementById('receiverAccount').value;
+            const amount = document.getElementById('amount').value;
+            const description = document.getElementById('description').value;
+
+            if (senderId === receiverId) {
+                showAlert('Sender and receiver cannot be the same account.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span>Coordinating 2PC Across Shards...</span>';
+            animateSteps(true);
+
+            try {
+                const res = await fetch('/api/transfers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        senderAccountId: Number(senderId),
+                        receiverAccountId: Number(receiverId),
+                        amount: Number(amount),
+                        currency: 'PKR',
+                        description: description
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showAlert(`Transfer successful! Transaction: ${data.data.transactionId}`, 'success');
+                    highlightStepsSuccess();
+                    showTxResult(data.data.transactionId, data.data.status);
+                    await loadAccounts();
+                    await loadTransactions();
+                } else {
+                    showAlert(`Transfer aborted: ${data.message || 'Error occurred'}`, 'error');
+                    highlightStepsFailure();
+                }
+            } catch (err) {
+                showAlert('Network or server error during 2PC coordination.', 'error');
+                highlightStepsFailure();
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>Initiate Distributed 2PC Transfer</span>';
+            }
+        }
+
+        function animateSteps() {
+            const s0 = document.getElementById('step-0');
+            const s1 = document.getElementById('step-1');
+            const s2 = document.getElementById('step-2');
+
+            s0.className = 'step-box active';
+            s1.className = 'step-box';
+            s2.className = 'step-box';
+
+            setTimeout(() => { s1.className = 'step-box active'; }, 300);
+            setTimeout(() => { s2.className = 'step-box active'; }, 600);
+        }
+
+        function highlightStepsSuccess() {
+            document.getElementById('step-0').className = 'step-box success';
+            document.getElementById('step-1').className = 'step-box success';
+            document.getElementById('step-2').className = 'step-box success';
+        }
+
+        function highlightStepsFailure() {
+            document.getElementById('step-0').className = 'step-box failed';
+            document.getElementById('step-1').className = 'step-box failed';
+            document.getElementById('step-2').className = 'step-box failed';
+        }
+
+        function showTxResult(txId, status) {
+            const box = document.getElementById('tx-result-box');
+            document.getElementById('tx-res-id').textContent = txId;
+            document.getElementById('tx-res-status').textContent = status;
+            box.style.display = 'block';
+        }
+
+        function showAlert(msg, type) {
+            const el = document.getElementById('transfer-alert');
+            el.textContent = msg;
+            el.className = `alert alert-${type}`;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 6000);
+        }
+
+        async function loadTransactions() {
+            const tableBody = document.getElementById('tx-table-body');
+            const filterAccount = document.getElementById('filter-account').value;
+            const search = document.getElementById('filter-search').value;
+            const minAmount = document.getElementById('filter-min').value;
+            const maxAmount = document.getElementById('filter-max').value;
+            const sortVal = document.getElementById('filter-sort').value;
+            const [sortProp, sortOrder] = sortVal.split(':');
+
+            let url = filterAccount 
+                ? `/api/accounts/${filterAccount}/transactions?page=${currentPage}&size=${pageSize}`
+                : `/api/transactions?page=${currentPage}&size=${pageSize}`;
+
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (minAmount) url += `&minAmount=${minAmount}`;
+            if (maxAmount) url += `&maxAmount=${maxAmount}`;
+            if (sortProp) url += `&sort=${sortProp}`;
+            if (sortOrder) url += `&order=${sortOrder}`;
+
+            try {
+                const res = await fetch(url);
+                const json = await res.json();
+                if (json.success && json.data) {
+                    renderTransactions(json.data.content);
+                    renderPagination(json.data);
+                }
+            } catch (e) {
+                console.error('Error fetching transactions', e);
+            }
+        }
+
+        function renderTransactions(transactions) {
+            const tbody = document.getElementById('tx-table-body');
+            tbody.innerHTML = '';
+
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">No matching transactions found.</td></tr>`;
+                return;
+            }
+
+            transactions.forEach(tx => {
+                const tr = document.createElement('tr');
+                const date = new Date(tx.timestamp).toLocaleString();
+                const ledgerRows = tx.ledgerEntries && tx.ledgerEntries.length > 0
+                    ? tx.ledgerEntries.map(l => `<span class="badge ${l.type === 'DEBIT' ? 'badge-danger' : 'badge-success'}">${l.type}: Acc #${l.accountId} (${l.amount} PKR)</span>`).join(' ')
+                    : '<span style="color: var(--text-muted); font-size: 11px;">Single Entry</span>';
+
+                tr.innerHTML = `
+                    <td class="mono" style="font-size: 11px; color: #60A5FA;">${tx.transactionId}</td>
+                    <td style="font-size: 11px; color: var(--text-muted);">${date}</td>
+                    <td><strong class="mono">Acc #${tx.senderAccountId}</strong></td>
+                    <td><strong class="mono">Acc #${tx.receiverAccountId}</strong></td>
+                    <td style="font-weight: 700; color: #F9FAFB;">${Number(tx.amount).toFixed(2)} ${tx.currency}</td>
+                    <td><span class="badge badge-success">${tx.status}</span></td>
+                    <td style="color: var(--text-muted); font-size: 12px;">${tx.description || '-'}</td>
+                    <td>${ledgerRows}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderPagination(pageData) {
+            document.getElementById('page-info').textContent = 
+                `Showing page ${pageData.page + 1} of ${Math.max(pageData.totalPages, 1)} (${pageData.totalElements} total entries)`;
+
+            document.getElementById('btn-prev').disabled = pageData.first;
+            document.getElementById('btn-next').disabled = pageData.last;
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            if (currentPage < 0) currentPage = 0;
+            loadTransactions();
+        }
+
+        function applyFilters() {
+            currentPage = 0;
+            loadTransactions();
+        }
+
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
