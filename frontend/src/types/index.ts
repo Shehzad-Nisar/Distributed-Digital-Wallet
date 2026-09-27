@@ -1,4 +1,12 @@
-export type ShardType = 'SHARD_1_NORTH' | 'SHARD_2_CENTRAL' | 'SHARD_3_SOUTH' | 'SHARD_4_ENTERPRISE';
+export type ShardType =
+  | 'SHARD_1_US'
+  | 'SHARD_2_UK'
+  | 'SHARD_3_SG'
+  | 'SHARD_4_UAE'
+  | 'SHARD_1_NORTH'
+  | 'SHARD_2_CENTRAL'
+  | 'SHARD_3_SOUTH'
+  | 'SHARD_4_ENTERPRISE';
 
 export type TransactionStatus = 'INITIATED' | 'PREPARED' | 'COMMITTED' | 'FAILED';
 

@@ -163,8 +163,12 @@ Test classes:
 When the application starts:
 1. **Interactive Demo Dashboard:** Open `http://localhost:8080/`
 2. **Interactive Swagger Documentation:** Open `http://localhost:8080/swagger-ui.html`
-3. **Pre-Seeded Accounts:**
-   - Alice Khan: `ACC-ALICE-001` on `SHARD_3_SOUTH`
-   - Bob Malik: `ACC-BOB-002` on `SHARD_2_CENTRAL`
-   - Charlie Tariq: `ACC-CHARLIE-003` on `SHARD_1_NORTH`
-   - Daraz Merchant: `ACC-DARAZ-004` on `SHARD_4_ENTERPRISE`
+3. **Country-Based Pre-Seeded Accounts:**
+   - 🇺🇸 **Alice Smith (United States):** `ACC-US-001` on `SHARD_1_US` ($9,500.00 USD balance)
+   - 🇬🇧 **Bob Jones (United Kingdom):** `ACC-UK-002` on `SHARD_2_UK` ($3,000.00 USD balance)
+   - 🇸🇬 **Charlie Tanaka (Singapore):** `ACC-SG-003` on `SHARD_3_SG` ($5,000.00 USD balance)
+   - 🇦🇪 **Emirates Global Treasury (UAE):** `ACC-UAE-004` on `SHARD_4_UAE` ($100,000.00 USD balance)
+4. **Global Merchants:**
+   - Amazon Web Services (US), Deliveroo London (UK), Grab Southeast Asia (SG), Emirates Global Aviation (UAE)
+5. **Initial Cross-Country 2PC Wire:**
+   - Automatically executed cross-shard transfer: Alice (United States) -> Bob (United Kingdom) for $500.00 USD.

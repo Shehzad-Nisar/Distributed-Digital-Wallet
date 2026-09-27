@@ -28,116 +28,126 @@ public class DataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (userRepository.count() > 0) {
-            log.info("Database already seeded. Skipping initial data provisioning.");
+        if (accountRepository.findByAccountNumber("ACC-US-001").isPresent()) {
+            log.info("Country-based demo accounts already provisioned. Skipping initial data seeding.");
             return;
         }
 
-        log.info("=== Initializing Seed Data for TransMoney Distributed Digital Wallet ===");
+        log.info("=== Initializing Country-Based Distributed Shard Data for TransMoney ===");
 
-        // 1. Create Users
-        User alice = userRepository.save(User.builder()
-                .fullName("Alice Khan")
-                .email("alice@transmoney.com")
-                .phoneNumber("+923001112233")
-                .build());
+        // 1. Create Users from different countries
+        User alice = userRepository.findByEmail("alice.us@transmoney.com")
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .fullName("Alice Smith (United States)")
+                        .email("alice.us@transmoney.com")
+                        .phoneNumber("+1-202-555-0143")
+                        .build()));
 
-        User bob = userRepository.save(User.builder()
-                .fullName("Bob Malik")
-                .email("bob@transmoney.com")
-                .phoneNumber("+923004445566")
-                .build());
+        User bob = userRepository.findByEmail("bob.uk@transmoney.com")
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .fullName("Bob Jones (United Kingdom)")
+                        .email("bob.uk@transmoney.com")
+                        .phoneNumber("+44-20-7946-0912")
+                        .build()));
 
-        User charlie = userRepository.save(User.builder()
-                .fullName("Charlie Tariq")
-                .email("charlie@transmoney.com")
-                .phoneNumber("+923007778899")
-                .build());
+        User charlie = userRepository.findByEmail("charlie.sg@transmoney.com")
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .fullName("Charlie Tanaka (Singapore)")
+                        .email("charlie.sg@transmoney.com")
+                        .phoneNumber("+65-6789-0123")
+                        .build()));
 
-        User daraz = userRepository.save(User.builder()
-                .fullName("Daraz Merchant Services")
-                .email("daraz@merchants.transmoney.com")
-                .phoneNumber("+923009990011")
-                .build());
+        User emirates = userRepository.findByEmail("treasury.ae@transmoney.com")
+                .orElseGet(() -> userRepository.save(User.builder()
+                        .fullName("Emirates Global Treasury (UAE)")
+                        .email("treasury.ae@transmoney.com")
+                        .phoneNumber("+971-4-312-0000")
+                        .build()));
 
-        log.info("Seeded 4 users: Alice, Bob, Charlie, and Daraz Merchant");
+        log.info("Provisioned global users: US (Alice), UK (Bob), Singapore (Charlie), UAE (Emirates Treasury)");
 
-        // 2. Create Accounts across distributed shards
-        Account aliceAccount = accountRepository.save(Account.builder()
-                .accountNumber("ACC-ALICE-001")
+        // 2. Create Accounts across country-specific shards
+        Account usAccount = accountRepository.save(Account.builder()
+                .accountNumber("ACC-US-001")
                 .user(alice)
-                .shard(ShardType.SHARD_3_SOUTH)
+                .shard(ShardType.SHARD_1_US)
                 .balance(new BigDecimal("10000.00"))
-                .currency("PKR")
+                .currency("USD")
                 .status("ACTIVE")
                 .build());
 
-        Account bobAccount = accountRepository.save(Account.builder()
-                .accountNumber("ACC-BOB-002")
+        Account ukAccount = accountRepository.save(Account.builder()
+                .accountNumber("ACC-UK-002")
                 .user(bob)
-                .shard(ShardType.SHARD_2_CENTRAL)
-                .balance(new BigDecimal("1000.00"))
-                .currency("PKR")
+                .shard(ShardType.SHARD_2_UK)
+                .balance(new BigDecimal("2500.00"))
+                .currency("USD")
                 .status("ACTIVE")
                 .build());
 
-        Account charlieAccount = accountRepository.save(Account.builder()
-                .accountNumber("ACC-CHARLIE-003")
+        Account sgAccount = accountRepository.save(Account.builder()
+                .accountNumber("ACC-SG-003")
                 .user(charlie)
-                .shard(ShardType.SHARD_1_NORTH)
+                .shard(ShardType.SHARD_3_SG)
                 .balance(new BigDecimal("5000.00"))
-                .currency("PKR")
+                .currency("USD")
                 .status("ACTIVE")
                 .build());
 
-        Account darazAccount = accountRepository.save(Account.builder()
-                .accountNumber("ACC-DARAZ-004")
-                .user(daraz)
-                .shard(ShardType.SHARD_4_ENTERPRISE)
+        Account uaeAccount = accountRepository.save(Account.builder()
+                .accountNumber("ACC-UAE-004")
+                .user(emirates)
+                .shard(ShardType.SHARD_4_UAE)
                 .balance(new BigDecimal("100000.00"))
-                .currency("PKR")
+                .currency("USD")
                 .status("ACTIVE")
                 .build());
 
-        log.info("Seeded 4 accounts across Shards: Alice (SHARD_3_SOUTH), Bob (SHARD_2_CENTRAL), Charlie (SHARD_1_NORTH), Daraz (SHARD_4_ENTERPRISE)");
+        log.info("Provisioned Country Shards: US (SHARD_1_US), UK (SHARD_2_UK), Singapore (SHARD_3_SG), UAE (SHARD_4_UAE)");
 
-        // 3. Create Merchants
+        // 3. Create Global Merchants
         merchantRepository.save(Merchant.builder()
-                .name("FoodPanda Express")
-                .category("Food & Dining")
-                .accountId(bobAccount.getId())
+                .name("Amazon Web Services (US)")
+                .category("Cloud & Infrastructure")
+                .accountId(usAccount.getId())
                 .build());
 
         merchantRepository.save(Merchant.builder()
-                .name("Daraz Online Shopping")
-                .category("E-Commerce")
-                .accountId(darazAccount.getId())
+                .name("Deliveroo London (UK)")
+                .category("Food & Delivery")
+                .accountId(ukAccount.getId())
                 .build());
 
         merchantRepository.save(Merchant.builder()
-                .name("K-Electric Utility Bill")
-                .category("Utilities")
-                .accountId(darazAccount.getId())
+                .name("Grab Southeast Asia (SG)")
+                .category("SuperApp & Logistics")
+                .accountId(sgAccount.getId())
                 .build());
 
-        log.info("Seeded 3 merchants: FoodPanda Express, Daraz Online, K-Electric");
+        merchantRepository.save(Merchant.builder()
+                .name("Emirates Global Aviation (UAE)")
+                .category("Aviation & Cargo")
+                .accountId(uaeAccount.getId())
+                .build());
 
-        // 4. Execute an initial cross-shard 2PC transfer to prime the transaction ledger
+        log.info("Provisioned global merchants: Amazon AWS (US), Deliveroo (UK), Grab (SG), Emirates (UAE)");
+
+        // 4. Execute an initial cross-country, cross-shard 2PC transfer
         try {
             TransferRequest initialTransfer = TransferRequest.builder()
-                    .senderAccountId(aliceAccount.getId())
-                    .receiverAccountId(bobAccount.getId())
+                    .senderAccountId(usAccount.getId())
+                    .receiverAccountId(ukAccount.getId())
                     .amount(new BigDecimal("500.00"))
-                    .currency("PKR")
-                    .description("Initial Seed: Cross-shard transfer demo (Shard 3 -> Shard 2)")
+                    .currency("USD")
+                    .description("Cross-Border 2PC Wire: United States Shard -> United Kingdom Shard")
                     .build();
 
             transferService.executeTransfer(initialTransfer);
-            log.info("Executed initial cross-shard 2PC transfer: Alice (Shard 3) -> Bob (Shard 2) for PKR 500.00");
+            log.info("Executed initial cross-country 2PC transfer: Alice (US Shard) -> Bob (UK Shard) for $500.00 USD");
         } catch (Exception e) {
-            log.warn("Initial seed transfer failed (non-critical): {}", e.getMessage());
+            log.warn("Initial cross-border seed transfer failed (non-critical): {}", e.getMessage());
         }
 
-        log.info("=== Seed Data Initialization Complete ===");
+        log.info("=== Country-Based Seed Data Provisioning Complete ===");
     }
 }

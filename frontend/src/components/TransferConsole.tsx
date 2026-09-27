@@ -50,7 +50,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
         senderAccountId: Number(senderId),
         receiverAccountId: Number(receiverId),
         amount: Number(amount),
-        currency: 'PKR',
+        currency: sender?.currency || 'USD',
         description,
       });
 
@@ -111,7 +111,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
                   #{a.id} • {a.user?.fullName} ({a.shard}) — [
-                  {Number(a.balance).toFixed(0)} PKR]
+                  ${Number(a.balance).toFixed(0)} {a.currency || 'USD'}]
                 </option>
               ))}
             </select>
@@ -130,7 +130,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               {accounts.map((a) => (
                 <option key={a.id} value={a.id}>
                   #{a.id} • {a.user?.fullName} ({a.shard}) — [
-                  {Number(a.balance).toFixed(0)} PKR]
+                  ${Number(a.balance).toFixed(0)} {a.currency || 'USD'}]
                 </option>
               ))}
             </select>
@@ -139,7 +139,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
           {/* Amount */}
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Amount (PKR)
+              Amount ({sender?.currency || 'USD'})
             </label>
             <input
               type="number"
@@ -254,7 +254,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 {stepStatus === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
               </div>
               <p className="text-[11px] text-slate-400 ml-7">
-                Validates participant accounts active state, matching currency (PKR), and ensures sender balance is sufficient before casting <code className="text-emerald-400">VOTE_COMMIT</code>.
+                Validates participant accounts active state, matching currency, and ensures sender balance is sufficient before casting <code className="text-emerald-400">VOTE_COMMIT</code>.
               </p>
             </div>
 
@@ -278,7 +278,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 {stepStatus === 'success' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
               </div>
               <p className="text-[11px] text-slate-400 ml-7">
-                Both legs commit atomically across shards. Double-entry bookkeeping creates balanced DEBIT and CREDIT rows for an unalterable audit trail.
+                Both legs commit atomically across country shards. Double-entry bookkeeping creates balanced DEBIT and CREDIT rows for an unalterable audit trail.
               </p>
             </div>
           </div>
@@ -297,7 +297,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               TX-ID: {lastTx.transactionId}
             </div>
             <div className="text-[11px] text-slate-400">
-              Amount: <strong className="text-white">{lastTx.amount} PKR</strong> • Ledger Entries: 2 (Balanced)
+              Amount: <strong className="text-white">${lastTx.amount} {lastTx.currency || 'USD'}</strong> • Ledger Entries: 2 (Balanced)
             </div>
           </div>
         )}
