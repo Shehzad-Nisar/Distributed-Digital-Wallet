@@ -30,9 +30,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
     accounts[1]?.id || (accounts[0]?.id === 1 ? 2 : 1)
   );
   const [amount, setAmount] = useState<string>('500');
-  const [description, setDescription] = useState<string>(
-    '2PC atomic money transfer across distributed shards'
-  );
+  const [description, setDescription] = useState<string>('Money transfer');
   const [loading, setLoading] = useState<boolean>(false);
   const [activeStep, setActiveStep] = useState<number>(-1);
   const [stepStatus, setStepStatus] = useState<'idle' | 'running' | 'success' | 'failed'>('idle');
@@ -51,7 +49,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
   const sender = accounts.find((a) => a.id === Number(senderId));
   const receiver = accounts.find((a) => a.id === Number(receiverId));
-  const isCrossShard = sender && receiver && sender.shard !== receiver.shard;
+  const isDifferentRegion = sender && receiver && sender.shard !== receiver.shard;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +65,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
     if (sender && Number(sender.balance) < Number(amount)) {
       setErrorMsg(
-        `Insufficient balance. Account #${sender.id} has ${Number(sender.balance).toFixed(2)} PKR, requested: ${amount} PKR.`
+        `Not enough balance. Available: ${Number(sender.balance).toFixed(2)} PKR, requested: ${amount} PKR.`
       );
       return;
     }
@@ -87,7 +85,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
         receiverAccountId: Number(receiverId),
         amount: Number(amount),
         currency: 'PKR',
-        description: description.trim() || 'Cross-shard 2PC transfer',
+        description: description.trim() || 'Money transfer',
       });
 
       setActiveStep(2);
@@ -99,7 +97,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Transaction aborted during 2PC coordination';
+        'Transfer could not be completed. Please try again.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -116,22 +114,22 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               <Send className="w-4 h-4 text-black" />
               <div>
                 <h2 className="text-sm font-bold text-black uppercase tracking-wider font-mono">
-                  Execute 2PC Money Transfer
+                  Send Money
                 </h2>
                 {currentUser && (
                   <span className="text-[10px] text-slate-500 font-mono block">
-                    Sender: {currentUser.fullName}
+                    Sending as: {currentUser.fullName}
                   </span>
                 )}
               </div>
             </div>
-            {isCrossShard ? (
+            {isDifferentRegion ? (
               <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-100 text-black border border-slate-300">
-                CROSS-SHARD 2PC
+                INSTANT TRANSFER
               </span>
             ) : (
-              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-slate-50 text-slate-600 border border-slate-200">
-                LOCAL ACID
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                SAME REGION
               </span>
             )}
           </div>
@@ -148,7 +146,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                  Source Account (Debit)
+                  From Account
                 </label>
                 <select
                   value={senderId}
@@ -163,14 +161,14 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 </select>
                 {sender && (
                   <div className="mt-1 text-[10px] font-mono text-slate-500">
-                    Partition: <span className="text-black font-semibold">{sender.shard}</span>
+                    Region: <span className="text-black font-semibold">{sender.shard?.replace('SHARD_', 'HUB-').replace('_NORTH','').replace('_CENTRAL','').replace('_SOUTH','').replace('_ENTERPRISE','')}</span>
                   </div>
                 )}
               </div>
 
               <div>
                 <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                  Destination Account (Credit)
+                  To Account
                 </label>
                 <select
                   value={receiverId}
@@ -185,7 +183,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 </select>
                 {receiver && (
                   <div className="mt-1 text-[10px] font-mono text-slate-500">
-                    Partition: <span className="text-black font-semibold">{receiver.shard}</span>
+                    Region: <span className="text-black font-semibold">{receiver.shard?.replace('SHARD_', 'HUB-').replace('_NORTH','').replace('_CENTRAL','').replace('_SOUTH','').replace('_ENTERPRISE','')}</span>
                   </div>
                 )}
               </div>
@@ -194,27 +192,27 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             {/* Transfer Route Visualizer */}
             <div className="p-3 rounded-lg border border-slate-200 bg-slate-50 font-mono text-xs flex items-center justify-between">
               <div className="space-y-0.5">
-                <span className="text-[10px] text-slate-500 block uppercase">Debiting</span>
+                <span className="text-[10px] text-slate-500 block uppercase">From</span>
                 <span className="font-bold text-black block">
                   {sender?.accountNumber || `Acc #${senderId}`}
                 </span>
-                <span className="text-[10px] text-slate-600">{sender?.shard}</span>
+                <span className="text-[10px] text-slate-600">{sender?.user?.fullName}</span>
               </div>
 
               <div className="flex flex-col items-center px-2">
-                <span className="text-[9px] text-slate-500 uppercase">2PC Wire</span>
+                <span className="text-[9px] text-slate-500 uppercase">Instant</span>
                 <ArrowRight className="w-4 h-4 text-black my-0.5" />
-                <span className="text-[9px] text-slate-600 font-bold">
-                  {isCrossShard ? '2 Partitions' : 'Single Partition'}
+                <span className="text-[9px] text-emerald-600 font-bold">
+                  {isDifferentRegion ? 'Cross-Region' : 'Same Region'}
                 </span>
               </div>
 
               <div className="space-y-0.5 text-right">
-                <span className="text-[10px] text-slate-500 block uppercase">Crediting</span>
+                <span className="text-[10px] text-slate-500 block uppercase">To</span>
                 <span className="font-bold text-black block">
                   {receiver?.accountNumber || `Acc #${receiverId}`}
                 </span>
-                <span className="text-[10px] text-slate-600">{receiver?.shard}</span>
+                <span className="text-[10px] text-slate-600">{receiver?.user?.fullName}</span>
               </div>
             </div>
 
@@ -222,11 +220,11 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="text-[11px] font-mono uppercase text-slate-600">
-                  Transfer Amount (PKR)
+                  Amount (PKR)
                 </label>
                 {sender && (
                   <span className="text-[11px] font-mono text-slate-500">
-                    Max Available: {Number(sender.balance).toFixed(2)} PKR
+                    Available: {Number(sender.balance).toFixed(2)} PKR
                   </span>
                 )}
               </div>
@@ -264,16 +262,16 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               </div>
             </div>
 
-            {/* Description memo */}
+            {/* Note / memo */}
             <div>
               <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                Transaction Memo / Purpose
+                Note (optional)
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Transfer memo"
+                placeholder="What's this transfer for?"
                 className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-black transition"
               />
             </div>
@@ -286,12 +284,12 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               {loading ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Executing 2PC Consensus...</span>
+                  <span>Sending...</span>
                 </>
               ) : (
                 <>
                   <Send className="w-3.5 h-3.5" />
-                  <span>Initiate Two-Phase Commit Wire</span>
+                  <span>Send Money Now</span>
                 </>
               )}
             </button>
@@ -299,18 +297,18 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
         </div>
       </div>
 
-      {/* Protocol Visualizer Column */}
+      {/* Transfer Status Column */}
       <div className="lg:col-span-6 bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col justify-between space-y-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-4 border-b border-slate-200">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-black" />
               <h2 className="text-sm font-bold text-black uppercase tracking-wider font-mono">
-                Consensus Execution Protocol
+                Transfer Status
               </h2>
             </div>
             <span className="text-[10px] font-mono text-slate-500">
-              PostgreSQL 17 • ACID Shards
+              Secured & Guaranteed
             </span>
           </div>
 
@@ -325,16 +323,12 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               }`}
             >
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold uppercase">
-                  Phase 0: Deterministic Pessimistic Locking
-                </span>
+                <span className="font-bold uppercase">Step 1 — Verifying Accounts</span>
                 {activeStep > 0 && <CheckCircle2 className="w-3.5 h-3.5 text-black" />}
                 {activeStep === 0 && <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />}
               </div>
               <p className="text-[11px] text-slate-600 mt-1 font-sans">
-                Acquires <code className="text-black font-semibold">SELECT ... FOR UPDATE</code> locks in strictly ascending
-                account ID order (<code className="text-black font-semibold">Math.min</code> before <code className="text-black font-semibold">Math.max</code>)
-                to guarantee mathematical deadlock immunity.
+                Confirming both accounts are active and the sender has sufficient balance for this transfer.
               </p>
             </div>
 
@@ -347,15 +341,12 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               }`}
             >
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold uppercase">
-                  Phase 1: Prepare &amp; Participant Voting
-                </span>
+                <span className="font-bold uppercase">Step 2 — Authorizing Transfer</span>
                 {activeStep > 1 && <CheckCircle2 className="w-3.5 h-3.5 text-black" />}
                 {activeStep === 1 && <RefreshCw className="w-3.5 h-3.5 animate-spin text-black" />}
               </div>
               <p className="text-[11px] text-slate-600 mt-1 font-sans">
-                Participant shards verify account activity, currency consistency, and sender balance sufficiency.
-                If valid, votes <code className="text-black font-semibold">VOTE_COMMIT</code>. If balance &lt; amount, votes <code className="text-black font-semibold">VOTE_ABORT</code>.
+                Verifying currency compatibility and authorizing the full transfer amount across all systems.
               </p>
             </div>
 
@@ -370,9 +361,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               }`}
             >
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold uppercase">
-                  Phase 2: Atomic Commit / Rollback &amp; Ledger Write
-                </span>
+                <span className="font-bold uppercase">Step 3 — Completing Transfer</span>
                 {stepStatus === 'success' && <CheckCircle2 className="w-3.5 h-3.5 text-black" />}
                 {stepStatus === 'failed' && <XCircle className="w-3.5 h-3.5 text-rose-600" />}
                 {activeStep === 2 && stepStatus === 'running' && (
@@ -380,8 +369,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 )}
               </div>
               <p className="text-[11px] text-slate-600 mt-1 font-sans">
-                Applies balances across partitions, writes immutable double-entry journal rows (1 Debit, 1 Credit),
-                and commits transaction status to <code className="text-black font-semibold">COMMITTED</code>.
+                Updating balances for both accounts and recording the transfer permanently in your history.
               </p>
             </div>
           </div>
@@ -392,20 +380,20 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
           <div className="p-4 rounded-lg border border-slate-300 bg-slate-50 text-xs font-mono space-y-2">
             <div className="flex items-center justify-between pb-2 border-b border-slate-200">
               <span className="text-black font-bold uppercase tracking-wider">
-                Transaction Confirmed
+                Transfer Complete ✓
               </span>
-              <span className="px-2 py-0.5 rounded bg-black text-white font-bold text-[10px]">
+              <span className="px-2 py-0.5 rounded bg-emerald-600 text-white font-bold text-[10px]">
                 {lastTx.status}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-[11px]">
               <div>
-                <span className="text-slate-500 block">Transaction Hash</span>
+                <span className="text-slate-500 block">Reference ID</span>
                 <span className="text-black font-bold truncate block">{lastTx.transactionId}</span>
               </div>
               <div className="text-right">
-                <span className="text-slate-500 block">Amount Settled</span>
+                <span className="text-slate-500 block">Amount Sent</span>
                 <span className="text-black font-bold block">{Number(lastTx.amount).toFixed(2)} {lastTx.currency}</span>
               </div>
             </div>
@@ -413,15 +401,15 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             {lastTx.ledgerEntries && lastTx.ledgerEntries.length > 0 && (
               <div className="pt-2 border-t border-slate-200 space-y-1">
                 <span className="text-[10px] text-slate-500 uppercase tracking-wider block">
-                  Double-Entry Ledger Entries ({lastTx.ledgerEntries.length})
+                  Transaction Breakdown
                 </span>
                 {lastTx.ledgerEntries.map((le) => (
                   <div key={le.id} className="flex justify-between items-center text-[10px]">
                     <span className="text-slate-700">
-                      [{le.type}] Account #{le.accountId}
+                      {le.type === 'DEBIT' ? '💸 Sent from' : '💰 Received by'} Account #{le.accountId}
                     </span>
                     <span className="text-black font-bold">
-                      {le.type === 'DEBIT' ? '-' : '+'}{Number(le.amount).toFixed(2)} PKR (After: {Number(le.balanceAfter).toFixed(0)})
+                      {le.type === 'DEBIT' ? '-' : '+'}{Number(le.amount).toFixed(2)} PKR → Balance: {Number(le.balanceAfter).toFixed(0)}
                     </span>
                   </div>
                 ))}

@@ -49,17 +49,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setActiveTab('landing')}
             className="flex items-center gap-2.5 cursor-pointer group"
           >
-            <img src={logoImg} alt="TransMoney" className="w-8 h-8 rounded object-cover" />
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-black tracking-tight text-black uppercase">
-                  TransMoney
-                </span>
-                <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[10px] font-mono border border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold">
-                  WALLET
-                </span>
-              </div>
-            </div>
+            <img src={logoImg} alt="TransMoney" className="w-9 h-9 rounded object-cover" />
           </div>
 
           {/* Navigation Links */}
