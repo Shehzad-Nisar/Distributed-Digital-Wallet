@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database, GitCommit, Layers } from 'lucide-react';
+import { Globe, Layers, ShieldCheck } from 'lucide-react';
 
 export const ArchitectureView: React.FC = () => {
   return (
@@ -7,123 +7,104 @@ export const ArchitectureView: React.FC = () => {
       {/* Title */}
       <div className="border-b border-slate-200 pb-4 space-y-1">
         <span className="text-xs font-mono uppercase tracking-widest text-slate-500">
-          Course Project Specification
+          About TransMoney
         </span>
         <h2 className="text-2xl font-black text-black uppercase tracking-tight">
-          Distributed Relational Database Architecture
+          How TransMoney Works
         </h2>
         <p className="text-xs text-slate-600 font-mono">
-          PostgreSQL Sharded Cluster • ACID Two-Phase Commit (2PC) • Raft High-Availability
+          A fast, secure, and reliable digital wallet built for real people.
         </p>
       </div>
 
-      {/* 6-Layer Architecture Overview */}
+      {/* Platform Overview */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-black uppercase tracking-wider font-mono flex items-center gap-2">
           <Layers className="w-4 h-4 text-black" />
-          <span>Six-Layer Horizontally Scalable Architecture</span>
+          <span>Platform Overview</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 font-mono text-xs">
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 01
+              01
             </span>
-            <h4 className="font-bold text-black uppercase">Client Presentation</h4>
+            <h4 className="font-bold text-black uppercase">Easy-to-Use App</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              Stateless React 19 single-page console communicating over REST JSON APIs with client-side idempotency.
+              A clean, fast interface that works on any device. No downloads needed — access your wallet from any browser.
             </p>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 02
+              02
             </span>
-            <h4 className="font-bold text-black uppercase">Gateway &amp; Routing</h4>
+            <h4 className="font-bold text-black uppercase">Smart Routing</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              Reverse proxy and load balancer distributing stateless read/write traffic across healthy API instances.
+              Transfers are automatically routed through the fastest available path, keeping your money moving without delays.
             </p>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 03
+              03
             </span>
-            <h4 className="font-bold text-black uppercase">2PC Application Engine</h4>
+            <h4 className="font-bold text-black uppercase">Transfer Engine</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              Spring Boot 3 service layer executing deterministic pessimistic row-locking and distributed 2PC orchestration.
+              Every transfer is processed with a guaranteed all-or-nothing mechanism — the money either arrives in full or is returned instantly.
             </p>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 04
+              04
             </span>
-            <h4 className="font-bold text-black uppercase">Distributed Caching</h4>
+            <h4 className="font-bold text-black uppercase">Fast Balance Updates</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              Absorbs high-frequency read spikes for account balances and frequent transaction lookups.
+              Your balance refreshes immediately after every transfer, so you always see your real balance in real time.
             </p>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 05
+              05
             </span>
-            <h4 className="font-bold text-black uppercase">Write Pipeline Serialization</h4>
+            <h4 className="font-bold text-black uppercase">Conflict-Free Processing</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              Serializes concurrent balance mutations per account partition to prevent race conditions and lost updates.
+              Multiple simultaneous transfers never interfere with each other. Every transaction is handled in strict order to prevent errors.
             </p>
           </div>
 
           <div className="p-4 rounded-xl border border-slate-200 bg-white space-y-2 shadow-xs">
             <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700 font-bold">
-              LAYER 06
+              06
             </span>
-            <h4 className="font-bold text-black uppercase">Sharded Relational Storage</h4>
+            <h4 className="font-bold text-black uppercase">Secure Storage</h4>
             <p className="text-[11px] text-slate-600 font-sans">
-              PostgreSQL 17 sharded cluster partitioned by <code className="text-black font-semibold">account_id</code> with immutable ledger entries.
+              All account data and transaction records are stored securely with full audit history. Nothing is ever deleted.
             </p>
           </div>
         </div>
       </div>
 
-      {/* 2PC Consensus Protocol Flow */}
+      {/* How a Transfer Works */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-black uppercase tracking-wider font-mono flex items-center gap-2">
-          <GitCommit className="w-4 h-4 text-black" />
-          <span>Cross-Shard Two-Phase Commit Protocol Sequence</span>
+          <ShieldCheck className="w-4 h-4 text-black" />
+          <span>How Every Transfer Is Protected</span>
         </h3>
 
         <div className="p-5 rounded-xl border border-slate-200 bg-slate-50 font-mono text-xs space-y-4 shadow-xs">
-          <div className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded bg-black text-white font-bold flex items-center justify-center shrink-0">
-              0
-            </span>
-            <div>
-              <span className="text-black font-bold block uppercase">
-                Deterministic Row-Lock Ordering (Deadlock Prevention)
-              </span>
-              <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                The 2PC Coordinator sorts sender and receiver account IDs in strictly ascending numerical order
-                (<code className="text-black font-semibold">Math.min(accA, accB)</code> before <code className="text-black font-semibold">Math.max(accA, accB)</code>)
-                before acquiring row locks via <code className="text-black font-semibold">SELECT ... FOR UPDATE</code>.
-                This breaks circular wait chains and mathematically eliminates distributed deadlocks.
-              </p>
-            </div>
-          </div>
-
           <div className="flex items-start gap-3">
             <span className="w-6 h-6 rounded bg-black text-white font-bold flex items-center justify-center shrink-0">
               1
             </span>
             <div>
               <span className="text-black font-bold block uppercase">
-                Phase 1: Prepare &amp; Participant Voting
+                Identity & Balance Check
               </span>
               <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                Coordinator checks participating shard availability, verifies account active statuses, validates currency compatibility,
-                and verifies sender balance sufficiency. If all checks pass, participants vote <code className="text-black font-semibold">VOTE_COMMIT</code>.
-                If balance is insufficient, vote is <code className="text-black font-semibold">VOTE_ABORT</code> and transaction rolls back with zero balance mutation.
+                Before any money moves, we verify both accounts are active and the sender has enough balance. If anything looks wrong, the transfer is stopped immediately with no money moved.
               </p>
             </div>
           </div>
@@ -134,61 +115,73 @@ export const ArchitectureView: React.FC = () => {
             </span>
             <div>
               <span className="text-black font-bold block uppercase">
-                Phase 2: Atomic Cross-Shard Commit &amp; Double-Entry Audit
+                Transfer Authorization
               </span>
               <p className="text-[11px] text-slate-600 font-sans mt-0.5">
-                On unanimous commit votes, the coordinator applies balance updates across shards simultaneously.
-                Two immutable ledger entries are written: a <code className="text-black font-semibold">DEBIT</code> entry for the sender and a <code className="text-black font-semibold">CREDIT</code> entry for the recipient.
-                Sum of debits strictly equals sum of credits.
+                All systems confirm they are ready to receive and process the transfer. If any system is unavailable, the transfer is held until everything is confirmed — no partial transfers allowed.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded bg-black text-white font-bold flex items-center justify-center shrink-0">
+              3
+            </span>
+            <div>
+              <span className="text-black font-bold block uppercase">
+                Instant Completion & Record
+              </span>
+              <p className="text-[11px] text-slate-600 font-sans mt-0.5">
+                Once confirmed, the sender's balance is reduced and the recipient's balance is increased simultaneously. A permanent record is created for both sides — every PKR is always accounted for.
               </p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Shard Mapping Table */}
+      {/* Regional Hubs Table */}
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-black uppercase tracking-wider font-mono flex items-center gap-2">
-          <Database className="w-4 h-4 text-black" />
-          <span>Cluster Partition Topology &amp; Pre-Seeded Accounts</span>
+          <Globe className="w-4 h-4 text-black" />
+          <span>Regional Coverage & Pre-Loaded Accounts</span>
         </h3>
 
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white font-mono text-xs shadow-xs">
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px]">
               <tr>
-                <th className="py-2.5 px-3">Shard Node</th>
-                <th className="py-2.5 px-3">Geographic Region</th>
-                <th className="py-2.5 px-3">Initial Account</th>
-                <th className="py-2.5 px-3">Seed User</th>
-                <th className="py-2.5 px-3 text-right">Balance</th>
+                <th className="py-2.5 px-3">Region</th>
+                <th className="py-2.5 px-3">Coverage Area</th>
+                <th className="py-2.5 px-3">Account</th>
+                <th className="py-2.5 px-3">Account Holder</th>
+                <th className="py-2.5 px-3 text-right">Starting Balance</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">SHARD_1_NORTH</td>
-                <td className="py-2.5 px-3 text-slate-600">Islamabad / KPK Cluster</td>
+                <td className="py-2.5 px-3 font-bold text-black">North Hub</td>
+                <td className="py-2.5 px-3 text-slate-600">Islamabad / KPK</td>
                 <td className="py-2.5 px-3 text-black">ACC-CHARLIE-003</td>
                 <td className="py-2.5 px-3 text-black">Charlie Tariq</td>
                 <td className="py-2.5 px-3 text-right font-bold text-black">5,000.00 PKR</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">SHARD_2_CENTRAL</td>
-                <td className="py-2.5 px-3 text-slate-600">Lahore / Punjab Cluster</td>
+                <td className="py-2.5 px-3 font-bold text-black">Central Hub</td>
+                <td className="py-2.5 px-3 text-slate-600">Lahore / Punjab</td>
                 <td className="py-2.5 px-3 text-black">ACC-BOB-002</td>
                 <td className="py-2.5 px-3 text-black">Bob Malik</td>
                 <td className="py-2.5 px-3 text-right font-bold text-black">1,000.00 PKR</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">SHARD_3_SOUTH</td>
-                <td className="py-2.5 px-3 text-slate-600">Karachi / Coastal Cluster</td>
+                <td className="py-2.5 px-3 font-bold text-black">South Hub</td>
+                <td className="py-2.5 px-3 text-slate-600">Karachi / Sindh</td>
                 <td className="py-2.5 px-3 text-black">ACC-ALICE-001</td>
                 <td className="py-2.5 px-3 text-black">Alice Khan</td>
                 <td className="py-2.5 px-3 text-right font-bold text-black">10,000.00 PKR</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">SHARD_4_ENTERPRISE</td>
-                <td className="py-2.5 px-3 text-slate-600">Corporate Settlement Node</td>
+                <td className="py-2.5 px-3 font-bold text-black">Business Hub</td>
+                <td className="py-2.5 px-3 text-slate-600">Corporate & Merchant</td>
                 <td className="py-2.5 px-3 text-black">ACC-DARAZ-004</td>
                 <td className="py-2.5 px-3 text-black">Daraz Merchant</td>
                 <td className="py-2.5 px-3 text-right font-bold text-black">100,000.00 PKR</td>
