@@ -1,0 +1,216 @@
+{
+  "info": {
+    "name": "TransMoney Distributed Digital Wallet API",
+    "_postman_id": "4b680517-5789-49fa-8ec1-d576a8d87ea3",
+    "description": "Postman Collection for TransMoney Distributed Digital Wallet System. Includes health checks, user registration, sharded account creation, cross-shard 2PC transfers, balance queries, and dynamic transaction search & sorting.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. System Health",
+      "item": [
+        {
+          "name": "Health Check (Database & App)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "health"]
+            }
+          }
+        },
+        {
+          "name": "OpenAPI Specification (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/v3/api-docs",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["v3", "api-docs"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Users",
+      "item": [
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dave Wilson\",\n  \"email\": \"dave.wilson@example.com\",\n  \"phoneNumber\": \"+923005556677\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/users",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "users"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Accounts",
+      "item": [
+        {
+          "name": "Create Sharded Account",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": 1,\n  \"accountNumber\": \"ACC-CUSTOM-999\",\n  \"currency\": \"PKR\",\n  \"initialBalance\": 15000.00,\n  \"shard\": \"SHARD_3_SOUTH\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/accounts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get All Accounts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/accounts",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Account Balance by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/accounts/1/balance",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "accounts", "1", "balance"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Transfers & 2PC Coordination",
+      "item": [
+        {
+          "name": "Execute 2PC Cross-Shard Transfer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"senderAccountId\": 1,\n  \"receiverAccountId\": 2,\n  \"amount\": 750.00,\n  \"currency\": \"PKR\",\n  \"description\": \"Demo: Cross-shard transfer Alice (Shard 3) to Bob (Shard 2)\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/transfers",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "transfers"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction Audit & Double-Entry Ledger",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/transactions/TX-REPLACE-WITH-TXID",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "transactions", "TX-REPLACE-WITH-TXID"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Search, Sort & Filtering",
+      "item": [
+        {
+          "name": "Search Account Transactions (Filtered)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/accounts/1/transactions?search=transfer&minAmount=100&maxAmount=5000&sort=createdAt&order=desc&page=0&size=20",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "accounts", "1", "transactions"],
+              "query": [
+                { "key": "search", "value": "transfer" },
+                { "key": "minAmount", "value": "100" },
+                { "key": "maxAmount", "value": "5000" },
+                { "key": "sort", "value": "createdAt" },
+                { "key": "order", "value": "desc" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Global Transactions Search & Sort",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/transactions?sort=amount&order=desc&page=0&size=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8080",
+              "path": ["api", "transactions"],
+              "query": [
+                { "key": "sort", "value": "amount" },
+                { "key": "order", "value": "desc" },
+                { "key": "page", "value": "0" },
+                { "key": "size", "value": "10" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

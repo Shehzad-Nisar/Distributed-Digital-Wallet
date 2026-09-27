@@ -226,35 +226,55 @@ GET http://localhost:8080/api/accounts/1/balance
 ```http
 GET http://localhost:8080/api/transactions/TX-42bcfdbe-3ea4-48f8-a006-25f190e29b18
 ```
-**Response:**
-```json
-{
-  "success": true,
-  "message": "Transaction retrieved successfully",
-  "data": {
-    "transactionId": "TX-42bcfdbe-3ea4-48f8-a006-25f190e29b18",
-    "status": "COMMITTED",
-    "amount": 2500.00,
-    "currency": "PKR",
-    "senderAccountId": 1,
-    "receiverAccountId": 2,
-    "ledgerEntries": [
-      {
-        "id": 1,
-        "type": "DEBIT",
-        "accountId": 1,
-        "amount": 2500.00,
-        "timestamp": "2026-09-27T14:48:47.387994"
-      },
-      {
-        "id": 2,
-        "type": "CREDIT",
-        "accountId": 2,
-        "amount": 2500.00,
-        "timestamp": "2026-09-27T14:48:47.387994"
-      }
-    ],
-    "timestamp": "2026-09-27T14:48:47.387994"
-  }
-}
+
+### 7. Search, Sort & Filter Transactions (Proposal Sections 6 & 7)
+Filter transactions by keyword, amount range, date range, or sort order:
+```http
+GET http://localhost:8080/api/accounts/1/transactions?search=P2P&minAmount=100&maxAmount=5000&sort=createdAt&order=desc&page=0&size=20
 ```
+
+Or query globally across all accounts:
+```http
+GET http://localhost:8080/api/transactions?minAmount=500&sort=amount&order=desc
+```
+
+---
+
+## 🖥️ Interactive Web Console & Swagger UI
+
+### 1. Interactive Demo Console
+Once the backend is running, open your web browser to:
+👉 **`http://localhost:8080/`**
+
+- **Live Shards Topology:** Displays real-time balances and active shard mapping.
+- **Interactive 2PC Transfer Trigger:** Execute live cross-shard transfers with real-time 3-step visualizer (Pessimistic Locking $\rightarrow$ Phase 1 Prepare/Vote $\rightarrow$ Phase 2 Commit).
+- **Audit Ledger:** Live double-entry bookkeeping validation ($\sum \text{Debits} == \sum \text{Credits}$).
+- **Search & Filter:** Instant multi-parameter transaction filtering.
+
+### 2. Interactive Swagger / OpenAPI Docs
+Test all REST endpoints with live payload validation in Swagger UI:
+👉 **`http://localhost:8080/swagger-ui.html`**
+
+OpenAPI JSON specification:
+👉 **`http://localhost:8080/v3/api-docs`**
+
+---
+
+## 🧪 Automated Integration Tests
+
+Run the full verification suite (all 8 tests pass against PostgreSQL):
+
+```powershell
+cd backend
+$env:JAVA_HOME = "$HOME\.jdk\jdk-21.0.12.1+1"; $env:Path = "$HOME\.jdk\jdk-21.0.12.1+1\bin;" + $env:Path; .\mvnw.cmd test
+```
+
+### Verified Scenarios:
+1. `TwoPhaseCommitIntegrationTest.testSuccessfulCrossShardTransfer`: Validates full 2PC lifecycle, balance updates, and strict double-entry debits/credits parity.
+2. `TwoPhaseCommitIntegrationTest.testInsufficientBalanceRejection`: Validates Phase 1 vote abort and guarantees zero balance changes on failed transfers.
+3. `TransactionSearchAndApiIntegrationTest.testSearchByKeyword`: Verifies partial keyword search over transaction memo/ID.
+4. `TransactionSearchAndApiIntegrationTest.testNumericRangeFilterAndSort`: Verifies B-tree numerical range filtering and custom sorting.
+5. `TransactionSearchAndApiIntegrationTest.testGlobalTransactionsEndpoint`: Validates global search with page metadata.
+6. `TransactionSearchAndApiIntegrationTest.testSwaggerOpenApiDocs`: Verifies OpenAPI 3.0 specification generation.
+7. `TransactionSearchAndApiIntegrationTest.testStaticDashboardServed`: Verifies embedded single-page dashboard serving.
+8. `BackendApplicationTests.contextLoads`: Verifies Spring ApplicationContext boots cleanly.
