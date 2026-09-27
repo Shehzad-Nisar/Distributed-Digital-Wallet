@@ -367,12 +367,12 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
                       <span className="font-bold mr-2">[{entry.type}]</span>
                       <span>Account #{entry.accountId}</span>
                       <div className="text-[10px] text-slate-400 mt-0.5">
-                        Balance After: ${entry.balanceAfter} {selectedTx.currency || 'USD'}
+                        Balance After: {entry.balanceAfter} PKR
                       </div>
                     </div>
                     <span className="font-mono font-bold text-sm">
                       {entry.type === 'DEBIT' ? '-' : '+'}
-                      ${entry.amount} {selectedTx.currency || 'USD'}
+                      {entry.amount} PKR
                     </span>
                   </div>
                 ))
