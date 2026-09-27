@@ -150,3 +150,4 @@ class TwoPhaseCommitIntegrationTest {
         assertEquals(0, new BigDecimal("1000.00").compareTo(receiverBal.getBalance()));
     }
 }
+

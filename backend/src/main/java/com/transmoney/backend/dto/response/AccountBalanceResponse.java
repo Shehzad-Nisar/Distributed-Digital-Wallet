@@ -18,3 +18,4 @@ public class AccountBalanceResponse {
     private ShardType shard;
     private String status;
 }
+
