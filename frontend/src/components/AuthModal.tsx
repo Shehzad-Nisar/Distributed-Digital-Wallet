@@ -14,11 +14,11 @@ interface AuthModalProps {
   initialMode?: 'signin' | 'signup';
 }
 
-const SHARD_OPTIONS: { value: ShardType; label: string; desc: string }[] = [
-  { value: 'SHARD_1_NORTH', label: 'Shard 1 (North)', desc: 'Islamabad / KPK / North Cluster' },
-  { value: 'SHARD_2_CENTRAL', label: 'Shard 2 (Central)', desc: 'Lahore / Punjab Central Cluster' },
-  { value: 'SHARD_3_SOUTH', label: 'Shard 3 (South)', desc: 'Karachi / Sindh / Coastal Cluster' },
-  { value: 'SHARD_4_ENTERPRISE', label: 'Shard 4 (Enterprise)', desc: 'Corporate / Merchant / B2B Cluster' },
+const REGION_OPTIONS: { value: ShardType; label: string; desc: string }[] = [
+  { value: 'SHARD_1_NORTH', label: 'North Region', desc: 'Islamabad / KPK' },
+  { value: 'SHARD_2_CENTRAL', label: 'Central Region', desc: 'Lahore / Punjab' },
+  { value: 'SHARD_3_SOUTH', label: 'South Region', desc: 'Karachi / Sindh' },
+  { value: 'SHARD_4_ENTERPRISE', label: 'Business Hub', desc: 'Corporate / Merchant' },
 ];
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -71,7 +71,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Failed to register user and account.';
+        'Could not create your account. Please try again.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -84,11 +84,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-slate-200">
           <div className="flex items-center gap-2">
-            <span className="w-7 h-7 rounded bg-black text-white font-black text-xs flex items-center justify-center font-mono">
+            <div className="w-7 h-7 rounded bg-emerald-600 text-white font-black text-xs flex items-center justify-center font-mono">
               TM
-            </span>
+            </div>
             <h3 className="text-base font-bold text-black uppercase tracking-tight">
-              User Session &amp; Account Management
+              TransMoney Wallet
             </h3>
           </div>
           <button
@@ -113,7 +113,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 : 'text-slate-500 hover:text-black'
             }`}
           >
-            Select Active Profile
+            Sign In
           </button>
           <button
             type="button"
@@ -127,7 +127,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 : 'text-slate-500 hover:text-black'
             }`}
           >
-            + Register New Wallet User
+            + Open New Account
           </button>
         </div>
 
@@ -142,13 +142,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {tab === 'signin' ? (
             <div className="space-y-4">
               <p className="text-xs text-slate-600">
-                Choose an existing wallet profile to act as the primary sender and view sharded balances.
+                Select your profile to sign in and access your wallet.
               </p>
 
               <div className="space-y-2">
                 {users.length === 0 ? (
                   <div className="text-center py-8 text-xs text-slate-400 font-mono">
-                    No users loaded yet from database.
+                    No accounts found. Create one to get started.
                   </div>
                 ) : (
                   users.map((u) => {
@@ -171,21 +171,24 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       >
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs flex items-center justify-center">
+                              {u.fullName.charAt(0)}
+                            </div>
                             <span className="font-semibold text-sm text-black">{u.fullName}</span>
                             {isCurrent && (
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-black text-white font-mono font-bold">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-600 text-white font-mono font-bold">
                                 ACTIVE
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-slate-500 font-mono">{u.email}</p>
-                          <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                          <p className="text-xs text-slate-500 font-mono pl-9">{u.email}</p>
+                          <div className="flex flex-wrap items-center gap-1.5 pt-1 pl-9">
                             {userAccounts.map((acc) => (
                               <span
                                 key={acc.id}
                                 className="px-2 py-0.5 rounded text-[10px] font-mono bg-slate-100 border border-slate-200 text-slate-700"
                               >
-                                {acc.accountNumber} ({acc.shard.replace('SHARD_', 'S')})
+                                {acc.accountNumber}
                               </span>
                             ))}
                           </div>
@@ -207,7 +210,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="space-y-1">
                 <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
-                  Step 1: User Profile
+                  Step 1 — Your Details
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
                   <div>
@@ -230,7 +233,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     <input
                       type="email"
                       required
-                      placeholder="tariq@transmoney.com"
+                      placeholder="tariq@example.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-black transition"
@@ -254,7 +257,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
               <div className="space-y-1 pt-2 border-t border-slate-200">
                 <span className="text-xs font-mono uppercase tracking-wider text-slate-500">
-                  Step 2: Sharded Account Provisioning
+                  Step 2 — Account Setup
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -272,7 +275,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   </div>
                   <div>
                     <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                      Initial Deposit (PKR) *
+                      Opening Balance (PKR) *
                     </label>
                     <input
                       type="number"
@@ -288,10 +291,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
                 <div className="pt-2">
                   <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Select Target Shard Partition *
+                    Select Your Region *
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {SHARD_OPTIONS.map((opt) => (
+                    {REGION_OPTIONS.map((opt) => (
                       <button
                         key={opt.value}
                         type="button"
@@ -319,7 +322,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   disabled={loading}
                   className="w-full py-3 rounded-lg bg-black text-white hover:bg-slate-800 font-semibold text-xs uppercase tracking-wider transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
-                  {loading ? 'Provisioning Sharded Account...' : 'Complete Registration & Open Account'}
+                  {loading ? 'Creating your account...' : 'Create Account & Get Started'}
                 </button>
               </div>
             </form>
