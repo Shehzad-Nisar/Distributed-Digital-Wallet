@@ -1,0 +1,149 @@
+/* ==========================================================================
+   TRANSMONEY CENTRALIZED THEME CONFIGURATION
+   All application colors and surfaces are strictly controlled here.
+   To change the theme in the future, modify ONLY this file.
+   ========================================================================== */
+
+:root {
+  /* Core Backgrounds: Pure White & Subtle Off-White */
+  --bg-app: #ffffff;
+  --bg-header: #ffffff;
+  --bg-surface: #fafafa;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f8fafc;
+  --bg-card-hover: #f1f5f9;
+  --bg-modal: #ffffff;
+  --bg-overlay: rgba(0, 0, 0, 0.45);
+
+  /* Typography: Solid Black & Neutral Grays */
+  --text-primary: #000000;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --text-inverse: #ffffff;
+
+  /* Borders: Crisp Light Grayscale */
+  --border-subtle: #e2e8f0;
+  --border-medium: #cbd5e1;
+  --border-strong: #000000;
+
+  /* Primary Button: Solid Black with White Text */
+  --btn-primary-bg: #000000;
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover: #262626;
+
+  /* Secondary Button: White with Subtle Border & Black Text */
+  --btn-secondary-bg: #ffffff;
+  --btn-secondary-text: #000000;
+  --btn-secondary-border: #e2e8f0;
+  --btn-secondary-hover: #f8fafc;
+
+  /* Form Inputs */
+  --input-bg: #ffffff;
+  --input-border: #cbd5e1;
+  --input-text: #000000;
+  --input-focus-border: #000000;
+  --input-placeholder: #94a3b8;
+
+  /* Badges */
+  --badge-bg: #f1f5f9;
+  --badge-text: #0f172a;
+  --badge-border: #e2e8f0;
+
+  --badge-invert-bg: #000000;
+  --badge-invert-text: #ffffff;
+
+  /* Scrollbars */
+  --scrollbar-track: #ffffff;
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+}
+
+/* ==========================================================================
+   GLOBAL THEME UTILITY CLASSES
+   ========================================================================== */
+
+.theme-bg-app {
+  background-color: var(--bg-app) !important;
+}
+
+.theme-bg-header {
+  background-color: var(--bg-header) !important;
+}
+
+.theme-bg-surface {
+  background-color: var(--bg-surface) !important;
+}
+
+.theme-bg-card {
+  background-color: var(--bg-card) !important;
+}
+
+.theme-bg-card-subtle {
+  background-color: var(--bg-card-subtle) !important;
+}
+
+.theme-text-primary {
+  color: var(--text-primary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--text-secondary) !important;
+}
+
+.theme-text-muted {
+  color: var(--text-muted) !important;
+}
+
+.theme-border {
+  border-color: var(--border-subtle) !important;
+}
+
+.theme-border-strong {
+  border-color: var(--border-strong) !important;
+}
+
+.theme-btn-primary {
+  background-color: var(--btn-primary-bg) !important;
+  color: var(--btn-primary-text) !important;
+  border: 1px solid var(--btn-primary-bg) !important;
+  transition: all 0.15s ease-in-out;
+}
+.theme-btn-primary:hover {
+  background-color: var(--btn-primary-hover) !important;
+  border-color: var(--btn-primary-hover) !important;
+}
+
+.theme-btn-secondary {
+  background-color: var(--btn-secondary-bg) !important;
+  color: var(--btn-secondary-text) !important;
+  border: 1px solid var(--btn-secondary-border) !important;
+  transition: all 0.15s ease-in-out;
+}
+.theme-btn-secondary:hover {
+  background-color: var(--btn-secondary-hover) !important;
+  border-color: var(--border-medium) !important;
+}
+
+.theme-input {
+  background-color: var(--input-bg) !important;
+  color: var(--input-text) !important;
+  border: 1px solid var(--input-border) !important;
+  transition: border-color 0.15s ease;
+}
+.theme-input:focus {
+  outline: none;
+  border-color: var(--input-focus-border) !important;
+}
+
+.theme-badge {
+  background-color: var(--badge-bg) !important;
+  color: var(--badge-text) !important;
+  border: 1px solid var(--badge-border) !important;
+}
+
+.theme-badge-invert {
+  background-color: var(--badge-invert-bg) !important;
+  color: var(--badge-invert-text) !important;
+}
+

@@ -1,4 +1,12 @@
-export type ShardType = 'SHARD_1_NORTH' | 'SHARD_2_CENTRAL' | 'SHARD_3_SOUTH' | 'SHARD_4_ENTERPRISE';
+export type ShardType =
+  | 'SHARD_1_NORTH'
+  | 'SHARD_2_CENTRAL'
+  | 'SHARD_3_SOUTH'
+  | 'SHARD_4_ENTERPRISE'
+  | 'SHARD_1_US'
+  | 'SHARD_2_UK'
+  | 'SHARD_3_SG'
+  | 'SHARD_4_UAE';
 
 export type TransactionStatus = 'INITIATED' | 'PREPARED' | 'COMMITTED' | 'FAILED';
 
@@ -10,8 +18,9 @@ export interface User {
   id: number;
   fullName: string;
   email: string;
-  phoneNumber: string;
-  createdAt: string;
+  phoneNumber?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Account {
@@ -70,6 +79,20 @@ export interface TransferRequest {
   amount: number;
   currency: string;
   description: string;
+}
+
+export interface CreateUserRequest {
+  fullName: string;
+  email: string;
+  phoneNumber?: string;
+}
+
+export interface CreateAccountRequest {
+  userId: number;
+  accountNumber: string;
+  currency: string;
+  initialBalance: number;
+  shard: ShardType;
 }
 
 export interface SystemHealth {

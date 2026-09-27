@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   ArrowDownUp,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Filter,
-  Search,
-  Scale,
+  ChevronUp,
   FileText,
+  Filter,
+  RefreshCw,
+  Scale,
+  Search,
 } from 'lucide-react';
 import { getTransactions } from '../api/client';
 import type { Account, PageResponse, TransactionResponse } from '../types';
@@ -34,7 +37,7 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   const [sortField, setSortField] = useState<string>('createdAt');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [loading, setLoading] = useState<boolean>(false);
-  const [selectedTx, setSelectedTx] = useState<TransactionResponse | null>(null);
+  const [expandedTxId, setExpandedTxId] = useState<string | null>(null);
 
   useEffect(() => {
     if (selectedAccountId) {
@@ -86,315 +89,312 @@ export const TransactionHistory: React.FC<TransactionHistoryProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 shadow-xl space-y-5">
-      {/* Title & Stats */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+    <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs space-y-6 font-sans text-black">
+      {/* Title & Audit Status */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-slate-200">
         <div className="flex items-center gap-2">
-          <FileText className="w-5 h-5 text-blue-400" />
-          <h2 className="text-base font-bold text-white">
-            Transaction Ledger & Multi-Criteria Search (Proposal Sec 6 & 7)
+          <FileText className="w-4 h-4 text-black" />
+          <h2 className="text-sm font-bold text-black uppercase tracking-wider font-mono">
+            Transaction Ledger &amp; Multi-Criteria Search
           </h2>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
-          <Scale className="w-3.5 h-3.5" />
-          <span>Double-Entry Parity: Strict Parity Verified</span>
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 bg-slate-50 font-mono text-[11px] text-slate-700">
+          <Scale className="w-3.5 h-3.5 text-black" />
+          <span>Double-Entry Bookkeeping: Σ Debits == Σ Credits</span>
         </div>
       </div>
 
       {/* Filter / Search Bar */}
-      <form
-        onSubmit={handleFilterSubmit}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"
-      >
-        {/* Keyword Search */}
-        <div className="lg:col-span-2">
-          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Keyword Search
-          </label>
-          <div className="relative">
-            <Search className="w-4 h-4 text-slate-500 absolute left-2.5 top-2.5" />
+      <form onSubmit={handleFilterSubmit} className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Keyword search */}
+          <div>
+            <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
+              Search Description / ID
+            </label>
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-slate-400" />
+              <input
+                type="text"
+                placeholder="e.g. wire, transfer, Daraz..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-black transition"
+              />
+            </div>
+          </div>
+
+          {/* Account Filter */}
+          <div>
+            <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
+              Filter By Account
+            </label>
+            <select
+              value={filterAccountId}
+              onChange={(e) => setFilterAccountId(e.target.value)}
+              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-black text-xs font-mono focus:outline-none focus:border-black transition"
+            >
+              <option value="">All Sharded Accounts</option>
+              {accounts.map((acc) => (
+                <option key={acc.id} value={acc.id}>
+                  {acc.accountNumber} ({acc.user?.fullName?.split(' ')[0] || `Acc #${acc.id}`})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Min Amount */}
+          <div>
+            <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
+              Min Amount (PKR)
+            </label>
             <input
-              type="text"
-              placeholder="Search memo, TX-ID..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg pl-8 pr-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              type="number"
+              placeholder="0"
+              value={minAmount}
+              onChange={(e) => setMinAmount(e.target.value)}
+              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-black text-xs font-mono placeholder:text-slate-400 focus:outline-none focus:border-black transition"
+            />
+          </div>
+
+          {/* Max Amount */}
+          <div>
+            <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
+              Max Amount (PKR)
+            </label>
+            <input
+              type="number"
+              placeholder="100000"
+              value={maxAmount}
+              onChange={(e) => setMaxAmount(e.target.value)}
+              className="w-full px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-black text-xs font-mono placeholder:text-slate-400 focus:outline-none focus:border-black transition"
             />
           </div>
         </div>
 
-        {/* Filter Account */}
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Account Filter
-          </label>
-          <select
-            value={filterAccountId}
-            onChange={(e) => setFilterAccountId(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          >
-            <option value="">All Accounts (Global)</option>
-            {accounts.map((a) => (
-              <option key={a.id} value={a.id}>
-                #{a.id} • {a.user?.fullName} ({a.shard})
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Filter Buttons & Sort Options */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+          <div className="flex items-center gap-2">
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-md bg-black text-white hover:bg-slate-800 font-semibold text-xs font-mono uppercase tracking-wider transition cursor-pointer flex items-center gap-1.5 shadow-xs"
+            >
+              <Filter className="w-3 h-3" />
+              <span>Apply Predicates</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="px-3 py-1.5 rounded-md border border-slate-300 bg-white text-slate-700 hover:text-black hover:border-slate-400 text-xs font-mono transition cursor-pointer shadow-2xs"
+            >
+              Reset
+            </button>
+          </div>
 
-        {/* Min Amount */}
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Min Amount
-          </label>
-          <input
-            type="number"
-            placeholder="0.00"
-            value={minAmount}
-            onChange={(e) => setMinAmount(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        {/* Max Amount */}
-        <div>
-          <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
-            Max Amount
-          </label>
-          <input
-            type="number"
-            placeholder="99999.00"
-            value={maxAmount}
-            onChange={(e) => setMaxAmount(e.target.value)}
-            className="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
-          />
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-end gap-2">
-          <button
-            type="submit"
-            className="flex-1 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold transition flex items-center justify-center gap-1.5"
-          >
-            <Filter className="w-3.5 h-3.5" />
-            <span>Apply</span>
-          </button>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="py-2 px-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-medium border border-slate-700 transition"
-          >
-            Reset
-          </button>
+          {/* Sorting controls */}
+          <div className="flex items-center gap-2 font-mono text-xs">
+            <span className="text-slate-500 uppercase text-[10px]">Sort:</span>
+            <select
+              value={sortField}
+              onChange={(e) => setSortField(e.target.value)}
+              className="px-2 py-1 rounded bg-white border border-slate-300 text-black text-xs focus:outline-none focus:border-black"
+            >
+              <option value="createdAt">Timestamp</option>
+              <option value="amount">Amount</option>
+              <option value="id">Transaction ID</option>
+            </select>
+            <button
+              type="button"
+              onClick={() => setSortOrder((prev) => (prev === 'desc' ? 'asc' : 'desc'))}
+              className="p-1 rounded border border-slate-300 bg-white text-black hover:bg-slate-50 transition cursor-pointer"
+              title={`Sort ${sortOrder.toUpperCase()}`}
+            >
+              <ArrowDownUp className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </form>
 
-      {/* Sorting bar */}
-      <div className="flex items-center justify-between text-xs text-slate-400 pt-2 border-t border-slate-800/60">
-        <div className="flex items-center gap-3">
-          <span className="font-semibold uppercase tracking-wider text-[11px]">Sort By:</span>
-          <button
-            type="button"
-            onClick={() => setSortField('createdAt')}
-            className={`font-medium ${
-              sortField === 'createdAt' ? 'text-blue-400 font-bold' : 'hover:text-white'
-            }`}
-          >
-            Date
-          </button>
-          <button
-            type="button"
-            onClick={() => setSortField('amount')}
-            className={`font-medium ${
-              sortField === 'amount' ? 'text-blue-400 font-bold' : 'hover:text-white'
-            }`}
-          >
-            Amount
-          </button>
-          <button
-            type="button"
-            onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-            className="flex items-center gap-1 text-slate-300 hover:text-white bg-slate-800 px-2 py-0.5 rounded border border-slate-700"
-          >
-            <ArrowDownUp className="w-3 h-3" />
-            <span>{sortOrder === 'desc' ? 'Descending' : 'Ascending'}</span>
-          </button>
-        </div>
-        {pageData && (
-          <span>
-            Total Entries: <strong className="text-white">{pageData.totalElements}</strong>
-          </span>
-        )}
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto rounded-lg border border-slate-800">
-        <table className="w-full text-left text-xs">
-          <thead className="bg-slate-800/80 text-slate-400 uppercase tracking-wider text-[11px] font-semibold border-b border-slate-800">
+      {/* Transaction Table */}
+      <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white">
+        <table className="w-full text-left font-mono text-xs">
+          <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px] tracking-wider">
             <tr>
-              <th className="py-3 px-3.5">TX ID</th>
-              <th className="py-3 px-3.5">Timestamp</th>
-              <th className="py-3 px-3.5">From</th>
-              <th className="py-3 px-3.5">To</th>
-              <th className="py-3 px-3.5">Amount</th>
-              <th className="py-3 px-3.5">Status</th>
-              <th className="py-3 px-3.5">Description</th>
-              <th className="py-3 px-3.5 text-right">Audit</th>
+              <th className="py-2.5 px-3">Transaction ID</th>
+              <th className="py-2.5 px-3">Type</th>
+              <th className="py-2.5 px-3">From &rarr; To</th>
+              <th className="py-2.5 px-3 text-right">Amount</th>
+              <th className="py-2.5 px-3">Status</th>
+              <th className="py-2.5 px-3">Timestamp</th>
+              <th className="py-2.5 px-3 text-center">Ledger</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800 text-slate-200">
+          <tbody className="divide-y divide-slate-100">
             {loading ? (
               <tr>
-                <td colSpan={8} className="text-center py-8 text-slate-400">
-                  Querying distributed shards...
+                <td colSpan={7} className="py-12 text-center text-slate-500">
+                  <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-black" />
+                  <span>Loading ledger records from sharded partitions...</span>
                 </td>
               </tr>
             ) : transactions.length === 0 ? (
               <tr>
-                <td colSpan={8} className="text-center py-8 text-slate-400">
-                  No transactions match the selected filter criteria.
+                <td colSpan={7} className="py-12 text-center text-slate-500">
+                  No transactions match the selected criteria.
                 </td>
               </tr>
             ) : (
-              transactions.map((tx) => (
-                <tr key={tx.transactionId} className="hover:bg-slate-800/30 transition">
-                  <td className="py-3 px-3.5 font-mono text-blue-400 font-medium truncate max-w-[130px]">
-                    {tx.transactionId}
-                  </td>
-                  <td className="py-3 px-3.5 text-slate-400 text-[11px] whitespace-nowrap">
-                    {new Date(tx.timestamp).toLocaleString()}
-                  </td>
-                  <td className="py-3 px-3.5 font-mono">
-                    Acc #{tx.senderAccountId}
-                  </td>
-                  <td className="py-3 px-3.5 font-mono">
-                    Acc #{tx.receiverAccountId}
-                  </td>
-                  <td className="py-3 px-3.5 font-bold text-white whitespace-nowrap">
-                    {Number(tx.amount).toFixed(2)} {tx.currency}
-                  </td>
-                  <td className="py-3 px-3.5">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                      {tx.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-3.5 text-slate-300 max-w-[180px] truncate">
-                    {tx.description || '-'}
-                  </td>
-                  <td className="py-3 px-3.5 text-right">
-                    <button
-                      onClick={() => setSelectedTx(tx)}
-                      className="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-blue-300 font-medium text-[11px] border border-slate-700"
+              transactions.map((tx) => {
+                const isExpanded = expandedTxId === tx.transactionId;
+                const senderAcc = accounts.find((a) => a.id === tx.senderAccountId);
+                const receiverAcc = accounts.find((a) => a.id === tx.receiverAccountId);
+
+                return (
+                  <React.Fragment key={tx.transactionId}>
+                    <tr
+                      onClick={() =>
+                        setExpandedTxId(isExpanded ? null : tx.transactionId)
+                      }
+                      className="hover:bg-slate-50 transition cursor-pointer"
                     >
-                      Ledger ({tx.ledgerEntries?.length || 2})
-                    </button>
-                  </td>
-                </tr>
-              ))
+                      <td className="py-3 px-3 font-bold text-black max-w-[140px] truncate">
+                        {tx.transactionId}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-[10px] text-slate-700">
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-slate-700">
+                        <span className="text-black font-medium">{senderAcc?.accountNumber || `#${tx.senderAccountId}`}</span>
+                        <span className="text-slate-400 mx-1.5">&rarr;</span>
+                        <span className="text-black font-medium">{receiverAcc?.accountNumber || `#${tx.receiverAccountId}`}</span>
+                      </td>
+                      <td className="py-3 px-3 text-right font-bold text-black">
+                        {Number(tx.amount).toFixed(2)} {tx.currency}
+                      </td>
+                      <td className="py-3 px-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            tx.status === 'COMMITTED'
+                              ? 'bg-black text-white'
+                              : 'bg-slate-100 text-slate-700 border border-slate-200'
+                          }`}
+                        >
+                          {tx.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-slate-500 text-[11px]">
+                        {tx.timestamp ? new Date(tx.timestamp).toLocaleString() : 'N/A'}
+                      </td>
+                      <td className="py-3 px-3 text-center">
+                        <button
+                          type="button"
+                          className="p-1 rounded hover:bg-slate-100 text-slate-500 hover:text-black transition"
+                        >
+                          {isExpanded ? (
+                            <ChevronUp className="w-3.5 h-3.5 mx-auto" />
+                          ) : (
+                            <ChevronDown className="w-3.5 h-3.5 mx-auto" />
+                          )}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {/* Double-Entry Ledger Drilldown Row */}
+                    {isExpanded && (
+                      <tr className="bg-slate-50 border-y border-slate-200">
+                        <td colSpan={7} className="p-4 space-y-3">
+                          <div className="flex items-center justify-between pb-2 border-b border-slate-200 text-xs">
+                            <span className="font-bold uppercase tracking-wider text-black">
+                              Double-Entry Journal Verification (Tx: {tx.transactionId})
+                            </span>
+                            <span className="text-slate-500 text-[11px]">
+                              Memo: {tx.description || 'N/A'}
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {tx.ledgerEntries && tx.ledgerEntries.length > 0 ? (
+                              tx.ledgerEntries.map((entry) => (
+                                <div
+                                  key={entry.id}
+                                  className="p-3 rounded-lg border border-slate-200 bg-white font-mono text-xs space-y-1.5 shadow-2xs"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span
+                                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                        entry.type === 'DEBIT'
+                                          ? 'bg-slate-100 text-slate-700 border border-slate-200'
+                                          : 'bg-black text-white'
+                                      }`}
+                                    >
+                                      {entry.type === 'DEBIT' ? 'DEBIT [-]' : 'CREDIT [+]'}
+                                    </span>
+                                    <span className="text-[10px] text-slate-400">
+                                      Entry #{entry.id}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-1">
+                                    <span className="text-slate-500">Account ID:</span>
+                                    <span className="font-bold text-black">
+                                      Account #{entry.accountId}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline">
+                                    <span className="text-slate-500">Ledger Amount:</span>
+                                    <span className="font-bold text-black">
+                                      {Number(entry.amount).toFixed(2)} PKR
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between items-baseline pt-1 border-t border-slate-100">
+                                    <span className="text-slate-400 text-[10px]">
+                                      Balance After Entry:
+                                    </span>
+                                    <span className="font-bold text-slate-700 text-[11px]">
+                                      {Number(entry.balanceAfter).toFixed(2)} PKR
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="col-span-2 text-center py-4 text-xs text-slate-400">
+                                No ledger entries found for this transaction.
+                              </div>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
+                );
+              })
             )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
-      {pageData && (
-        <div className="flex items-center justify-between text-xs text-slate-400 pt-2">
-          <span>
-            Page {pageData.page + 1} of {Math.max(pageData.totalPages, 1)}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 0))}
-              disabled={pageData.first}
-              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-40 border border-slate-700 flex items-center gap-1"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" />
-              <span>Previous</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage((p) => p + 1)}
-              disabled={pageData.last}
-              className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-white disabled:opacity-40 border border-slate-700 flex items-center gap-1"
-            >
-              <span>Next</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+      {/* Pagination Bar */}
+      {pageData && pageData.totalPages > 1 && (
+        <div className="flex items-center justify-between font-mono text-xs text-slate-600 pt-2 border-t border-slate-200">
+          <div>
+            Page <strong className="text-black">{pageData.page + 1}</strong> of{' '}
+            <strong className="text-black">{pageData.totalPages}</strong> ({pageData.totalElements} records)
           </div>
-        </div>
-      )}
-
-      {/* Ledger Modal */}
-      {selectedTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-              <div className="flex items-center gap-2">
-                <Scale className="w-5 h-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-sm">
-                  Immutable Double-Entry Audit Trail
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedTx(null)}
-                className="text-slate-400 hover:text-white text-sm font-bold"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="text-xs space-y-1">
-              <div className="font-mono text-blue-400 font-bold truncate">
-                {selectedTx.transactionId}
-              </div>
-              <p className="text-slate-400">{selectedTx.description}</p>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-                Balanced Ledger Records:
-              </span>
-              {selectedTx.ledgerEntries && selectedTx.ledgerEntries.length > 0 ? (
-                selectedTx.ledgerEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className={`p-3 rounded-lg border text-xs flex justify-between items-center ${
-                      entry.type === 'DEBIT'
-                        ? 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-                        : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                    }`}
-                  >
-                    <div>
-                      <span className="font-bold mr-2">[{entry.type}]</span>
-                      <span>Account #{entry.accountId}</span>
-                      <div className="text-[10px] text-slate-400 mt-0.5">
-                        Balance After: {entry.balanceAfter} PKR
-                      </div>
-                    </div>
-                    <span className="font-mono font-bold text-sm">
-                      {entry.type === 'DEBIT' ? '-' : '+'}
-                      {entry.amount} PKR
-                    </span>
-                  </div>
-                ))
-              ) : (
-                <div className="p-3 rounded-lg bg-slate-800 text-slate-400 text-xs text-center">
-                  Double-entry records verified: Debit #{selectedTx.senderAccountId} and Credit #{selectedTx.receiverAccountId}
-                </div>
-              )}
-            </div>
-
-            <div className="p-3 rounded-lg bg-slate-800/80 border border-slate-700/60 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>Mathematical Parity:</span>
-              <span className="text-emerald-400 font-bold">
-                ∑ Debits ({selectedTx.amount}) == ∑ Credits ({selectedTx.amount})
-              </span>
-            </div>
-
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => setSelectedTx(null)}
-              className="w-full py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold transition border border-slate-700"
+              disabled={pageData.first}
+              onClick={() => setCurrentPage((prev) => Math.max(0, prev - 1))}
+              className="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
             >
-              Close Ledger View
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              disabled={pageData.last}
+              onClick={() => setCurrentPage((prev) => prev + 1)}
+              className="p-1.5 rounded border border-slate-300 bg-white hover:bg-slate-50 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer shadow-2xs"
+            >
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         </div>
