@@ -116,6 +116,22 @@ backend/src/main/resources/
   $env:JAVA_HOME = "$HOME\.jdk\jdk-21.0.12.1+1"; $env:Path = "$HOME\.jdk\jdk-21.0.12.1+1\bin;" + $env:Path; .\mvnw.cmd test
   ```
 
+### React + TypeScript Frontend
+- **Directory:** `e:\Projects\Disributed-Digital_Wallet\frontend`
+- **Framework:** React 19 + TypeScript + Vite + Tailwind CSS v4 + Lucide Icons + Axios
+- **Port:** `5173` (with auto-proxy of `/api` to port `8080`)
+- **Run Dev Server:**
+  ```powershell
+  cd e:\Projects\Disributed-Digital_Wallet\frontend
+  npm run dev
+  ```
+- **Build Production Bundle:**
+  ```powershell
+  cd e:\Projects\Disributed-Digital_Wallet\frontend
+  npm run build
+  ```
+- **Direct Spring Boot Serving:** The production bundle is also synced into `backend/src/main/resources/static/`, so running the Spring Boot backend alone automatically serves the full React UI directly at `http://localhost:8080/`.
+
 ---
 
 ## 🧪 4. Verified Protocols & Automated Tests
