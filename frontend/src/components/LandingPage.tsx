@@ -18,6 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import fintechClusterImg from '../assets/fintech_cluster.jpg';
+import logoImg from '../assets/logo.png';
 import type { Account, SystemHealth, User } from '../types';
 
 interface LandingPageProps {
@@ -1003,9 +1004,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           ===================================================================== */}
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 border-t border-slate-200 text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-slate-950 text-white font-bold text-[10px] flex items-center justify-center">
-            TM
-          </div>
+          <img src={logoImg} alt="TransMoney" className="w-6 h-6 rounded object-cover" />
           <span className="font-bold text-slate-900 uppercase">TransMoney Digital Wallet</span>
           <span>© 2026 TransMoney Inc. All rights reserved.</span>
         </div>
