@@ -1,35 +1,19 @@
-# Distributed Digital Wallet Transaction System
 # Distributed Digital Wallet Transaction System (TransMoney)
 
-## Team Members
 A high-performance, fault-tolerant distributed digital wallet backend architecture built with **Java 21**, **Spring Boot**, and **PostgreSQL**. Features an ACID-compliant **Two-Phase Commit (2PC) Coordinator** for cross-shard transfers, double-entry ledger bookkeeping, and pessimistic lock concurrency controls.
 
-- Shehzad Nisar
-- Muhammad Ashraf
-- Daniyal Ahmed
 ---
 
-## Tech Stack
 ## 👥 Team Members
-
-### Backend
 - **Shehzad Nisar**
 - **Muhammad Ashraf**
 - **Daniyal Ahmed**
 
-- Java 21
-- Spring Boot
 ---
 
-### Frontend
 ## 🏛️ System Architecture
-
-- React
-- TypeScript
-- Vite
 The project strictly follows the industry-standard **Layered / MVCS (Model-View-Controller-Service)** architecture:
 
-### Database
 ```
 backend/src/main/java/com/transmoney/backend/
 ├── controller/            # API Endpoints (Routing & HTTP request handlers)
@@ -77,14 +61,10 @@ backend/src/main/java/com/transmoney/backend/
     └── TransactionException.java
 ```
 
-- PostgreSQL
-- Redis
 ---
 
-### Messaging
 ## ⚡ Core Features & Distributed Protocols
 
-- RabbitMQ
 ### 1. Two-Phase Commit (2PC) Coordinator
 When a transfer occurs between accounts (especially across different geographical shards):
 1. **Phase 1 (Prepare / Vote):**
@@ -95,15 +75,12 @@ When a transfer occurs between accounts (especially across different geographica
    - If all parties vote commit: Sender account is debited, receiver account is credited, and transaction status moves to `COMMITTED`.
    - If any participant fails: Entire transaction transitions to `FAILED` and changes are rolled back.
 
-### DevOps
 ### 2. Double-Entry Bookkeeping Ledger
 Every transfer generates two immutably recorded ledger entries:
 - A `DEBIT` entry against the sender's account.
 - A `CREDIT` entry against the recipient's account.
 - Mathematically satisfies: $\sum \text{Debits} == \sum \text{Credits}$ for auditability and regulatory compliance.
 
-- Docker
-- Kubernetes
 ### 3. Sharding Strategy
 Accounts are mapped to geographical/domain shards:
 - `SHARD_1_NORTH`
@@ -111,17 +88,26 @@ Accounts are mapped to geographical/domain shards:
 - `SHARD_3_SOUTH`
 - `SHARD_4_ENTERPRISE`
 
-## Status
 ---
 
-Project Initialized
 ## 🛠️ Tech Stack & Prerequisites
 
+### Backend
 - **Language:** Java 21 LTS (OpenJDK 21.0.12.1)
 - **Framework:** Spring Boot 3.4.3
 - **ORM / Persistence:** Spring Data JPA / Hibernate
 - **Database:** PostgreSQL 17.2
+- **Caching & Messaging:** Redis, RabbitMQ
 - **Build Tool:** Maven 3.x (with included `mvnw.cmd` wrapper)
+
+### Frontend (Planned)
+- React
+- TypeScript
+- Vite
+
+### DevOps
+- Docker
+- Kubernetes
 
 ---
 
