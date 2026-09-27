@@ -32,3 +32,4 @@ public class CreateAccountRequest {
     @NotNull(message = "Shard is required")
     private ShardType shard;
 }
+

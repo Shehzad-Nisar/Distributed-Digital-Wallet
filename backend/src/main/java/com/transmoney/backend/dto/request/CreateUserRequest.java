@@ -20,3 +20,4 @@ public class CreateUserRequest {
 
     private String phoneNumber;
 }
+
