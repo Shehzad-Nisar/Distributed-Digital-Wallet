@@ -1,4 +1,4 @@
-package com.transmoney.backend.entity;
+﻿package com.transmoney.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -32,6 +32,14 @@ public class User {
 
     @Column(name = "phone_number")
     private String phoneNumber;
+
+    @JsonIgnore
+    @Column(name = "password")
+    private String password;
+
+    @Column(name = "role")
+    @Builder.Default
+    private String role = "ROLE_USER";
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

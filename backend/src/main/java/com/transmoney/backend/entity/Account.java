@@ -1,5 +1,6 @@
-package com.transmoney.backend.entity;
+﻿package com.transmoney.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.transmoney.backend.entity.enums.ShardType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
     @Index(name = "idx_account_user_id", columnList = "user_id"),
     @Index(name = "idx_account_shard", columnList = "shard")
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,6 +31,7 @@ public class Account {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "accounts"})
     private User user;
 
     @Column(name = "account_number", nullable = false, unique = true, length = 64)

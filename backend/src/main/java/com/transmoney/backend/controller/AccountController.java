@@ -1,6 +1,9 @@
-package com.transmoney.backend.controller;
+﻿package com.transmoney.backend.controller;
 
 import com.transmoney.backend.dto.request.CreateAccountRequest;
+import com.transmoney.backend.dto.request.DepositRequest;
+import com.transmoney.backend.dto.request.UpdateAccountStatusRequest;
+import com.transmoney.backend.dto.request.WithdrawRequest;
 import com.transmoney.backend.dto.response.AccountBalanceResponse;
 import com.transmoney.backend.dto.response.ApiResponse;
 import com.transmoney.backend.dto.response.PageResponse;
@@ -24,7 +27,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Tag(name = "Account Management", description = "Endpoints for managing accounts, querying real-time shard balances, and searching transaction history")
+@Tag(name = "Account Management", description = "Endpoints for managing accounts, querying real-time shard balances, depositing, withdrawing, and searching transaction history")
 @RestController
 @RequestMapping("/api/accounts")
 @RequiredArgsConstructor
@@ -88,5 +91,32 @@ public class AccountController {
                 id, search, minAmount, maxAmount, startDate, endDate, type, status, sort, order, page, size
         );
         return ResponseEntity.ok(ApiResponse.ok("Transactions retrieved successfully", response));
+    }
+
+    @Operation(summary = "Deposit / Add funds into account", description = "Simulates an instant top-up/deposit into the account via Debit Card or Bank Wire, generating a double-entry CREDIT ledger record.")
+    @PostMapping("/{id}/deposit")
+    public ResponseEntity<ApiResponse<Account>> deposit(
+            @PathVariable Long id,
+            @Valid @RequestBody DepositRequest request) {
+        Account account = accountService.deposit(id, request);
+        return ResponseEntity.ok(ApiResponse.ok("Funds deposited successfully", account));
+    }
+
+    @Operation(summary = "Withdraw funds from account", description = "Debits account balance and transfers funds to an external bank or payout destination, generating an immutable DEBIT ledger record.")
+    @PostMapping("/{id}/withdraw")
+    public ResponseEntity<ApiResponse<Account>> withdraw(
+            @PathVariable Long id,
+            @Valid @RequestBody WithdrawRequest request) {
+        Account account = accountService.withdraw(id, request);
+        return ResponseEntity.ok(ApiResponse.ok("Funds withdrawn successfully", account));
+    }
+
+    @Operation(summary = "Update account operational status", description = "Updates account status to ACTIVE or FROZEN. Frozen accounts cannot send or receive transfers.")
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<Account>> updateAccountStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateAccountStatusRequest request) {
+        Account account = accountService.updateAccountStatus(id, request);
+        return ResponseEntity.ok(ApiResponse.ok("Account status updated to " + account.getStatus(), account));
     }
 }

@@ -7,9 +7,10 @@ import { TransactionHistory } from './components/TransactionHistory';
 import { ArchitectureView } from './components/ArchitectureView';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
-import { getAccounts, getHealth, getUsers } from './api/client';
+import { DepositWithdrawModal } from './components/DepositWithdrawModal';
+import { getAccounts, getHealth, getUsers, removeToken, updateAccountStatus } from './api/client';
 import type { Account, SystemHealth, User } from './types';
-import { RefreshCw, Send, Wallet } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Lock, RefreshCw, Send, Unlock, Wallet } from 'lucide-react';
 
 export function App() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
@@ -27,6 +28,8 @@ export function App() {
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
   const [authModalMode, setAuthModalMode] = useState<'signin' | 'signup'>('signin');
   const [createAccountModalOpen, setCreateAccountModalOpen] = useState<boolean>(false);
+  const [depositModalOpen, setDepositModalOpen] = useState<boolean>(false);
+  const [depositModalMode, setDepositModalMode] = useState<'deposit' | 'withdraw'>('deposit');
 
   const fetchData = async () => {
     try {
@@ -51,7 +54,6 @@ export function App() {
           }
         }
       } else if (!currentUser && usrs.length > 0) {
-        // Default to first user (e.g. Alice) for smooth demoing
         setCurrentUser(usrs[0]);
         const userAcc = accs.find((a) => a.user?.id === usrs[0].id);
         if (userAcc) {
@@ -86,7 +88,25 @@ export function App() {
 
   const handleLogout = () => {
     setCurrentUser(null);
+    removeToken();
     localStorage.removeItem('transmoney_active_user_id');
+  };
+
+  const handleStatusToggle = async (acc: Account) => {
+    try {
+      const nextStatus = acc.status === 'ACTIVE' ? 'FROZEN' : 'ACTIVE';
+      const updated = await updateAccountStatus(acc.id, nextStatus);
+      setAccounts((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+      fetchData();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || 'Failed to update account status');
+    }
+  };
+
+  const handleDepositSuccess = (updatedAccount: Account) => {
+    setAccounts((prev) => prev.map((a) => (a.id === updatedAccount.id ? updatedAccount : a)));
+    setRefreshTrigger((prev) => prev + 1);
+    fetchData();
   };
 
   const handleUserCreated = (newUser: User, newAccount: Account) => {
@@ -202,32 +222,103 @@ export function App() {
               <div className="space-y-8">
                 {/* Active user quick status bar */}
                 {currentUser && (
-                  <div className="p-4 rounded-xl theme-bg-card theme-border border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 font-mono text-xs shadow-xs">
-                    <div className="flex items-center gap-2.5">
-                      <Wallet className="w-4 h-4 theme-text-primary" />
+                  <div className="p-4 rounded-xl theme-bg-card theme-border border flex flex-col md:flex-row items-start md:items-center justify-between gap-4 font-mono text-xs shadow-xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center font-bold text-sm shrink-0">
+                        {currentUser.fullName.charAt(0)}
+                      </div>
                       <div>
-                        <span className="theme-text-muted uppercase text-[10px] block">Active User Perspective</span>
-                        <span className="font-bold theme-text-primary text-sm">
-                          {currentUser.fullName} ({currentUserAccounts.length} Sharded Account{currentUserAccounts.length === 1 ? '' : 's'})
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold theme-text-primary text-sm">{currentUser.fullName}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] bg-slate-100 dark:bg-slate-800 border theme-border font-mono text-slate-600 dark:text-slate-300">
+                            {currentUser.role || 'ROLE_USER'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] theme-text-secondary block font-sans">
+                          {currentUser.email} • {currentUserAccounts.length} Sharded Account{currentUserAccounts.length === 1 ? '' : 's'}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => setActiveTab('transfer')}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded theme-btn-primary font-semibold uppercase text-[11px] cursor-pointer"
-                      >
-                        <Send className="w-3 h-3" />
-                        <span>Send 2PC Wire</span>
-                      </button>
-                      <button
-                        onClick={() => setCreateAccountModalOpen(true)}
-                        className="px-3 py-1.5 rounded theme-btn-secondary text-[11px] cursor-pointer"
-                      >
-                        + Open Another Account
-                      </button>
-                    </div>
+                    {/* Active Selected Account Details & Actions */}
+                    {(() => {
+                      const activeAcc = accounts.find((a) => a.id === selectedAccountId) || currentUserAccounts[0];
+                      const isFrozen = activeAcc?.status === 'FROZEN';
+
+                      return (
+                        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-start md:justify-end pt-2 md:pt-0 border-t md:border-t-0 theme-border">
+                          {activeAcc && (
+                            <div className="flex items-center gap-2 mr-2 px-3 py-1.5 rounded-lg theme-bg-card-subtle border theme-border">
+                              <span className="text-[11px] font-bold theme-text-primary">{activeAcc.accountNumber}</span>
+                              <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">
+                                {Number(activeAcc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })} {activeAcc.currency}
+                              </span>
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                                  isFrozen ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
+                                }`}
+                              >
+                                {activeAcc.status}
+                              </span>
+                            </div>
+                          )}
+
+                          {activeAcc && (
+                            <>
+                              <button
+                                onClick={() => {
+                                  setDepositModalMode('deposit');
+                                  setDepositModalOpen(true);
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] transition cursor-pointer"
+                              >
+                                <ArrowDownLeft className="w-3.5 h-3.5" />
+                                <span>Deposit</span>
+                              </button>
+
+                              <button
+                                onClick={() => {
+                                  setDepositModalMode('withdraw');
+                                  setDepositModalOpen(true);
+                                }}
+                                className="flex items-center gap-1.5 px-3 py-1.5 rounded bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] transition cursor-pointer"
+                              >
+                                <ArrowUpRight className="w-3.5 h-3.5" />
+                                <span>Withdraw</span>
+                              </button>
+
+                              <button
+                                onClick={() => handleStatusToggle(activeAcc)}
+                                title={isFrozen ? 'Unfreeze Account' : 'Freeze Account'}
+                                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded border text-[11px] font-semibold transition cursor-pointer ${
+                                  isFrozen
+                                    ? 'border-amber-400 bg-amber-50 text-amber-800 hover:bg-amber-100'
+                                    : 'theme-border theme-bg-card text-slate-700 dark:text-slate-300 hover:bg-slate-100'
+                                }`}
+                              >
+                                {isFrozen ? <Unlock className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                                <span>{isFrozen ? 'Unfreeze' : 'Freeze'}</span>
+                              </button>
+                            </>
+                          )}
+
+                          <button
+                            onClick={() => setActiveTab('transfer')}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded theme-btn-primary font-semibold uppercase text-[11px] cursor-pointer"
+                          >
+                            <Send className="w-3 h-3" />
+                            <span>Send Wire</span>
+                          </button>
+
+                          <button
+                            onClick={() => setCreateAccountModalOpen(true)}
+                            className="px-2.5 py-1.5 rounded theme-btn-secondary text-[11px] cursor-pointer"
+                          >
+                            + Shard Acc
+                          </button>
+                        </div>
+                      );
+                    })()}
                   </div>
                 )}
 
@@ -367,9 +458,6 @@ export function App() {
       <AuthModal
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
-        users={users}
-        accounts={accounts}
-        currentUser={currentUser}
         onSelectUser={handleSelectUser}
         onUserCreated={handleUserCreated}
         initialMode={authModalMode}
@@ -380,6 +468,14 @@ export function App() {
         onClose={() => setCreateAccountModalOpen(false)}
         currentUser={currentUser}
         onAccountCreated={handleAccountCreated}
+      />
+
+      <DepositWithdrawModal
+        isOpen={depositModalOpen}
+        onClose={() => setDepositModalOpen(false)}
+        account={accounts.find((a) => a.id === selectedAccountId) || accounts[0] || null}
+        mode={depositModalMode}
+        onSuccess={handleDepositSuccess}
       />
     </div>
   );

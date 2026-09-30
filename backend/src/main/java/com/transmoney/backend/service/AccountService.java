@@ -1,25 +1,42 @@
-package com.transmoney.backend.service;
+﻿package com.transmoney.backend.service;
 
 import com.transmoney.backend.dto.request.CreateAccountRequest;
+import com.transmoney.backend.dto.request.DepositRequest;
+import com.transmoney.backend.dto.request.UpdateAccountStatusRequest;
+import com.transmoney.backend.dto.request.WithdrawRequest;
 import com.transmoney.backend.dto.response.AccountBalanceResponse;
 import com.transmoney.backend.entity.Account;
+import com.transmoney.backend.entity.LedgerEntry;
+import com.transmoney.backend.entity.Transaction;
 import com.transmoney.backend.entity.User;
+import com.transmoney.backend.entity.enums.LedgerEntryType;
+import com.transmoney.backend.entity.enums.TransactionStatus;
+import com.transmoney.backend.entity.enums.TransactionType;
+import com.transmoney.backend.exception.InsufficientBalanceException;
 import com.transmoney.backend.exception.ResourceNotFoundException;
+import com.transmoney.backend.exception.TransactionException;
 import com.transmoney.backend.repository.AccountRepository;
+import com.transmoney.backend.repository.LedgerEntryRepository;
+import com.transmoney.backend.repository.TransactionRepository;
 import com.transmoney.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AccountService {
 
     private final AccountRepository accountRepository;
     private final UserRepository userRepository;
+    private final TransactionRepository transactionRepository;
+    private final LedgerEntryRepository ledgerEntryRepository;
 
     @Transactional
     public Account createAccount(CreateAccountRequest request) {
@@ -71,5 +88,113 @@ public class AccountService {
     @Transactional(readOnly = true)
     public List<Account> getAllAccounts() {
         return accountRepository.findAll();
+    }
+
+    @Transactional
+    public Account deposit(Long accountId, DepositRequest request) {
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Deposit amount must be strictly positive");
+        }
+
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+
+        if (!"ACTIVE".equalsIgnoreCase(account.getStatus())) {
+            throw new TransactionException("Cannot deposit to account " + account.getAccountNumber() + " because it is " + account.getStatus());
+        }
+
+        BigDecimal newBalance = account.getBalance().add(request.getAmount());
+        account.setBalance(newBalance);
+        Account savedAccount = accountRepository.save(account);
+
+        String txId = "DEP-" + UUID.randomUUID().toString();
+        String description = "Deposit via " + (request.getPaymentMethod() != null ? request.getPaymentMethod() : "BANK_LOAD")
+                + (request.getReferenceNotes() != null && !request.getReferenceNotes().isBlank() ? " (" + request.getReferenceNotes() + ")" : "");
+
+        Transaction transaction = Transaction.builder()
+                .transactionId(txId)
+                .senderAccountId(null)
+                .receiverAccountId(account.getId())
+                .amount(request.getAmount())
+                .currency(account.getCurrency())
+                .description(description)
+                .type(TransactionType.DEPOSIT)
+                .status(TransactionStatus.COMMITTED)
+                .build();
+        Transaction savedTx = transactionRepository.save(transaction);
+
+        LedgerEntry entry = LedgerEntry.builder()
+                .transaction(savedTx)
+                .entryType(LedgerEntryType.CREDIT)
+                .accountId(account.getId())
+                .amount(request.getAmount())
+                .balanceAfter(newBalance)
+                .build();
+        ledgerEntryRepository.save(entry);
+
+        log.info("Deposit [{}] completed: Credited {} {} to account {}", txId, request.getAmount(), account.getCurrency(), account.getAccountNumber());
+        return savedAccount;
+    }
+
+    @Transactional
+    public Account withdraw(Long accountId, WithdrawRequest request) {
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Withdrawal amount must be strictly positive");
+        }
+
+        Account account = accountRepository.findByIdForUpdate(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+
+        if (!"ACTIVE".equalsIgnoreCase(account.getStatus())) {
+            throw new TransactionException("Cannot withdraw from account " + account.getAccountNumber() + " because it is " + account.getStatus());
+        }
+
+        if (account.getBalance().compareTo(request.getAmount()) < 0) {
+            throw new InsufficientBalanceException("Insufficient balance for withdrawal. Available: "
+                    + account.getBalance() + ", Requested: " + request.getAmount());
+        }
+
+        BigDecimal newBalance = account.getBalance().subtract(request.getAmount());
+        account.setBalance(newBalance);
+        Account savedAccount = accountRepository.save(account);
+
+        String txId = "WTH-" + UUID.randomUUID().toString();
+        String description = "Withdrawal to " + request.getDestinationBank() + " [" + request.getDestinationAccountNumber() + "]"
+                + (request.getReferenceNotes() != null && !request.getReferenceNotes().isBlank() ? " (" + request.getReferenceNotes() + ")" : "");
+
+        Transaction transaction = Transaction.builder()
+                .transactionId(txId)
+                .senderAccountId(account.getId())
+                .receiverAccountId(null)
+                .amount(request.getAmount())
+                .currency(account.getCurrency())
+                .description(description)
+                .type(TransactionType.WITHDRAWAL)
+                .status(TransactionStatus.COMMITTED)
+                .build();
+        Transaction savedTx = transactionRepository.save(transaction);
+
+        LedgerEntry entry = LedgerEntry.builder()
+                .transaction(savedTx)
+                .entryType(LedgerEntryType.DEBIT)
+                .accountId(account.getId())
+                .amount(request.getAmount())
+                .balanceAfter(newBalance)
+                .build();
+        ledgerEntryRepository.save(entry);
+
+        log.info("Withdrawal [{}] completed: Debited {} {} from account {}", txId, request.getAmount(), account.getCurrency(), account.getAccountNumber());
+        return savedAccount;
+    }
+
+    @Transactional
+    public Account updateAccountStatus(Long accountId, UpdateAccountStatusRequest request) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+
+        account.setStatus(request.getStatus().trim().toUpperCase());
+        Account saved = accountRepository.save(account);
+        log.info("Account {} status updated to {}", account.getAccountNumber(), saved.getStatus());
+        return saved;
     }
 }
