@@ -156,3 +156,102 @@ export interface SystemHealth {
   service: string;
   database: string;
 }
+
+export interface Merchant {
+  id: number;
+  merchantCode: string;
+  name: string;
+  category: string;
+  accountId: number;
+  accountNumber?: string;
+  shard?: string;
+  feeRatePercent: number;
+  accumulatedGross: number;
+  accumulatedFees: number;
+  accumulatedNetSettled: number;
+  unsettledBalance: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface MerchantOnboardPayload {
+  userId?: number;
+  businessName: string;
+  category: string;
+  accountId?: number;
+  feeRatePercent?: number;
+}
+
+export interface QrCodeResponse {
+  qrPayload: string;
+  qrImageDataUrl: string;
+  qrSvg: string;
+  merchantId: number;
+  merchantCode: string;
+  merchantName: string;
+  accountId: number;
+  accountNumber?: string;
+  amount?: number;
+  currency: string;
+  orderRef?: string;
+  isDynamic: boolean;
+  expiresAt?: string;
+  signature?: string;
+}
+
+export interface QrScanDetails {
+  valid: boolean;
+  merchantId?: number;
+  merchantCode?: string;
+  merchantName?: string;
+  merchantCategory?: string;
+  merchantAccountId?: number;
+  merchantAccountNumber?: string;
+  merchantShard?: string;
+  amount?: number;
+  currency?: string;
+  orderRef?: string;
+  isDynamic?: boolean;
+  isExpired?: boolean;
+  expiresAt?: string;
+  feeRatePercent?: number;
+  estimatedFee?: number;
+  estimatedNetAmount?: number;
+  message?: string;
+}
+
+export interface QrPaymentResponse {
+  transactionId: string;
+  status: TransactionStatus;
+  payerAccountId: number;
+  payerAccountNumber?: string;
+  payerShard?: string;
+  merchantId?: number;
+  merchantCode?: string;
+  merchantName?: string;
+  merchantAccountId: number;
+  merchantAccountNumber?: string;
+  merchantShard?: string;
+  grossAmount: number;
+  feeAmount?: number;
+  netAmount?: number;
+  currency: string;
+  orderRef?: string;
+  idempotencyKey?: string;
+  cachedReplay: boolean;
+  timestamp: string;
+}
+
+export interface SettlementBatch {
+  batchReference: string;
+  merchantId: number;
+  merchantName: string;
+  settlementAccountId: number;
+  settlementAccountNumber?: string;
+  transactionCount: number;
+  grossVolume: number;
+  totalFees: number;
+  netSettlementAmount: number;
+  status: string;
+  settlementDate: string;
+}

@@ -64,31 +64,40 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 
 ---
 
-### Phase 3: Real P2P Transfers & Idempotent 2PC Engine
-**Status:** 🔄 *Ready for Development*  
+#### Phase 3: Real P2P Transfers & Idempotent 2PC Engine
+**Status:** ✅ *COMPLETED*  
 **Core Objective:** Fortify cross-shard Two-Phase Commit with distributed idempotency, optimistic locking, and network failure recovery.
 
-- [ ] **Idempotency Keys**: Accept `X-Idempotency-Key` header on all transfers to prevent accidental duplicate debits.
-- [ ] **Distributed Locks**: Prevent race conditions when concurrent requests target the same account balance.
-- [ ] **Transaction Recovery Coordinator**: Periodic background job scanning for orphaned `PREPARED` 2PC transactions and rolling them back.
-- [ ] **Deadlock Detection**: Enforce strict hierarchical shard lock acquisition order (`SHARD_1` -> `SHARD_2` -> `SHARD_3` -> `SHARD_4`).
-- [ ] **Frontend 2PC Stepper**: Live step-by-step visual animation for Prepare and Commit phases in `TransferConsole.tsx`.
+- [x] **Idempotency Keys**: Accept `X-Idempotency-Key` header on all transfers to prevent accidental duplicate debits (`IdempotencyService`).
+- [x] **Distributed Locks**: Deterministic hierarchical lock acquisition order (`Math.min` -> `Math.max`) prevents deadlocks across shard partitions.
+- [x] **Transaction Recovery Coordinator**: Background scheduled worker (`@Scheduled`) scanning and aborting orphaned `PREPARED` 2PC transactions.
+- [x] **Deadlock Detection & Cross-Shard State**: Enforced strict `INITIATED` -> `PREPARED` -> `COMMITTED` transitions.
+- [x] **Frontend 2PC Stepper**: Real-time visual animation for Prepare and Commit phases with recovery triggers in `TransferConsole.tsx`.
 
 ---
 
 ### Phase 4: Merchant Services, QR Payments & Settlement
-**Status:** ⏳ *Planned*  
-**Core Objective:** Support business/merchant accounts with instant QR code payments and point-of-sale settlements.
+**Status:** ✅ *COMPLETED*  
+**Core Objective:** Support business/merchant accounts with instant QR code payments, cryptographic signature verification, point-of-sale terminals, and end-of-day settlements.
 
-- [ ] **Merchant Account Types**: Expand `User` roles with `MERCHANT` tier and business metadata.
-- [ ] **Dynamic & Static QR Codes**: Generate signed QR payment payloads with expiration timestamps.
-- [ ] **Scan-to-Pay UI**: Camera scanner component or simulated QR scan flow in React.
-- [ ] **Merchant Settlement Portal**: End-of-day batch settlement and transaction fee deduction logic.
+- [x] **Merchant Account Types**: Expanded `Merchant` entity with `merchantCode`, user mapping, business category, secret key, and MDR fee rate.
+- [x] **Dynamic & Static QR Codes**: Cryptographically signed HMAC-SHA256 QR payloads with expiry tracking, Base64 PNG, and crisp vector SVG generation (`QrCodeService`).
+- [x] **Scan-to-Pay UI**: Interactive QR decoder in `MerchantPortal.tsx` with one-click demo invoices, fee preview, and 2PC execution.
+- [x] **Point of Sale Generator**: POS terminal supporting both fixed-amount dynamic invoices and open-amount persistent static QR codes.
+- [x] **Merchant Settlement Portal**: End-of-day batch settlement engine with MDR platform fee deduction, settlement history, and volume tracking (`SettlementBatch`).
+- [x] **REST Endpoints**:
+  - `POST /api/merchants/onboard`
+  - `GET /api/merchants` & `GET /api/merchants/{id}` & `GET /api/merchants/user/{userId}`
+  - `POST /api/merchants/qr/generate`
+  - `POST /api/merchants/qr/scan`
+  - `POST /api/merchants/qr/pay` (supports `X-Idempotency-Key`)
+  - `POST /api/merchants/{id}/settle`
+  - `GET /api/merchants/{id}/settlements`
 
 ---
 
 ### Phase 5: Double-Entry Financial Ledger & Audit Reporting
-**Status:** ⏳ *Planned*  
+**Status:** 🔄 *Ready for Development*  
 **Core Objective:** Full GAAP-compliant double-entry ledger ensuring zero-sum accounting and audit trail.
 
 - [ ] **Journal & Ledger Entries**: Maintain immutable debit and credit pairs for every financial movement.
@@ -134,7 +143,7 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 **Core Objective:** Rule-based fraud scoring and IP/device rate limiting to safeguard wallet funds.
 
 - [ ] **Velocity Checker**: Detect and block abnormal velocity (e.g., > 5 transfers within 60 seconds).
-- [ ] **Large Transfer Flagging**: Trigger manual review or 2FA challenge for transfers exceeding \$10,000 threshold.
+- [ ] **Large Transfer Flagging**: Trigger manual review or 2FA challenge for transfers exceeding $10,000 threshold.
 - [ ] **IP & Account Rate Limiting**: Token-bucket algorithm via Bucket4j or Redis.
 
 ---
@@ -152,9 +161,11 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 
 ## Verification & Quality Assurance Summary
 
-* **Automated Test Results**: 10/10 Tests Passed (`mvnw.cmd test`)
+* **Automated Test Results**: 20/20 Tests Passed (`mvnw.cmd test`, 0 failures, 0 errors)
   * `AuthAndAccountLifecycleIntegrationTest`: 2/2 tests pass (Auth, BCrypt, JWT, Deposit, Withdraw, Freeze).
   * `TwoPhaseCommitIntegrationTest`: 2/2 tests pass (Atomic 2PC commit, balance rollback on abort).
   * `TransactionSearchAndApiIntegrationTest`: 5/5 tests pass (Paginated queries, shard routing, OpenAPI).
+  * `IdempotencyAnd2PCIntegrationTest`: 4/4 tests pass (Distributed idempotency, replay caching, recovery coordinator).
+  * `MerchantAndQrPaymentIntegrationTest`: 6/6 tests pass (Onboarding, QR generation, 2PC QR payments, MDR fees, idempotency replay, tampered QR rejection, settlement batches).
   * `BackendApplicationTests`: 1/1 tests pass.
-* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors**.
+* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.64s**.

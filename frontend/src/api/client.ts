@@ -15,6 +15,12 @@ import type {
   TransferResponse,
   User,
   WithdrawRequest,
+  Merchant,
+  MerchantOnboardPayload,
+  QrCodeResponse,
+  QrScanDetails,
+  QrPaymentResponse,
+  SettlementBatch,
 } from '../types';
 
 const api = axios.create({
@@ -202,6 +208,83 @@ export const getTransactionById = async (
 ): Promise<TransactionResponse> => {
   const response = await api.get<ApiResponse<TransactionResponse>>(
     `/transactions/${transactionId}`
+  );
+  return response.data.data;
+};
+
+// --- Phase 4: Merchant Services, QR Code Payments & Batch Settlement ---
+export const getMerchants = async (): Promise<Merchant[]> => {
+  const response = await api.get<ApiResponse<Merchant[]>>('/merchants');
+  return response.data.data;
+};
+
+export const getMerchantById = async (id: number): Promise<Merchant> => {
+  const response = await api.get<ApiResponse<Merchant>>(`/merchants/${id}`);
+  return response.data.data;
+};
+
+export const getMerchantByUserId = async (userId: number): Promise<Merchant> => {
+  const response = await api.get<ApiResponse<Merchant>>(`/merchants/user/${userId}`);
+  return response.data.data;
+};
+
+export const onboardMerchant = async (
+  payload: MerchantOnboardPayload
+): Promise<Merchant> => {
+  const response = await api.post<ApiResponse<Merchant>>('/merchants/onboard', payload);
+  return response.data.data;
+};
+
+export const generateQrCode = async (req: {
+  merchantId: number;
+  amount?: number;
+  orderRef?: string;
+  description?: string;
+  isDynamic?: boolean;
+  expiryMinutes?: number;
+}): Promise<QrCodeResponse> => {
+  const response = await api.post<ApiResponse<QrCodeResponse>>('/merchants/qr/generate', req);
+  return response.data.data;
+};
+
+export const scanQrCode = async (qrPayload: string): Promise<QrScanDetails> => {
+  const response = await api.post<ApiResponse<QrScanDetails>>('/merchants/qr/scan', {
+    qrPayload,
+  });
+  return response.data.data;
+};
+
+export const payQrCode = async (payload: {
+  qrPayload: string;
+  payerAccountId: number;
+  amount?: number;
+  idempotencyKey?: string;
+  notes?: string;
+}): Promise<QrPaymentResponse> => {
+  const headers: Record<string, string> = {};
+  if (payload.idempotencyKey) {
+    headers['X-Idempotency-Key'] = payload.idempotencyKey;
+  }
+  const response = await api.post<ApiResponse<QrPaymentResponse>>(
+    '/merchants/qr/pay',
+    payload,
+    { headers }
+  );
+  return response.data.data;
+};
+
+export const settleMerchant = async (merchantId: number): Promise<SettlementBatch> => {
+  const response = await api.post<ApiResponse<SettlementBatch>>(
+    `/merchants/${merchantId}/settle`
+  );
+  return response.data.data;
+};
+
+export const getSettlementHistory = async (
+  merchantId: number
+): Promise<SettlementBatch[]> => {
+  const response = await api.get<ApiResponse<SettlementBatch[]>>(
+    `/merchants/${merchantId}/settlements`
   );
   return response.data.data;
 };

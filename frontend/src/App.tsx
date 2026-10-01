@@ -5,6 +5,7 @@ import { ShardClusterView } from './components/ShardClusterView';
 import { TransferConsole } from './components/TransferConsole';
 import { TransactionHistory } from './components/TransactionHistory';
 import { ArchitectureView } from './components/ArchitectureView';
+import { MerchantPortal } from './components/MerchantPortal';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
@@ -21,8 +22,8 @@ export function App() {
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
-  // View state: landing, console, transfer, ledger, architecture
-  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'ledger' | 'architecture'>('landing');
+  // View state: landing, console, transfer, merchant, ledger, architecture
+  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture'>('landing');
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -389,7 +390,17 @@ export function App() {
               </div>
             )}
 
-            {/* View 4: Ledger & Audit (Dedicated view) */}
+            {/* View 4: Merchant Services & QR Code Payments */}
+            {activeTab === 'merchant' && (
+              <MerchantPortal
+                currentUser={currentUser}
+                accounts={accounts}
+                activeAccountId={selectedAccountId}
+                onRefreshData={fetchData}
+              />
+            )}
+
+            {/* View 5: Ledger & Audit (Dedicated view) */}
             {activeTab === 'ledger' && (
               <div className="space-y-6">
                 <div className="border-b theme-border pb-3 flex items-center justify-between">

@@ -4,6 +4,7 @@ import {
   LogOut,
   Plus,
   Send,
+  Store,
   Users,
 } from 'lucide-react';
 import type { Account, SystemHealth, User } from '../types';
@@ -18,8 +19,8 @@ interface HeaderProps {
   onOpenAuth: (mode: 'signin' | 'signup') => void;
   onOpenCreateAccount: () => void;
   onLogout: () => void;
-  activeTab: 'landing' | 'console' | 'transfer' | 'ledger' | 'architecture';
-  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'ledger' | 'architecture') => void;
+  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture';
+  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -74,6 +75,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Send className="w-3 h-3" />
               <span>Send Money</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('merchant')}
+              className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 font-medium ${
+                activeTab === 'merchant'
+                  ? 'bg-black text-white font-semibold'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span>Merchants & QR</span>
             </button>
             <button
               onClick={() => setActiveTab('ledger')}

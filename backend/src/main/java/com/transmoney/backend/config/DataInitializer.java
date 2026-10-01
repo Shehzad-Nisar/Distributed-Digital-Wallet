@@ -103,24 +103,36 @@ public class DataInitializer implements CommandLineRunner {
 
         // 3. Create Merchants
         merchantRepository.save(Merchant.builder()
+                .merchantCode("MCH-FP-001")
                 .name("FoodPanda Express")
                 .category("Food & Dining")
+                .user(bob)
                 .accountId(bobAccount.getId())
+                .feeRatePercent(new BigDecimal("1.50"))
+                .secretKey("secret_foodpanda_2026")
                 .build());
 
         merchantRepository.save(Merchant.builder()
+                .merchantCode("MCH-DARAZ-002")
                 .name("Daraz Online Shopping")
                 .category("E-Commerce")
+                .user(daraz)
                 .accountId(darazAccount.getId())
+                .feeRatePercent(new BigDecimal("1.25"))
+                .secretKey("secret_daraz_2026")
                 .build());
 
         merchantRepository.save(Merchant.builder()
+                .merchantCode("MCH-KE-003")
                 .name("K-Electric Utility Bill")
                 .category("Utilities")
+                .user(daraz)
                 .accountId(darazAccount.getId())
+                .feeRatePercent(new BigDecimal("0.50"))
+                .secretKey("secret_kelectric_2026")
                 .build());
 
-        log.info("Seeded 3 merchants: FoodPanda Express, Daraz Online, K-Electric");
+        log.info("Seeded 3 merchants: FoodPanda Express (MCH-FP-001), Daraz Online (MCH-DARAZ-002), K-Electric (MCH-KE-003)");
 
         // 4. Execute an initial cross-shard 2PC transfer to prime the transaction ledger
         try {

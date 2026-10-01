@@ -10,9 +10,15 @@ import java.util.Optional;
 @Repository
 public interface MerchantRepository extends JpaRepository<Merchant, Long> {
 
+    Optional<Merchant> findByMerchantCode(String merchantCode);
+
+    List<Merchant> findByUserId(Long userId);
+
     List<Merchant> findByNameContainingIgnoreCase(String name);
 
     List<Merchant> findByCategoryIgnoreCase(String category);
 
     Optional<Merchant> findByAccountId(Long accountId);
+
+    boolean existsByMerchantCode(String merchantCode);
 }

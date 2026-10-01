@@ -89,6 +89,65 @@ public class IdempotencyService {
     }
 
     /**
+     * Checks or starts idempotency tracking for PayQrRequest.
+     */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public TransferResponse checkOrStartPayQr(String idempotencyKey, com.transmoney.backend.dto.request.PayQrRequest request) {
+        if (idempotencyKey == null || idempotencyKey.isBlank()) {
+            return null;
+        }
+
+        String requestHash = computeHashForPayQr(request);
+        Optional<IdempotencyRecord> existingOpt = idempotencyRepository.findByIdempotencyKey(idempotencyKey);
+
+        if (existingOpt.isPresent()) {
+            IdempotencyRecord existing = existingOpt.get();
+
+            if (!existing.getRequestHash().equals(requestHash)) {
+                log.warn("Idempotency conflict: key [{}] was used with different payload", idempotencyKey);
+                throw new IdempotencyConflictException(
+                        "Idempotency key '" + idempotencyKey + "' was already used with different transfer parameters."
+                );
+            }
+
+            if (existing.getStatus() == IdempotencyStatus.COMPLETED) {
+                log.info("Idempotent replay: returning cached response for key [{}]", idempotencyKey);
+                try {
+                    TransferResponse cachedResponse = objectMapper.readValue(
+                            existing.getResponsePayload(),
+                            TransferResponse.class
+                    );
+                    cachedResponse.setCachedReplay(true);
+                    cachedResponse.setIdempotencyKey(idempotencyKey);
+                    return cachedResponse;
+                } catch (JsonProcessingException e) {
+                    log.error("Failed to deserialize cached idempotency payload", e);
+                }
+            } else if (existing.getStatus() == IdempotencyStatus.PENDING) {
+                log.warn("Idempotency in-flight collision: key [{}] is currently being processed", idempotencyKey);
+                throw new IdempotencyConflictException(
+                        "A transfer with idempotency key '" + idempotencyKey + "' is currently in progress."
+                );
+            } else {
+                existing.setStatus(IdempotencyStatus.PENDING);
+                existing.setErrorMessage(null);
+                idempotencyRepository.save(existing);
+                return null;
+            }
+        }
+
+        IdempotencyRecord newRecord = IdempotencyRecord.builder()
+                .idempotencyKey(idempotencyKey)
+                .requestHash(requestHash)
+                .status(IdempotencyStatus.PENDING)
+                .build();
+        idempotencyRepository.save(newRecord);
+        log.info("Registered PENDING idempotency key [{}]", idempotencyKey);
+
+        return null;
+    }
+
+    /**
      * Marks the idempotency key as COMPLETED with the cached JSON response.
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -138,6 +197,21 @@ public class IdempotencyService {
                     req.getReceiverAccountId(),
                     req.getAmount().stripTrailingZeros().toPlainString(),
                     req.getCurrency() != null ? req.getCurrency().toUpperCase() : "PKR"
+            );
+            byte[] hash = digest.digest(raw.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(hash);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
+
+    private String computeHashForPayQr(com.transmoney.backend.dto.request.PayQrRequest req) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            String raw = String.format("%s:%s:%s",
+                    req.getPayerAccountId(),
+                    req.getQrPayload(),
+                    req.getAmount() != null ? req.getAmount().stripTrailingZeros().toPlainString() : "DEFAULT"
             );
             byte[] hash = digest.digest(raw.getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(hash);
