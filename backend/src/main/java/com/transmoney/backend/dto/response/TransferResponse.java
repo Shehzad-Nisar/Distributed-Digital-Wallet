@@ -16,5 +16,12 @@ public class TransferResponse {
     private TransactionStatus status;
     private BigDecimal amount;
     private String currency;
+    private Long senderAccountId;
+    private Long receiverAccountId;
+    private String senderShard;
+    private String receiverShard;
+    private Boolean isCrossShard;
+    private String idempotencyKey;
+    private Boolean cachedReplay;
     private LocalDateTime timestamp;
 }

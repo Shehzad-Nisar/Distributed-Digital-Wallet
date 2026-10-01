@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.dto.response;
+package com.transmoney.backend.dto.response;
 
 import com.transmoney.backend.entity.Account;
 import com.transmoney.backend.entity.User;

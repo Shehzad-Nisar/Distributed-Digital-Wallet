@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.controller;
+package com.transmoney.backend.controller;
 
 import com.transmoney.backend.dto.request.CreateAccountRequest;
 import com.transmoney.backend.dto.request.DepositRequest;

@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.security;
+package com.transmoney.backend.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

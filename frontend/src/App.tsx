@@ -10,7 +10,7 @@ import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
 import { getAccounts, getHealth, getUsers, removeToken, updateAccountStatus } from './api/client';
 import type { Account, SystemHealth, User } from './types';
-import { ArrowDownLeft, ArrowUpRight, Lock, RefreshCw, Send, Unlock, Wallet } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Lock, RefreshCw, Send, Unlock } from 'lucide-react';
 
 export function App() {
   const [health, setHealth] = useState<SystemHealth | null>(null);

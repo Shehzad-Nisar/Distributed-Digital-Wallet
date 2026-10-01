@@ -25,17 +25,54 @@ public class TransferService {
     private final TwoPhaseCommitCoordinator coordinator;
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final IdempotencyService idempotencyService;
+    private final com.transmoney.backend.repository.AccountRepository accountRepository;
 
     public TransferResponse executeTransfer(TransferRequest request) {
-        Transaction tx = coordinator.executeTransfer(request);
+        String idempotencyKey = request.getIdempotencyKey();
 
-        return TransferResponse.builder()
-                .transactionId(tx.getTransactionId())
-                .status(tx.getStatus())
-                .amount(tx.getAmount())
-                .currency(tx.getCurrency())
-                .timestamp(tx.getCreatedAt())
-                .build();
+        // Check or record in-flight idempotency state
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            TransferResponse cached = idempotencyService.checkOrStart(idempotencyKey, request);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
+        try {
+            Transaction tx = coordinator.executeTransfer(request);
+
+            com.transmoney.backend.entity.Account sender = accountRepository.findById(tx.getSenderAccountId()).orElse(null);
+            com.transmoney.backend.entity.Account receiver = accountRepository.findById(tx.getReceiverAccountId()).orElse(null);
+
+            boolean isCross = sender != null && receiver != null && !sender.getShard().equals(receiver.getShard());
+
+            TransferResponse response = TransferResponse.builder()
+                    .transactionId(tx.getTransactionId())
+                    .status(tx.getStatus())
+                    .amount(tx.getAmount())
+                    .currency(tx.getCurrency())
+                    .senderAccountId(tx.getSenderAccountId())
+                    .receiverAccountId(tx.getReceiverAccountId())
+                    .senderShard(sender != null ? sender.getShard().name() : null)
+                    .receiverShard(receiver != null ? receiver.getShard().name() : null)
+                    .isCrossShard(isCross)
+                    .idempotencyKey(idempotencyKey)
+                    .cachedReplay(false)
+                    .timestamp(tx.getCreatedAt())
+                    .build();
+
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.markCompleted(idempotencyKey, response);
+            }
+
+            return response;
+        } catch (Exception ex) {
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.markFailed(idempotencyKey, ex.getMessage());
+            }
+            throw ex;
+        }
     }
 
     @Transactional(readOnly = true)

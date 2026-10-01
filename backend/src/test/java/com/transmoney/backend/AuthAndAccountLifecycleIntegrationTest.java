@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend;
+package com.transmoney.backend;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.transmoney.backend.dto.request.*;

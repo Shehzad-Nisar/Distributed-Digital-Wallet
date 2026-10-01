@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.dto.request;
+package com.transmoney.backend.dto.request;
 
 import com.transmoney.backend.entity.enums.ShardType;
 import io.swagger.v3.oas.annotations.media.Schema;

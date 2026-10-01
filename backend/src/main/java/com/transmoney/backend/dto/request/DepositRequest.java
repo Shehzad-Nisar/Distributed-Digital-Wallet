@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.dto.request;
+package com.transmoney.backend.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;

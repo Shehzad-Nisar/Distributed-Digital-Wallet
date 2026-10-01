@@ -1,4 +1,4 @@
-﻿package com.transmoney.backend.entity;
+package com.transmoney.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.transmoney.backend.entity.enums.ShardType;

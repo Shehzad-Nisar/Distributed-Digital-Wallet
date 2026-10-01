@@ -1,4 +1,4 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import type {
   Account,
   ApiResponse,
@@ -12,6 +12,7 @@ import type {
   SystemHealth,
   TransactionResponse,
   TransferRequest,
+  TransferResponse,
   User,
   WithdrawRequest,
 } from '../types';
@@ -143,11 +144,30 @@ export const updateAccountStatus = async (
   return response.data.data;
 };
 
-// Transfers (2PC)
+// Transfers (2PC) with distributed idempotency
 export const executeTransfer = async (
-  request: TransferRequest
-): Promise<TransactionResponse> => {
-  const response = await api.post<ApiResponse<any>>('/transfers', request);
+  request: TransferRequest,
+  idempotencyKey?: string
+): Promise<TransferResponse> => {
+  const key = idempotencyKey || request.idempotencyKey;
+  const headers: Record<string, string> = {};
+  if (key) {
+    headers['X-Idempotency-Key'] = key;
+  }
+
+  const response = await api.post<ApiResponse<TransferResponse>>('/transfers', request, {
+    headers,
+  });
+  return response.data.data;
+};
+
+// 2PC Recovery Sweep trigger
+export const trigger2pcRecovery = async (staleSeconds: number = 30) => {
+  const response = await api.post<ApiResponse<{ reconciledTransactions: number; staleThresholdSeconds: number }>>(
+    '/transfers/recovery',
+    null,
+    { params: { staleSeconds } }
+  );
   return response.data.data;
 };
 

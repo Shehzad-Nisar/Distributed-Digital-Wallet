@@ -1,4 +1,4 @@
-﻿export type ShardType =
+export type ShardType =
   | 'SHARD_1_NORTH'
   | 'SHARD_2_CENTRAL'
   | 'SHARD_3_SOUTH'
@@ -119,6 +119,22 @@ export interface TransferRequest {
   amount: number;
   currency: string;
   description: string;
+  idempotencyKey?: string;
+}
+
+export interface TransferResponse {
+  transactionId: string;
+  status: TransactionStatus;
+  amount: number;
+  currency: string;
+  senderAccountId?: number;
+  receiverAccountId?: number;
+  senderShard?: string;
+  receiverShard?: string;
+  isCrossShard?: boolean;
+  idempotencyKey?: string;
+  cachedReplay?: boolean;
+  timestamp: string;
 }
 
 export interface CreateUserRequest {

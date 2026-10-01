@@ -1,4 +1,4 @@
-﻿# TransMoney: Enterprise Distributed Digital Wallet — Project Master Plan
+# TransMoney: Enterprise Distributed Digital Wallet — Project Master Plan
 
 **Project:** TransMoney Distributed Digital Wallet System  
 **Architecture:** Multi-Shard Distributed Database (PostgreSQL 17) + Spring Boot 3 Core + React 19 / Vite Web Client  
