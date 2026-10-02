@@ -36,4 +36,18 @@ public class LedgerController {
         ReconciliationResponse reconciliation = ledgerService.reconcileAccount(accountId);
         return ResponseEntity.ok(ApiResponse.ok("Account reconciliation completed", reconciliation));
     }
+
+    @GetMapping("/entries")
+    public ResponseEntity<ApiResponse<List<LedgerEntryResponse>>> getAllEntries() {
+        List<LedgerEntryResponse> entries = ledgerService.getAllEntries();
+        return ResponseEntity.ok(ApiResponse.ok("All ledger entries retrieved successfully", entries));
+    }
+
+    @GetMapping(value = "/accounts/{accountId}/statement/csv", produces = "text/csv")
+    public ResponseEntity<String> exportCsvStatement(@PathVariable Long accountId) {
+        String csv = ledgerService.generateCsvStatement(accountId);
+        return ResponseEntity.ok()
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"statement_account_" + accountId + ".csv\"")
+                .body(csv);
+    }
 }

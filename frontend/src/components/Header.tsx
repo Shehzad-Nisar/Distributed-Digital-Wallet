@@ -3,6 +3,7 @@ import {
   ChevronDown,
   LogOut,
   Plus,
+  Scale,
   Send,
   Store,
   Users,
@@ -89,13 +90,14 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => setActiveTab('ledger')}
-              className={`px-3 py-1.5 rounded-md transition cursor-pointer font-medium ${
+              className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 font-medium ${
                 activeTab === 'ledger'
                   ? 'bg-black text-white font-semibold'
                   : 'text-slate-600 hover:text-black hover:bg-slate-100'
               }`}
             >
-              Activity
+              <Scale className="w-3.5 h-3.5" />
+              <span>Ledger &amp; Audit</span>
             </button>
             <button
               onClick={() => setActiveTab('architecture')}

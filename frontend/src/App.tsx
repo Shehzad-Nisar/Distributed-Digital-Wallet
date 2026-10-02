@@ -6,6 +6,7 @@ import { TransferConsole } from './components/TransferConsole';
 import { TransactionHistory } from './components/TransactionHistory';
 import { ArchitectureView } from './components/ArchitectureView';
 import { MerchantPortal } from './components/MerchantPortal';
+import { AuditorDashboard } from './components/AuditorDashboard';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
@@ -403,28 +404,27 @@ export function App() {
             {/* View 5: Ledger & Audit (Dedicated view) */}
             {activeTab === 'ledger' && (
               <div className="space-y-6">
-                <div className="border-b theme-border pb-3 flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold theme-text-primary uppercase tracking-tight font-mono">
-                      Audit Ledger &amp; Multi-Criteria Search
-                    </h2>
-                    <p className="text-xs theme-text-secondary font-mono">
-                      Immutable double-entry bookkeeping journal entries with dynamic B-tree and trigram search
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('console')}
-                    className="px-3 py-1.5 rounded theme-btn-secondary font-mono text-xs cursor-pointer"
-                  >
-                    &larr; Back to Topology
-                  </button>
-                </div>
-
-                <TransactionHistory
+                <AuditorDashboard
                   accounts={accounts}
                   selectedAccountId={selectedAccountId}
                   refreshTrigger={refreshTrigger}
                 />
+
+                <div className="pt-4 border-t theme-border">
+                  <div className="mb-3">
+                    <h3 className="text-sm font-bold theme-text-primary font-mono uppercase tracking-tight">
+                      Historical Transaction Search &amp; Trigram Query
+                    </h3>
+                    <p className="text-xs theme-text-secondary font-mono">
+                      Query indexed audit logs with full status transitions and shard routing
+                    </p>
+                  </div>
+                  <TransactionHistory
+                    accounts={accounts}
+                    selectedAccountId={selectedAccountId}
+                    refreshTrigger={refreshTrigger}
+                  />
+                </div>
               </div>
             )}
 

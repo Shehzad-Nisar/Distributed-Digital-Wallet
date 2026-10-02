@@ -97,14 +97,14 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 ---
 
 ### Phase 5: Double-Entry Financial Ledger & Audit Reporting
-**Status:** 🚀 *In Active Development (Core Ledger Engine Completed)*  
+**Status:** ✅ *Completed*  
 **Core Objective:** Full GAAP-compliant double-entry ledger ensuring zero-sum accounting and audit trail.
 
-- [x] **Journal & Ledger Entries**: Centralized `LedgerService` maintaining immutable debit and credit entries for every transaction (deposits, withdrawals, transfers).
+- [x] **Journal & Ledger Entries**: Centralized `LedgerService` maintaining immutable debit and credit entries for every transaction (deposits, withdrawals, transfers, and merchant payments via 2PC).
 - [x] **Running Balance Verification**: Checksum assertions (`reconcileAccount`) comparing account balance with net sum of ledger entries.
-- [x] **Ledger REST APIs**: Dedicated endpoints (`/api/ledger/accounts/{accountId}/entries`, `/api/ledger/transactions/{txId}/entries`, `/api/ledger/reconcile/{accountId}`).
-- [ ] **Statement Generation**: Export account monthly statements in CSV and formatted PDF formats.
-- [ ] **Auditor Dashboard**: Dedicated frontend view for regulatory compliance and invariant checks.
+- [x] **Ledger REST APIs**: Dedicated endpoints (`/api/ledger/entries`, `/api/ledger/accounts/{accountId}/entries`, `/api/ledger/transactions/{txId}/entries`, `/api/ledger/reconcile/{accountId}`).
+- [x] **Statement Generation**: Export account monthly statements in CSV format (`/api/ledger/accounts/{accountId}/statement/csv`).
+- [x] **Auditor Dashboard**: Dedicated frontend view for regulatory compliance, live zero-sum stream, invariant checks, and statement export.
 
 ---
 

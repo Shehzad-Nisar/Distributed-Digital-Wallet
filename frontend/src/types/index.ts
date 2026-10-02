@@ -255,3 +255,28 @@ export interface SettlementBatch {
   status: string;
   settlementDate: string;
 }
+
+// --- Phase 5: Double-Entry Financial Ledger & Audit Reporting ---
+export interface LedgerEntryResponse {
+  id: number;
+  transactionId: string;
+  accountId: number;
+  entryType: 'DEBIT' | 'CREDIT';
+  amount: number;
+  balanceAfter: number;
+  createdAt: string;
+}
+
+export interface ReconciliationResponse {
+  accountId: number;
+  accountNumber: string;
+  currency: string;
+  currentBalance: number;
+  calculatedLedgerBalance: number;
+  totalDebits: number;
+  totalCredits: number;
+  balanced: boolean;
+  totalEntries: number;
+  statusMessage: string;
+}
+

@@ -21,6 +21,8 @@ import type {
   QrScanDetails,
   QrPaymentResponse,
   SettlementBatch,
+  LedgerEntryResponse,
+  ReconciliationResponse,
 } from '../types';
 
 const api = axios.create({
@@ -288,3 +290,43 @@ export const getSettlementHistory = async (
   );
   return response.data.data;
 };
+
+// --- Phase 5: Double-Entry Financial Ledger & Audit Reporting ---
+export const getLedgerEntriesByAccount = async (
+  accountId: number
+): Promise<LedgerEntryResponse[]> => {
+  const response = await api.get<ApiResponse<LedgerEntryResponse[]>>(
+    `/ledger/accounts/${accountId}/entries`
+  );
+  return response.data.data;
+};
+
+export const getAllLedgerEntries = async (): Promise<LedgerEntryResponse[]> => {
+  const response = await api.get<ApiResponse<LedgerEntryResponse[]>>('/ledger/entries');
+  return response.data.data;
+};
+
+export const reconcileAccount = async (
+  accountId: number
+): Promise<ReconciliationResponse> => {
+  const response = await api.get<ApiResponse<ReconciliationResponse>>(
+    `/ledger/reconcile/${accountId}`
+  );
+  return response.data.data;
+};
+
+export const downloadStatementCsv = async (accountId: number): Promise<void> => {
+  const response = await api.get(`/ledger/accounts/${accountId}/statement/csv`, {
+    responseType: 'blob',
+  });
+  const blob = new Blob([response.data], { type: 'text/csv' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `statement_account_${accountId}.csv`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+

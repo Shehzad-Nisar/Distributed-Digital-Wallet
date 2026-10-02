@@ -155,4 +155,36 @@ public class LedgerService {
                 .statusMessage(statusMessage)
                 .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<LedgerEntryResponse> getAllEntries() {
+        return ledgerEntryRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "createdAt"))
+                .stream()
+                .limit(200)
+                .map(LedgerEntryResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public String generateCsvStatement(Long accountId) {
+        Account account = accountRepository.findById(accountId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + accountId));
+
+        List<LedgerEntry> entries = ledgerEntryRepository.findByAccountIdOrderByCreatedAtDesc(accountId);
+
+        StringBuilder csv = new StringBuilder();
+        csv.append("Entry ID,Transaction ID,Date & Time,Type,Amount,Currency,Balance After\n");
+
+        for (LedgerEntry entry : entries) {
+            String txId = entry.getTransaction() != null ? entry.getTransaction().getTransactionId() : "N/A";
+            csv.append(entry.getId()).append(",")
+               .append(txId).append(",")
+               .append(entry.getCreatedAt()).append(",")
+               .append(entry.getEntryType()).append(",")
+               .append(entry.getAmount()).append(",")
+               .append(account.getCurrency()).append(",")
+               .append(entry.getBalanceAfter() != null ? entry.getBalanceAfter() : "").append("\n");
+        }
+        return csv.toString();
+    }
 }

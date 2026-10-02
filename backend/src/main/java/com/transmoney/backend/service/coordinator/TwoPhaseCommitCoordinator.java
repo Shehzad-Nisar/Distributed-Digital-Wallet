@@ -13,6 +13,7 @@ import com.transmoney.backend.exception.TransactionException;
 import com.transmoney.backend.repository.AccountRepository;
 import com.transmoney.backend.repository.LedgerEntryRepository;
 import com.transmoney.backend.repository.TransactionRepository;
+import com.transmoney.backend.service.LedgerService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -30,6 +31,7 @@ public class TwoPhaseCommitCoordinator {
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final LedgerService ledgerService;
 
     /**
      * Executes an atomic transfer using Two-Phase Commit protocol semantics
@@ -133,27 +135,10 @@ public class TwoPhaseCommitCoordinator {
         transaction.setStatus(TransactionStatus.COMMITTED);
         transaction = transactionRepository.save(transaction);
 
-        LedgerEntry debitEntry = LedgerEntry.builder()
-                .transaction(transaction)
-                .accountId(senderAccount.getId())
-                .entryType(LedgerEntryType.DEBIT)
-                .amount(request.getAmount())
-                .balanceAfter(senderBalanceAfter)
-                .build();
-
-        LedgerEntry creditEntry = LedgerEntry.builder()
-                .transaction(transaction)
-                .accountId(receiverAccount.getId())
-                .entryType(LedgerEntryType.CREDIT)
-                .amount(request.getAmount())
-                .balanceAfter(receiverBalanceAfter)
-                .build();
-
-        ledgerEntryRepository.save(debitEntry);
-        ledgerEntryRepository.save(creditEntry);
-
-        transaction.getLedgerEntries().add(debitEntry);
-        transaction.getLedgerEntries().add(creditEntry);
+        ledgerService.recordDoubleEntry(transaction,
+                senderAccount.getId(), senderBalanceAfter,
+                receiverAccount.getId(), receiverBalanceAfter,
+                request.getAmount());
 
         log.info("2PC transfer [{}] COMMITTED successfully across shards [senderShard={}, receiverShard={}]",
                 txId, senderAccount.getShard(), receiverAccount.getShard());
@@ -261,27 +246,8 @@ public class TwoPhaseCommitCoordinator {
         transaction.setStatus(TransactionStatus.COMMITTED);
         transaction = transactionRepository.save(transaction);
 
-        LedgerEntry debitEntry = LedgerEntry.builder()
-                .transaction(transaction)
-                .accountId(payerAccount.getId())
-                .entryType(LedgerEntryType.DEBIT)
-                .amount(grossAmount)
-                .balanceAfter(payerBalanceAfter)
-                .build();
-
-        LedgerEntry creditEntry = LedgerEntry.builder()
-                .transaction(transaction)
-                .accountId(merchantAccount.getId())
-                .entryType(LedgerEntryType.CREDIT)
-                .amount(netAmount)
-                .balanceAfter(merchantBalanceAfter)
-                .build();
-
-        ledgerEntryRepository.save(debitEntry);
-        ledgerEntryRepository.save(creditEntry);
-
-        transaction.getLedgerEntries().add(debitEntry);
-        transaction.getLedgerEntries().add(creditEntry);
+        ledgerService.recordSingleEntry(transaction, payerAccount.getId(), LedgerEntryType.DEBIT, grossAmount, payerBalanceAfter);
+        ledgerService.recordSingleEntry(transaction, merchantAccount.getId(), LedgerEntryType.CREDIT, netAmount, merchantBalanceAfter);
 
         log.info("2PC Merchant Payment [{}] COMMITTED successfully across shards [payerShard={}, merchantShard={}]",
                 txId, payerAccount.getShard(), merchantAccount.getShard());
