@@ -6,7 +6,7 @@ import com.transmoney.backend.dto.request.UpdateAccountStatusRequest;
 import com.transmoney.backend.dto.request.WithdrawRequest;
 import com.transmoney.backend.dto.response.AccountBalanceResponse;
 import com.transmoney.backend.entity.Account;
-import com.transmoney.backend.entity.LedgerEntry;
+
 import com.transmoney.backend.entity.Transaction;
 import com.transmoney.backend.entity.User;
 import com.transmoney.backend.entity.enums.LedgerEntryType;
@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
+import com.transmoney.backend.service.LedgerService;
 
 @Slf4j
 @Service
@@ -37,6 +38,7 @@ public class AccountService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+
 
     @Transactional
     public Account createAccount(CreateAccountRequest request) {
@@ -123,14 +125,13 @@ public class AccountService {
                 .build();
         Transaction savedTx = transactionRepository.save(transaction);
 
-        LedgerEntry entry = LedgerEntry.builder()
-                .transaction(savedTx)
-                .entryType(LedgerEntryType.CREDIT)
-                .accountId(account.getId())
-                .amount(request.getAmount())
-                .balanceAfter(newBalance)
-                .build();
-        ledgerEntryRepository.save(entry);
+        // Persist ledger entries via LedgerService (double‑entry)
+        com.transmoney.backend.dto.request.LedgerEntryRequest ledgerReq = new com.transmoney.backend.dto.request.LedgerEntryRequest(
+                null, // senderAccountId (null for deposit)
+                account.getId(),
+                request.getAmount(),
+                savedTx);
+        ledgerService.recordEntry(ledgerReq);
 
         log.info("Deposit [{}] completed: Credited {} {} to account {}", txId, request.getAmount(), account.getCurrency(), account.getAccountNumber());
         return savedAccount;
