@@ -97,13 +97,14 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 ---
 
 ### Phase 5: Double-Entry Financial Ledger & Audit Reporting
-**Status:** 🔄 *Ready for Development*  
+**Status:** 🚀 *In Active Development (Core Ledger Engine Completed)*  
 **Core Objective:** Full GAAP-compliant double-entry ledger ensuring zero-sum accounting and audit trail.
 
-- [ ] **Journal & Ledger Entries**: Maintain immutable debit and credit pairs for every financial movement.
-- [ ] **Running Balance Verification**: Checksum assertions comparing account balance with sum of ledger entries.
+- [x] **Journal & Ledger Entries**: Centralized `LedgerService` maintaining immutable debit and credit entries for every transaction (deposits, withdrawals, transfers).
+- [x] **Running Balance Verification**: Checksum assertions (`reconcileAccount`) comparing account balance with net sum of ledger entries.
+- [x] **Ledger REST APIs**: Dedicated endpoints (`/api/ledger/accounts/{accountId}/entries`, `/api/ledger/transactions/{txId}/entries`, `/api/ledger/reconcile/{accountId}`).
 - [ ] **Statement Generation**: Export account monthly statements in CSV and formatted PDF formats.
-- [ ] **Auditor Dashboard**: Dedicated view for regulatory compliance and invariant checks.
+- [ ] **Auditor Dashboard**: Dedicated frontend view for regulatory compliance and invariant checks.
 
 ---
 
