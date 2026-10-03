@@ -49,6 +49,15 @@ public class Transaction {
     @Builder.Default
     private String currency = "PKR";
 
+    @Column(name = "target_amount", precision = 18, scale = 2)
+    private BigDecimal targetAmount;
+
+    @Column(name = "target_currency", length = 10)
+    private String targetCurrency;
+
+    @Column(name = "exchange_rate", precision = 18, scale = 6)
+    private BigDecimal exchangeRate;
+
     @Column(name = "description", length = 500)
     private String description;
 

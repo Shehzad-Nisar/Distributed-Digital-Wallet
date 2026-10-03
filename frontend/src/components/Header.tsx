@@ -7,6 +7,7 @@ import {
   Send,
   Store,
   Users,
+  ArrowRightLeft,
 } from 'lucide-react';
 import type { Account, SystemHealth, User } from '../types';
 import logoImg from '../assets/logo.png';
@@ -20,8 +21,8 @@ interface HeaderProps {
   onOpenAuth: (mode: 'signin' | 'signup') => void;
   onOpenCreateAccount: () => void;
   onLogout: () => void;
-  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture';
-  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture') => void;
+  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture';
+  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -98,6 +99,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Scale className="w-3.5 h-3.5" />
               <span>Ledger &amp; Audit</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('exchange')}
+              className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 font-medium ${
+                activeTab === 'exchange'
+                  ? 'bg-black text-white font-semibold'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              <span>FX Exchange</span>
             </button>
             <button
               onClick={() => setActiveTab('architecture')}

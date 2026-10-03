@@ -32,11 +32,13 @@ public class TwoPhaseCommitCoordinator {
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
     private final LedgerService ledgerService;
+    private final com.transmoney.backend.service.FxRateService fxRateService;
 
     /**
      * Executes an atomic transfer using Two-Phase Commit protocol semantics
      * with ordered pessimistic write locks to guarantee deadlock-free execution
      * and explicit persistent state transitions (INITIATED -> PREPARED -> COMMITTED).
+     * Supports both same-currency and cross-currency multi-shard transfers.
      */
     @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
     public Transaction executeTransfer(TransferRequest request) {
@@ -65,23 +67,25 @@ public class TwoPhaseCommitCoordinator {
         Account senderAccount = firstLockId.equals(request.getSenderAccountId()) ? firstLocked : secondLocked;
         Account receiverAccount = firstLockId.equals(request.getReceiverAccountId()) ? firstLocked : secondLocked;
 
+        boolean isCrossCurrency = !senderAccount.getCurrency().equalsIgnoreCase(receiverAccount.getCurrency());
+
         // --- PHASE 0: INITIATE ---
         Transaction transaction = Transaction.builder()
                 .transactionId(txId)
                 .senderAccountId(senderAccount.getId())
                 .receiverAccountId(receiverAccount.getId())
                 .amount(request.getAmount())
-                .currency(request.getCurrency())
+                .currency(senderAccount.getCurrency())
                 .description(request.getDescription())
-                .type(TransactionType.P2P_TRANSFER)
+                .type(isCrossCurrency ? TransactionType.CURRENCY_EXCHANGE : TransactionType.P2P_TRANSFER)
                 .status(TransactionStatus.INITIATED)
                 .build();
         transaction = transactionRepository.save(transaction);
 
         // --- PHASE 1: PREPARE / VOTE ---
         boolean isCrossShard = !senderAccount.getShard().equals(receiverAccount.getShard());
-        log.info("Phase 1 (Prepare): Validating accounts and shard topology [senderShard={}, receiverShard={}, crossShard={}]",
-                senderAccount.getShard(), receiverAccount.getShard(), isCrossShard);
+        log.info("Phase 1 (Prepare): Validating accounts and topology [senderShard={}, receiverShard={}, crossShard={}, crossCurrency={}]",
+                senderAccount.getShard(), receiverAccount.getShard(), isCrossShard, isCrossCurrency);
 
         if (!"ACTIVE".equalsIgnoreCase(senderAccount.getStatus())) {
             transaction.setStatus(TransactionStatus.FAILED);
@@ -94,17 +98,41 @@ public class TwoPhaseCommitCoordinator {
             throw new TransactionException("Receiver account is not ACTIVE (current status: " + receiverAccount.getStatus() + ")");
         }
 
-        if (!senderAccount.getCurrency().equalsIgnoreCase(request.getCurrency())) {
-            transaction.setStatus(TransactionStatus.FAILED);
-            transactionRepository.save(transaction);
-            throw new TransactionException("Currency mismatch: sender currency " + senderAccount.getCurrency()
-                    + " does not match requested currency " + request.getCurrency());
-        }
-        if (!receiverAccount.getCurrency().equalsIgnoreCase(request.getCurrency())) {
-            transaction.setStatus(TransactionStatus.FAILED);
-            transactionRepository.save(transaction);
-            throw new TransactionException("Currency mismatch: receiver currency " + receiverAccount.getCurrency()
-                    + " does not match requested currency " + request.getCurrency());
+        BigDecimal targetAmount;
+        BigDecimal effectiveRate;
+
+        if (isCrossCurrency) {
+            log.info("Phase 1 (Prepare): Computing cross-currency FX rate [{} -> {}] for amount {}",
+                    senderAccount.getCurrency(), receiverAccount.getCurrency(), request.getAmount());
+            try {
+                com.transmoney.backend.service.FxRateService.ConversionResult conversion = fxRateService.executeConversion(
+                        senderAccount.getCurrency(),
+                        receiverAccount.getCurrency(),
+                        request.getAmount(),
+                        null,
+                        request.getExpectedRate(),
+                        request.getMinTargetAmount(),
+                        request.getMaxSlippagePercent()
+                );
+                targetAmount = conversion.targetAmount();
+                effectiveRate = conversion.effectiveRate();
+                log.info("Phase 1 (Prepare): FX conversion computed successfully: {} {} -> {} {} (effectiveRate={})",
+                        request.getAmount(), senderAccount.getCurrency(), targetAmount, receiverAccount.getCurrency(), effectiveRate);
+            } catch (Exception ex) {
+                log.warn("Phase 1 VOTE_ABORT: FX conversion or slippage validation failed for tx [{}]: {}", txId, ex.getMessage());
+                transaction.setStatus(TransactionStatus.FAILED);
+                transactionRepository.save(transaction);
+                throw ex;
+            }
+        } else {
+            if (request.getCurrency() != null && !senderAccount.getCurrency().equalsIgnoreCase(request.getCurrency())) {
+                transaction.setStatus(TransactionStatus.FAILED);
+                transactionRepository.save(transaction);
+                throw new TransactionException("Currency mismatch: sender currency " + senderAccount.getCurrency()
+                        + " does not match requested currency " + request.getCurrency());
+            }
+            targetAmount = request.getAmount();
+            effectiveRate = BigDecimal.ONE;
         }
 
         if (senderAccount.getBalance().compareTo(request.getAmount()) < 0) {
@@ -116,7 +144,7 @@ public class TwoPhaseCommitCoordinator {
                     + ". Current balance: " + senderAccount.getBalance() + ", requested: " + request.getAmount());
         }
 
-        // Both shards vote COMMIT -> Transition to PREPARED
+        // Both participants vote COMMIT -> Transition to PREPARED
         transaction.setStatus(TransactionStatus.PREPARED);
         transaction = transactionRepository.save(transaction);
         log.info("Phase 1 VOTE_COMMIT: All participants validated successfully. Transitioned tx [{}] to PREPARED", txId);
@@ -124,7 +152,7 @@ public class TwoPhaseCommitCoordinator {
         // --- PHASE 2: COMMIT ---
         log.info("Phase 2 (Commit): Applying atomic balance updates and immutable ledger entries");
         BigDecimal senderBalanceAfter = senderAccount.getBalance().subtract(request.getAmount());
-        BigDecimal receiverBalanceAfter = receiverAccount.getBalance().add(request.getAmount());
+        BigDecimal receiverBalanceAfter = receiverAccount.getBalance().add(targetAmount);
 
         senderAccount.setBalance(senderBalanceAfter);
         receiverAccount.setBalance(receiverBalanceAfter);
@@ -132,16 +160,138 @@ public class TwoPhaseCommitCoordinator {
         accountRepository.save(senderAccount);
         accountRepository.save(receiverAccount);
 
+        transaction.setTargetAmount(targetAmount);
+        transaction.setTargetCurrency(receiverAccount.getCurrency());
+        transaction.setExchangeRate(effectiveRate);
         transaction.setStatus(TransactionStatus.COMMITTED);
         transaction = transactionRepository.save(transaction);
 
-        ledgerService.recordDoubleEntry(transaction,
-                senderAccount.getId(), senderBalanceAfter,
-                receiverAccount.getId(), receiverBalanceAfter,
-                request.getAmount());
+        if (!isCrossCurrency) {
+            ledgerService.recordDoubleEntry(transaction,
+                    senderAccount.getId(), senderBalanceAfter,
+                    receiverAccount.getId(), receiverBalanceAfter,
+                    request.getAmount());
+        } else {
+            // Immutable ledger entries in respective account home currencies
+            ledgerService.recordSingleEntry(transaction, senderAccount.getId(), LedgerEntryType.DEBIT, request.getAmount(), senderBalanceAfter);
+            ledgerService.recordSingleEntry(transaction, receiverAccount.getId(), LedgerEntryType.CREDIT, targetAmount, receiverBalanceAfter);
+        }
 
-        log.info("2PC transfer [{}] COMMITTED successfully across shards [senderShard={}, receiverShard={}]",
-                txId, senderAccount.getShard(), receiverAccount.getShard());
+        log.info("2PC transfer [{}] COMMITTED successfully across shards [senderShard={}, receiverShard={}, crossCurrency={}]",
+                txId, senderAccount.getShard(), receiverAccount.getShard(), isCrossCurrency);
+
+        return transaction;
+    }
+
+    /**
+     * Executes an atomic Currency Exchange between two accounts (can be same user or cross-user)
+     * using Two-Phase Commit with deterministic row locking and real-time FX rate settlement.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
+    public Transaction executeCurrencyExchange(com.transmoney.backend.dto.request.ExchangeRequest request) {
+        String txId = "TX-EXC-" + UUID.randomUUID().toString();
+        log.info("Starting 2PC Currency Exchange [{}] from account {} to account {} for amount {}",
+                txId, request.getSourceAccountId(), request.getTargetAccountId(), request.getSourceAmount());
+
+        if (request.getSourceAccountId().equals(request.getTargetAccountId())) {
+            throw new IllegalArgumentException("Source and target accounts for currency exchange cannot be the same");
+        }
+
+        if (request.getSourceAmount() == null || request.getSourceAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Exchange source amount must be strictly positive");
+        }
+
+        // --- DEADLOCK PREVENTION: Deterministic Hierarchical Locking ---
+        Long firstLockId = Math.min(request.getSourceAccountId(), request.getTargetAccountId());
+        Long secondLockId = Math.max(request.getSourceAccountId(), request.getTargetAccountId());
+
+        Account firstLocked = accountRepository.findByIdForUpdate(firstLockId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + firstLockId));
+        Account secondLocked = accountRepository.findByIdForUpdate(secondLockId)
+                .orElseThrow(() -> new ResourceNotFoundException("Account not found with ID: " + secondLockId));
+
+        Account sourceAccount = firstLockId.equals(request.getSourceAccountId()) ? firstLocked : secondLocked;
+        Account targetAccount = firstLockId.equals(request.getTargetAccountId()) ? firstLocked : secondLocked;
+
+        // --- PHASE 0: INITIATE ---
+        Transaction transaction = Transaction.builder()
+                .transactionId(txId)
+                .senderAccountId(sourceAccount.getId())
+                .receiverAccountId(targetAccount.getId())
+                .amount(request.getSourceAmount())
+                .currency(sourceAccount.getCurrency())
+                .description(request.getDescription() != null ? request.getDescription() :
+                        String.format("FX Exchange: %s %s to %s", request.getSourceAmount(), sourceAccount.getCurrency(), targetAccount.getCurrency()))
+                .type(TransactionType.CURRENCY_EXCHANGE)
+                .status(TransactionStatus.INITIATED)
+                .build();
+        transaction = transactionRepository.save(transaction);
+
+        // --- PHASE 1: PREPARE / VOTE ---
+        if (!"ACTIVE".equalsIgnoreCase(sourceAccount.getStatus())) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            throw new TransactionException("Source account is not ACTIVE (current status: " + sourceAccount.getStatus() + ")");
+        }
+        if (!"ACTIVE".equalsIgnoreCase(targetAccount.getStatus())) {
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            throw new TransactionException("Target account is not ACTIVE (current status: " + targetAccount.getStatus() + ")");
+        }
+
+        com.transmoney.backend.service.FxRateService.ConversionResult conversion;
+        try {
+            conversion = fxRateService.executeConversion(
+                    sourceAccount.getCurrency(),
+                    targetAccount.getCurrency(),
+                    request.getSourceAmount(),
+                    request.getQuoteId(),
+                    request.getExpectedRate(),
+                    request.getMinTargetAmount(),
+                    request.getMaxSlippagePercent()
+            );
+        } catch (Exception ex) {
+            log.warn("Phase 1 VOTE_ABORT: Exchange calculation failed for tx [{}]: {}", txId, ex.getMessage());
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            throw ex;
+        }
+
+        if (sourceAccount.getBalance().compareTo(request.getSourceAmount()) < 0) {
+            log.warn("Phase 1 VOTE_ABORT: Source account {} has insufficient balance (balance={}, required={})",
+                    sourceAccount.getId(), sourceAccount.getBalance(), request.getSourceAmount());
+            transaction.setStatus(TransactionStatus.FAILED);
+            transactionRepository.save(transaction);
+            throw new InsufficientBalanceException("Insufficient balance in source account " + sourceAccount.getId()
+                    + ". Current balance: " + sourceAccount.getBalance() + ", requested: " + request.getSourceAmount());
+        }
+
+        transaction.setStatus(TransactionStatus.PREPARED);
+        transaction = transactionRepository.save(transaction);
+        log.info("Phase 1 VOTE_COMMIT: Currency exchange [{}] PREPARED successfully", txId);
+
+        // --- PHASE 2: COMMIT ---
+        BigDecimal sourceBalanceAfter = sourceAccount.getBalance().subtract(request.getSourceAmount());
+        BigDecimal targetBalanceAfter = targetAccount.getBalance().add(conversion.targetAmount());
+
+        sourceAccount.setBalance(sourceBalanceAfter);
+        targetAccount.setBalance(targetBalanceAfter);
+
+        accountRepository.save(sourceAccount);
+        accountRepository.save(targetAccount);
+
+        transaction.setTargetAmount(conversion.targetAmount());
+        transaction.setTargetCurrency(targetAccount.getCurrency());
+        transaction.setExchangeRate(conversion.effectiveRate());
+        transaction.setStatus(TransactionStatus.COMMITTED);
+        transaction = transactionRepository.save(transaction);
+
+        ledgerService.recordSingleEntry(transaction, sourceAccount.getId(), LedgerEntryType.DEBIT, request.getSourceAmount(), sourceBalanceAfter);
+        ledgerService.recordSingleEntry(transaction, targetAccount.getId(), LedgerEntryType.CREDIT, conversion.targetAmount(), targetBalanceAfter);
+
+        log.info("2PC Currency Exchange [{}] COMMITTED: Debited {} {} from acc {}, Credited {} {} to acc {}",
+                txId, request.getSourceAmount(), sourceAccount.getCurrency(), sourceAccount.getId(),
+                conversion.targetAmount(), targetAccount.getCurrency(), targetAccount.getId());
 
         return transaction;
     }

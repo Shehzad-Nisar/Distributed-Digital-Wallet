@@ -7,6 +7,7 @@ import { TransactionHistory } from './components/TransactionHistory';
 import { ArchitectureView } from './components/ArchitectureView';
 import { MerchantPortal } from './components/MerchantPortal';
 import { AuditorDashboard } from './components/AuditorDashboard';
+import { CurrencyExchange } from './components/CurrencyExchange';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
@@ -23,8 +24,8 @@ export function App() {
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
 
-  // View state: landing, console, transfer, merchant, ledger, architecture
-  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'architecture'>('landing');
+  // View state: landing, console, transfer, merchant, ledger, exchange, architecture
+  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture'>('landing');
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -428,7 +429,19 @@ export function App() {
               </div>
             )}
 
-            {/* View 5: System Architecture */}
+            {/* View 5: Multi-Currency & Cross-Border Exchange Engine */}
+            {activeTab === 'exchange' && (
+              <CurrencyExchange
+                accounts={accounts}
+                currentUser={currentUser}
+                onExchangeComplete={() => {
+                  fetchData();
+                  setRefreshTrigger((prev) => prev + 1);
+                }}
+              />
+            )}
+
+            {/* View 6: System Architecture */}
             {activeTab === 'architecture' && <ArchitectureView />}
           </>
         )}

@@ -89,6 +89,9 @@ export interface TransactionResponse {
   type: TransactionType;
   amount: number;
   currency: string;
+  targetAmount?: number;
+  targetCurrency?: string;
+  exchangeRate?: number;
   senderAccountId: number;
   receiverAccountId: number;
   description: string;
@@ -118,6 +121,10 @@ export interface TransferRequest {
   receiverAccountId: number;
   amount: number;
   currency: string;
+  targetCurrency?: string;
+  expectedRate?: number;
+  minTargetAmount?: number;
+  maxSlippagePercent?: number;
   description: string;
   idempotencyKey?: string;
 }
@@ -127,6 +134,9 @@ export interface TransferResponse {
   status: TransactionStatus;
   amount: number;
   currency: string;
+  targetAmount?: number;
+  targetCurrency?: string;
+  exchangeRate?: number;
   senderAccountId?: number;
   receiverAccountId?: number;
   senderShard?: string;
@@ -278,5 +288,67 @@ export interface ReconciliationResponse {
   balanced: boolean;
   totalEntries: number;
   statusMessage: string;
+}
+
+// --- Phase 6: Multi-Currency & Cross-Border Exchange Engine ---
+export interface FxRatesResponse {
+  baseCurrency: string;
+  timestamp: string;
+  defaultSpreadPercent: number;
+  supportedCurrencies: string[];
+  ratesAgainstUsd: Record<string, number>;
+  directPairs: Record<string, number>;
+}
+
+export interface FxQuoteResponse {
+  quoteId: string;
+  sourceCurrency: string;
+  targetCurrency: string;
+  sourceAmount: number;
+  marketRate: number;
+  effectiveRate: number;
+  spreadMarginPercent: number;
+  spreadFeeAmount: number;
+  grossTargetAmount: number;
+  netTargetAmount: number;
+  minGuaranteedAmount: number;
+  issuedAt: string;
+  expiresAt: string;
+  validitySeconds: number;
+}
+
+export interface ExchangeRequest {
+  sourceAccountId: number;
+  targetAccountId: number;
+  sourceAmount: number;
+  quoteId?: string;
+  expectedRate?: number;
+  minTargetAmount?: number;
+  maxSlippagePercent?: number;
+  description?: string;
+  idempotencyKey?: string;
+}
+
+export interface ExchangeResponse {
+  transactionId: string;
+  status: TransactionStatus;
+  sourceAccountId: number;
+  sourceAccountNumber?: string;
+  sourceShard?: string;
+  sourceAmount: number;
+  sourceCurrency: string;
+  sourceBalanceAfter: number;
+  targetAccountId: number;
+  targetAccountNumber?: string;
+  targetShard?: string;
+  targetAmount: number;
+  targetCurrency: string;
+  targetBalanceAfter: number;
+  exchangeRate: number;
+  feeAmount?: number;
+  isCrossShard: boolean;
+  idempotencyKey?: string;
+  cachedReplay: boolean;
+  timestamp: string;
 }
 

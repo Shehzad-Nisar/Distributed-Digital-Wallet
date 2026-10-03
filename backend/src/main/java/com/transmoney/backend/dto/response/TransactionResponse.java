@@ -20,6 +20,9 @@ public class TransactionResponse {
     private TransactionType type;
     private BigDecimal amount;
     private String currency;
+    private BigDecimal targetAmount;
+    private String targetCurrency;
+    private BigDecimal exchangeRate;
     private Long senderAccountId;
     private Long receiverAccountId;
     private String description;

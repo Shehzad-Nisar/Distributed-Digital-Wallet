@@ -11,18 +11,25 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TransferResponse {
+public class ExchangeResponse {
     private String transactionId;
     private TransactionStatus status;
-    private BigDecimal amount;
-    private String currency;
+    private Long sourceAccountId;
+    private String sourceAccountNumber;
+    private String sourceShard;
+    private BigDecimal sourceAmount;
+    private String sourceCurrency;
+    private BigDecimal sourceBalanceAfter;
+
+    private Long targetAccountId;
+    private String targetAccountNumber;
+    private String targetShard;
     private BigDecimal targetAmount;
     private String targetCurrency;
+    private BigDecimal targetBalanceAfter;
+
     private BigDecimal exchangeRate;
-    private Long senderAccountId;
-    private Long receiverAccountId;
-    private String senderShard;
-    private String receiverShard;
+    private BigDecimal feeAmount;
     private Boolean isCrossShard;
     private String idempotencyKey;
     private Boolean cachedReplay;

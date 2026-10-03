@@ -15,11 +15,11 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 |:---:|---|:---:|:---:|:---:|
 | **01** | **Real Identity, Authentication & Session Security** | P0 | ✅ **COMPLETED** | Oct 2026 |
 | **02** | **Wallet & Multi-Shard Account Lifecycle** | P0 | ✅ **COMPLETED** | Oct 2026 |
-| **03** | **Real P2P Transfers & Idempotent 2PC Engine** | P0 | 🔄 *Ready for Dev* | Target: Sprint 2 |
-| **04** | **Merchant Services, QR Payments & Settlement** | P1 | ⏳ *Planned* | Target: Sprint 3 |
-| **05** | **Double-Entry Financial Ledger & Audit Reporting** | P0 | ⏳ *Planned* | Target: Sprint 4 |
-| **06** | **Multi-Currency & Cross-Border Exchange Engine** | P1 | ⏳ *Planned* | Target: Sprint 5 |
-| **07** | **Redis Caching & Asynchronous Queue Buffer** | P1 | ⏳ *Planned* | Target: Sprint 6 |
+| **03** | **Real P2P Transfers & Idempotent 2PC Engine** | P0 | ✅ **COMPLETED** | Oct 2026 |
+| **04** | **Merchant Services, QR Payments & Settlement** | P1 | ✅ **COMPLETED** | Oct 2026 |
+| **05** | **Double-Entry Financial Ledger & Audit Reporting** | P0 | ✅ **COMPLETED** | Oct 2026 |
+| **06** | **Multi-Currency & Cross-Border Exchange Engine** | P1 | ✅ **COMPLETED** | Oct 2026 |
+| **07** | **Redis Caching & Asynchronous Queue Buffer** | P1 | 🔄 *Ready for Dev* | Target: Sprint 6 |
 | **08** | **High Concurrency Load Simulator & Chaos Injection** | P1 | ⏳ *Planned* | Target: Sprint 7 |
 | **09** | **Real-Time Fraud Detection, Velocity & Rate Limiting** | P1 | ⏳ *Planned* | Target: Sprint 8 |
 | **10** | **Dockerization, Prometheus/Grafana & CI/CD** | P0 | ⏳ *Planned* | Target: Sprint 9 |
@@ -109,13 +109,17 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 ---
 
 ### Phase 6: Multi-Currency & Cross-Border Exchange Engine
-**Status:** ⏳ *Planned*  
+**Status:** ✅ **COMPLETED**  
 **Core Objective:** Real-time currency conversion (USD, EUR, GBP, AED, PKR) with slippage limits and exchange rate feeds.
 
-- [ ] **FX Rate Service**: Live currency rate cache with spread margin calculation.
-- [ ] **Cross-Currency 2PC**: Atomic exchange where sender account debited in Currency A and recipient credited in Currency B.
-- [ ] **Multi-Currency Wallets**: Users can hold multiple sub-accounts under distinct currencies within the same shard.
-- [ ] **Currency Converter UI**: Interactive conversion widget with live preview before confirmation.
+- [x] **FX Rate Service**: Live currency rate cache with spread margin calculation (`FxRateService`).
+- [x] **Cross-Currency 2PC**: Atomic exchange where sender account debited in Currency A and recipient credited in Currency B.
+- [x] **Multi-Currency Wallets**: Users can hold multiple sub-accounts under distinct currencies within the same shard.
+- [x] **Currency Converter UI**: Interactive conversion widget with live preview before confirmation (`CurrencyExchange.tsx`).
+- [x] **REST Endpoints**:
+  - `GET /api/fx/rates`: Real-time interbank cross-rates matrix.
+  - `GET /api/fx/quote` & `POST /api/fx/quote`: Guaranteed 60-second locked quotes.
+  - `POST /api/fx/exchange`: 2PC multi-currency exchange with `X-Idempotency-Key` replay protection.
 
 ---
 
@@ -162,11 +166,13 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 
 ## Verification & Quality Assurance Summary
 
-* **Automated Test Results**: 20/20 Tests Passed (`mvnw.cmd test`, 0 failures, 0 errors)
+* **Automated Test Results**: 27/27 Tests Passed (`mvnw.cmd test`, 0 failures, 0 errors)
   * `AuthAndAccountLifecycleIntegrationTest`: 2/2 tests pass (Auth, BCrypt, JWT, Deposit, Withdraw, Freeze).
   * `TwoPhaseCommitIntegrationTest`: 2/2 tests pass (Atomic 2PC commit, balance rollback on abort).
   * `TransactionSearchAndApiIntegrationTest`: 5/5 tests pass (Paginated queries, shard routing, OpenAPI).
   * `IdempotencyAnd2PCIntegrationTest`: 4/4 tests pass (Distributed idempotency, replay caching, recovery coordinator).
   * `MerchantAndQrPaymentIntegrationTest`: 6/6 tests pass (Onboarding, QR generation, 2PC QR payments, MDR fees, idempotency replay, tampered QR rejection, settlement batches).
+  * `LedgerAndReconciliationIntegrationTest`: 2/2 tests pass (GAAP zero-sum double-entry ledger invariant & CSV statement export).
+  * `MultiCurrencyAndFxIntegrationTest`: 5/5 tests pass (FX rates engine, quotes, cross-currency 2PC transfers, slippage protection abort, exchange idempotency replay).
   * `BackendApplicationTests`: 1/1 tests pass.
-* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.64s**.
+* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.32s**.

@@ -52,6 +52,9 @@ public class TransferService {
                     .status(tx.getStatus())
                     .amount(tx.getAmount())
                     .currency(tx.getCurrency())
+                    .targetAmount(tx.getTargetAmount())
+                    .targetCurrency(tx.getTargetCurrency())
+                    .exchangeRate(tx.getExchangeRate())
                     .senderAccountId(tx.getSenderAccountId())
                     .receiverAccountId(tx.getReceiverAccountId())
                     .senderShard(sender != null ? sender.getShard().name() : null)
@@ -64,6 +67,60 @@ public class TransferService {
 
             if (idempotencyKey != null && !idempotencyKey.isBlank()) {
                 idempotencyService.markCompleted(idempotencyKey, response);
+            }
+
+            return response;
+        } catch (Exception ex) {
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.markFailed(idempotencyKey, ex.getMessage());
+            }
+            throw ex;
+        }
+    }
+
+    public com.transmoney.backend.dto.response.ExchangeResponse executeExchange(com.transmoney.backend.dto.request.ExchangeRequest request) {
+        String idempotencyKey = request.getIdempotencyKey();
+
+        if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+            com.transmoney.backend.dto.response.ExchangeResponse cached = idempotencyService.checkOrStartExchange(idempotencyKey, request);
+            if (cached != null) {
+                return cached;
+            }
+        }
+
+        try {
+            Transaction tx = coordinator.executeCurrencyExchange(request);
+
+            com.transmoney.backend.entity.Account source = accountRepository.findById(tx.getSenderAccountId()).orElse(null);
+            com.transmoney.backend.entity.Account target = accountRepository.findById(tx.getReceiverAccountId()).orElse(null);
+
+            boolean isCross = source != null && target != null && !source.getShard().equals(target.getShard());
+
+            com.transmoney.backend.dto.response.ExchangeResponse response = com.transmoney.backend.dto.response.ExchangeResponse.builder()
+                    .transactionId(tx.getTransactionId())
+                    .status(tx.getStatus())
+                    .sourceAccountId(tx.getSenderAccountId())
+                    .sourceAccountNumber(source != null ? source.getAccountNumber() : null)
+                    .sourceShard(source != null ? source.getShard().name() : null)
+                    .sourceAmount(tx.getAmount())
+                    .sourceCurrency(tx.getCurrency())
+                    .sourceBalanceAfter(source != null ? source.getBalance() : null)
+                    .targetAccountId(tx.getReceiverAccountId())
+                    .targetAccountNumber(target != null ? target.getAccountNumber() : null)
+                    .targetShard(target != null ? target.getShard().name() : null)
+                    .targetAmount(tx.getTargetAmount())
+                    .targetCurrency(tx.getTargetCurrency())
+                    .targetBalanceAfter(target != null ? target.getBalance() : null)
+                    .exchangeRate(tx.getExchangeRate())
+                    .feeAmount(null)
+                    .isCrossShard(isCross)
+                    .idempotencyKey(idempotencyKey)
+                    .cachedReplay(false)
+                    .timestamp(tx.getCreatedAt())
+                    .build();
+
+            if (idempotencyKey != null && !idempotencyKey.isBlank()) {
+                idempotencyService.markCompletedExchange(idempotencyKey, response);
             }
 
             return response;
@@ -158,6 +215,9 @@ public class TransferService {
                 .type(tx.getType())
                 .amount(tx.getAmount())
                 .currency(tx.getCurrency())
+                .targetAmount(tx.getTargetAmount())
+                .targetCurrency(tx.getTargetCurrency())
+                .exchangeRate(tx.getExchangeRate())
                 .senderAccountId(tx.getSenderAccountId())
                 .receiverAccountId(tx.getReceiverAccountId())
                 .description(tx.getDescription())

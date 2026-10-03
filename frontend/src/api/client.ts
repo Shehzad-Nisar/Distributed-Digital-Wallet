@@ -23,6 +23,10 @@ import type {
   SettlementBatch,
   LedgerEntryResponse,
   ReconciliationResponse,
+  FxRatesResponse,
+  FxQuoteResponse,
+  ExchangeRequest,
+  ExchangeResponse,
 } from '../types';
 
 const api = axios.create({
@@ -328,5 +332,38 @@ export const downloadStatementCsv = async (accountId: number): Promise<void> => 
   link.click();
   link.remove();
   window.URL.revokeObjectURL(url);
+};
+
+// --- Phase 6: Multi-Currency & Cross-Border Exchange Engine ---
+export const getFxRates = async (): Promise<FxRatesResponse> => {
+  const response = await api.get<ApiResponse<FxRatesResponse>>('/fx/rates');
+  return response.data.data;
+};
+
+export const getFxQuote = async (
+  sourceCurrency: string,
+  targetCurrency: string,
+  amount: number
+): Promise<FxQuoteResponse> => {
+  const response = await api.get<ApiResponse<FxQuoteResponse>>('/fx/quote', {
+    params: { sourceCurrency, targetCurrency, amount },
+  });
+  return response.data.data;
+};
+
+export const executeFxExchange = async (
+  request: ExchangeRequest,
+  idempotencyKey?: string
+): Promise<ExchangeResponse> => {
+  const headers: Record<string, string> = {};
+  if (idempotencyKey) {
+    headers['X-Idempotency-Key'] = idempotencyKey;
+  }
+  const response = await api.post<ApiResponse<ExchangeResponse>>(
+    '/fx/exchange',
+    request,
+    { headers }
+  );
+  return response.data.data;
 };
 

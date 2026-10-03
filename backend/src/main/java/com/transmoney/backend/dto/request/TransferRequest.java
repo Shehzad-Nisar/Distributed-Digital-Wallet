@@ -26,6 +26,14 @@ public class TransferRequest {
     @Builder.Default
     private String currency = "PKR";
 
+    private String targetCurrency;
+
+    private BigDecimal expectedRate;
+
+    private BigDecimal minTargetAmount;
+
+    private BigDecimal maxSlippagePercent;
+
     private String description;
 
     private String idempotencyKey;
