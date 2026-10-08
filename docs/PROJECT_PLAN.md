@@ -143,12 +143,28 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 ---
 
 ### Phase 8: High Concurrency Load Simulator & Chaos Injection
-**Status:** 🔄 *Ready for Dev*  
-**Core Objective:** Rigorous stress testing, concurrent 2PC benchmarking, and network partition resiliency testing.
+**Status:** ✅ **COMPLETED**  
+**Core Objective:** Rigorous stress testing, concurrent 2PC benchmarking, deadlock verification under hot account contention, inter-shard network fault simulation, and automated coordinator crash recovery.
 
-- [ ] **Load Generation Script**: Multi-threaded simulator generating 1,000+ transfers/sec.
-- [ ] **Chaos Monkey Fault Injection**: Simulate network drops, delayed coordinator responses, and shard connection crashes.
-- [ ] **Performance Benchmarking Report**: Latency percentiles (p50, p95, p99) under high-contention accounts.
+- [x] **Multi-Threaded 2PC Load Simulator Engine**: Built `LoadSimulatorService` executing configurable parallel worker pools (1 to 32 threads) running atomic 2PC transfers across distributed shards with zero-sum ledger conservation invariant verification.
+- [x] **High-Contention Hot Account Scenario**: Simulates extreme traffic spikes targeting a single hot account simultaneously; validates deterministic hierarchical row locking (`Math.min/Math.max(senderId, receiverId)`) resulting in **0 Deadlocks**.
+- [x] **Latency Percentiles & Telemetry Engine**: Precise calculation of P50 (median), P95, P99, average latency, throughput (TPS), duration, and success/failure counters.
+- [x] **Chaos Monkey Fault Injection Engine**: Built `ChaosEngineeringService` simulating real-world distributed partition anomalies:
+  - `LATENCY_SPIKE`: Inter-shard network WAN latency spikes (configurable 50ms - 2000ms).
+  - `PREPARE_PARTITION`: Deterministic network partition during 2PC Phase 1 Prepare.
+  - `COORDINATOR_CRASH`: Simulated coordinator node failure right after `PREPARED` log transition, triggering recovery sweep.
+  - `PACKET_DROP`: Probabilistic inter-shard packet drops with configurable failure rates.
+- [x] **Automated 2PC Recovery Sweep**: Validated recovery coordinator cleanup of orphaned `PREPARED` transactions without fund loss or balance corruption.
+- [x] **Load & Chaos Management Dashboard UI**: Interactive operator dashboard (`ChaosSimulatorView.tsx`) featuring real-time concurrency sliders, hot contention toggle, latency percentile gauges (P50/P95/P99), fault injector controls, and automated recovery triggers.
+- [x] **REST Endpoints**:
+  - `POST /api/simulator/load-test`: Execute multi-threaded 2PC benchmark run.
+  - `GET /api/simulator/status`: Real-time benchmark execution status and last result.
+  - `POST /api/simulator/cancel`: Cancel active benchmark run.
+  - `GET /api/simulator/chaos/config`: Current Chaos Monkey fault state and telemetry counters.
+  - `POST /api/simulator/chaos/config`: Arm/disarm fault mode and configure latency/drop rates.
+  - `POST /api/simulator/chaos/reset`: Reset Chaos Monkey to baseline none.
+  - `POST /api/simulator/chaos/trigger-recovery`: Manually invoke 2PC orphaned transaction reconciliation sweep.
+- [x] **Automated Testing**: 5/5 integration tests in `LoadSimulationAndChaosIntegrationTest.java` verifying concurrent load simulation, zero-sum money conservation, hot account contention, latency injection, coordinator crash and recovery sweep, and REST endpoints. All 35 project tests passing.
 
 ---
 

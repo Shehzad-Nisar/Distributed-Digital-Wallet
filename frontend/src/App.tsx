@@ -9,6 +9,7 @@ import { MerchantPortal } from './components/MerchantPortal';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { CurrencyExchange } from './components/CurrencyExchange';
 import { SystemBufferDashboard } from './components/SystemBufferDashboard';
+import { ChaosSimulatorView } from './components/ChaosSimulatorView';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
@@ -27,8 +28,8 @@ export function App() {
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [liveToast, setLiveToast] = useState<{ message: string; type: string } | null>(null);
 
-  // View state: landing, console, transfer, merchant, ledger, exchange, system, architecture
-  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture'>('landing');
+  // View state: landing, console, transfer, merchant, ledger, exchange, system, simulator, architecture
+  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'simulator' | 'architecture'>('landing');
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -490,7 +491,10 @@ export function App() {
             {/* View 6: Redis Balance Cache & Async Queue Buffer (Phase 7) */}
             {activeTab === 'system' && <SystemBufferDashboard />}
 
-            {/* View 7: System Architecture */}
+            {/* View 7: High Concurrency Load Simulator & Chaos Monkey Fault Injection (Phase 8) */}
+            {activeTab === 'simulator' && <ChaosSimulatorView />}
+
+            {/* View 8: System Architecture */}
             {activeTab === 'architecture' && <ArchitectureView />}
           </>
         )}

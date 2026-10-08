@@ -29,6 +29,11 @@ import type {
   ExchangeResponse,
   CacheStatsResponse,
   QueueStatsResponse,
+  LoadTestRequest,
+  LoadBenchmarkResult,
+  ChaosConfigRequest,
+  ChaosConfigResponse,
+  SimulatorStatusResponse,
 } from '../types';
 
 const api = axios.create({
@@ -387,6 +392,62 @@ export const getQueueStats = async (): Promise<QueueStatsResponse> => {
 
 export const warmCache = async (): Promise<number> => {
   const response = await api.post<ApiResponse<number>>('/system/warm-cache');
+  return response.data.data;
+};
+
+// --- Phase 8: High Concurrency Load Simulator & Chaos Fault Injection APIs ---
+export const startLoadTest = async (
+  request: LoadTestRequest
+): Promise<LoadBenchmarkResult> => {
+  const response = await api.post<ApiResponse<LoadBenchmarkResult>>(
+    '/simulator/load-test',
+    request
+  );
+  return response.data.data;
+};
+
+export const getSimulatorStatus = async (): Promise<SimulatorStatusResponse> => {
+  const response = await api.get<ApiResponse<SimulatorStatusResponse>>(
+    '/simulator/status'
+  );
+  return response.data.data;
+};
+
+export const cancelLoadTest = async (): Promise<string> => {
+  const response = await api.post<ApiResponse<string>>('/simulator/cancel');
+  return response.data.data;
+};
+
+export const getChaosConfig = async (): Promise<ChaosConfigResponse> => {
+  const response = await api.get<ApiResponse<ChaosConfigResponse>>(
+    '/simulator/chaos/config'
+  );
+  return response.data.data;
+};
+
+export const updateChaosConfig = async (
+  request: ChaosConfigRequest
+): Promise<ChaosConfigResponse> => {
+  const response = await api.post<ApiResponse<ChaosConfigResponse>>(
+    '/simulator/chaos/config',
+    request
+  );
+  return response.data.data;
+};
+
+export const resetChaosConfig = async (): Promise<ChaosConfigResponse> => {
+  const response = await api.post<ApiResponse<ChaosConfigResponse>>(
+    '/simulator/chaos/reset'
+  );
+  return response.data.data;
+};
+
+export const triggerChaosRecovery = async (
+  olderThanSeconds = 0
+): Promise<number> => {
+  const response = await api.post<ApiResponse<number>>(
+    `/simulator/chaos/trigger-recovery?olderThanSeconds=${olderThanSeconds}`
+  );
   return response.data.data;
 };
 

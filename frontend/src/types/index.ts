@@ -387,4 +387,56 @@ export interface TransactionEvent {
   timestamp: string;
 }
 
+// --- Phase 8: Load Simulator & Chaos Fault Injection Types ---
+export interface LoadTestRequest {
+  concurrencyLevel?: number;
+  totalTransactions?: number;
+  highContentionMode?: boolean;
+  hotAccountId?: number;
+  currency?: string;
+  amountPerTransfer?: number;
+}
+
+export interface LoadBenchmarkResult {
+  benchmarkRunId: string;
+  concurrencyLevel: number;
+  totalAttempted: number;
+  totalSucceeded: number;
+  totalFailed: number;
+  totalDeadlocks: number;
+  durationMs: number;
+  transactionsPerSecond: number;
+  p50LatencyMs: number;
+  p95LatencyMs: number;
+  p99LatencyMs: number;
+  avgLatencyMs: number;
+  initialNetBalance: number;
+  finalNetBalance: number;
+  moneyConservationVerified: boolean;
+  sampleErrors: string[];
+}
+
+export interface ChaosConfigRequest {
+  enabled?: boolean;
+  mode?: 'NONE' | 'LATENCY_SPIKE' | 'PREPARE_PARTITION' | 'COORDINATOR_CRASH' | 'PACKET_DROP';
+  latencyMs?: number;
+  failureRatePercent?: number;
+}
+
+export interface ChaosConfigResponse {
+  enabled: boolean;
+  mode: string;
+  latencyMs: number;
+  failureRatePercent: number;
+  totalFaultsInjected: number;
+  totalCrashesSimulated: number;
+  totalDelaysInjected: number;
+}
+
+export interface SimulatorStatusResponse {
+  running: boolean;
+  lastResult?: LoadBenchmarkResult;
+  chaosConfig?: ChaosConfigResponse;
+}
+
 

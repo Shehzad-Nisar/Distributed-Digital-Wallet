@@ -23,5 +23,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Query("SELECT t FROM Transaction t WHERE t.senderAccountId = :accountId OR t.receiverAccountId = :accountId")
     Page<Transaction> findByAccountId(@Param("accountId") Long accountId, Pageable pageable);
 
+    List<Transaction> findByStatus(com.transmoney.backend.entity.enums.TransactionStatus status);
+
     List<Transaction> findByStatusAndCreatedAtBefore(com.transmoney.backend.entity.enums.TransactionStatus status, java.time.LocalDateTime cutoffTime);
 }

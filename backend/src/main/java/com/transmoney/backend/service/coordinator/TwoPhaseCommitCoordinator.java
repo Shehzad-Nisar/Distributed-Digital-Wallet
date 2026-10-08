@@ -8,6 +8,7 @@ import com.transmoney.backend.entity.Transaction;
 import com.transmoney.backend.entity.enums.LedgerEntryType;
 import com.transmoney.backend.entity.enums.TransactionStatus;
 import com.transmoney.backend.entity.enums.TransactionType;
+import com.transmoney.backend.exception.CoordinatorCrashException;
 import com.transmoney.backend.exception.InsufficientBalanceException;
 import com.transmoney.backend.exception.ResourceNotFoundException;
 import com.transmoney.backend.exception.TransactionException;
@@ -39,6 +40,7 @@ public class TwoPhaseCommitCoordinator {
     private final com.transmoney.backend.service.FxRateService fxRateService;
     private final BalanceCacheService balanceCacheService;
     private final AsyncQueueBufferService queueBufferService;
+    private final com.transmoney.backend.service.chaos.ChaosEngineeringService chaosEngineeringService;
 
     /**
      * Executes an atomic transfer using Two-Phase Commit protocol semantics
@@ -46,7 +48,11 @@ public class TwoPhaseCommitCoordinator {
      * and explicit persistent state transitions (INITIATED -> PREPARED -> COMMITTED).
      * Supports both same-currency and cross-currency multi-shard transfers.
      */
-    @Transactional(isolation = Isolation.READ_COMMITTED, rollbackFor = Exception.class)
+    @Transactional(
+            isolation = Isolation.READ_COMMITTED,
+            rollbackFor = Exception.class,
+            noRollbackFor = com.transmoney.backend.exception.CoordinatorCrashException.class
+    )
     public Transaction executeTransfer(TransferRequest request) {
         String txId = "TX-" + UUID.randomUUID().toString();
         log.info("Starting 2PC transfer [{}] from account {} to account {} for amount {} {}",
@@ -89,6 +95,8 @@ public class TwoPhaseCommitCoordinator {
         transaction = transactionRepository.save(transaction);
 
         // --- PHASE 1: PREPARE / VOTE ---
+        chaosEngineeringService.injectPreparePhaseChaos(txId, senderAccount.getId(), receiverAccount.getId());
+
         boolean isCrossShard = !senderAccount.getShard().equals(receiverAccount.getShard());
         log.info("Phase 1 (Prepare): Validating accounts and topology [senderShard={}, receiverShard={}, crossShard={}, crossCurrency={}]",
                 senderAccount.getShard(), receiverAccount.getShard(), isCrossShard, isCrossCurrency);
@@ -154,6 +162,12 @@ public class TwoPhaseCommitCoordinator {
         transaction.setStatus(TransactionStatus.PREPARED);
         transaction = transactionRepository.save(transaction);
         log.info("Phase 1 VOTE_COMMIT: All participants validated successfully. Transitioned tx [{}] to PREPARED", txId);
+
+        // --- CHAOS MONKEY: Coordinator Crash Simulation after PREPARED ---
+        if (chaosEngineeringService.shouldSimulateCoordinatorCrash()) {
+            log.error("CHAOS FAULT: Simulated coordinator crash after PREPARED phase on transaction [{}]", txId);
+            throw new CoordinatorCrashException("Coordinator crashed after PREPARED phase on transaction " + txId);
+        }
 
         // --- PHASE 2: COMMIT ---
         log.info("Phase 2 (Commit): Applying atomic balance updates and immutable ledger entries");

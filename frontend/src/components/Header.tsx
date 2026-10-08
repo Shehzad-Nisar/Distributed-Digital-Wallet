@@ -10,6 +10,7 @@ import {
   ArrowRightLeft,
   Cpu,
   Zap,
+  Flame,
 } from 'lucide-react';
 import type { Account, SystemHealth, User } from '../types';
 import logoImg from '../assets/logo.png';
@@ -23,8 +24,8 @@ interface HeaderProps {
   onOpenAuth: (mode: 'signin' | 'signup') => void;
   onOpenCreateAccount: () => void;
   onLogout: () => void;
-  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture';
-  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture') => void;
+  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'simulator' | 'architecture';
+  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'simulator' | 'architecture') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -123,6 +124,17 @@ export const Header: React.FC<HeaderProps> = ({
             >
               <Cpu className="w-3.5 h-3.5 text-amber-500" />
               <span>Redis &amp; Buffer</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('simulator')}
+              className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 font-medium ${
+                activeTab === 'simulator'
+                  ? 'bg-black text-white font-semibold'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 text-red-500" />
+              <span>Load &amp; Chaos</span>
             </button>
             <button
               onClick={() => setActiveTab('architecture')}
