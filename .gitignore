@@ -81,6 +81,7 @@ redis-data/
 ############################
 reports/
 test-output/
+test-results/
 
 ############################
 # Secrets

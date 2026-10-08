@@ -21,7 +21,6 @@ import java.time.LocalDateTime;
 @RestController
 @RequestMapping("/api/fx")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class FxController {
 
     private final FxRateService fxRateService;
