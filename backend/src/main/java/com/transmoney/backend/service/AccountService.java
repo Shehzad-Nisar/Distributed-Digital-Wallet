@@ -1,5 +1,6 @@
 package com.transmoney.backend.service;
 
+import com.transmoney.backend.dto.event.TransactionEvent;
 import com.transmoney.backend.dto.request.CreateAccountRequest;
 import com.transmoney.backend.dto.request.DepositRequest;
 import com.transmoney.backend.dto.request.UpdateAccountStatusRequest;
@@ -17,12 +18,15 @@ import com.transmoney.backend.exception.TransactionException;
 import com.transmoney.backend.repository.AccountRepository;
 import com.transmoney.backend.repository.TransactionRepository;
 import com.transmoney.backend.repository.UserRepository;
+import com.transmoney.backend.service.cache.BalanceCacheService;
+import com.transmoney.backend.service.queue.AsyncQueueBufferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,6 +39,8 @@ public class AccountService {
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
     private final LedgerService ledgerService;
+    private final BalanceCacheService balanceCacheService;
+    private final AsyncQueueBufferService queueBufferService;
 
     @Transactional
     public Account createAccount(CreateAccountRequest request) {
@@ -67,15 +73,19 @@ public class AccountService {
 
     @Transactional(readOnly = true)
     public AccountBalanceResponse getBalance(Long accountId) {
-        Account account = getAccountById(accountId);
-        return AccountBalanceResponse.builder()
-                .accountId(account.getId())
-                .accountNumber(account.getAccountNumber())
-                .balance(account.getBalance())
-                .currency(account.getCurrency())
-                .shard(account.getShard())
-                .status(account.getStatus())
-                .build();
+        return balanceCacheService.getBalance(accountId).orElseGet(() -> {
+            Account account = getAccountById(accountId);
+            AccountBalanceResponse response = AccountBalanceResponse.builder()
+                    .accountId(account.getId())
+                    .accountNumber(account.getAccountNumber())
+                    .balance(account.getBalance())
+                    .currency(account.getCurrency())
+                    .shard(account.getShard())
+                    .status(account.getStatus())
+                    .build();
+            balanceCacheService.putBalance(accountId, response);
+            return response;
+        });
     }
 
     @Transactional(readOnly = true)
@@ -123,6 +133,24 @@ public class AccountService {
 
         ledgerService.recordSingleEntry(savedTx, account.getId(), LedgerEntryType.CREDIT, request.getAmount(), newBalance);
 
+        // Phase 7: Evict balance cache and push event to async queue buffer
+        balanceCacheService.evictBalance(account.getId());
+        queueBufferService.enqueueEvent(TransactionEvent.builder()
+                .eventId("EVT-" + UUID.randomUUID())
+                .eventType("DEPOSIT_COMPLETED")
+                .transactionId(txId)
+                .transactionType("DEPOSIT")
+                .senderAccountId(null)
+                .receiverAccountId(account.getId())
+                .amount(request.getAmount())
+                .currency(account.getCurrency())
+                .targetAmount(request.getAmount())
+                .targetCurrency(account.getCurrency())
+                .receiverNewBalance(newBalance)
+                .description(description)
+                .timestamp(LocalDateTime.now())
+                .build());
+
         log.info("Deposit [{}] completed: Credited {} {} to account {}", txId, request.getAmount(), account.getCurrency(), account.getAccountNumber());
         return savedAccount;
     }
@@ -167,6 +195,24 @@ public class AccountService {
 
         ledgerService.recordSingleEntry(savedTx, account.getId(), LedgerEntryType.DEBIT, request.getAmount(), newBalance);
 
+        // Phase 7: Evict balance cache and push event to async queue buffer
+        balanceCacheService.evictBalance(account.getId());
+        queueBufferService.enqueueEvent(TransactionEvent.builder()
+                .eventId("EVT-" + UUID.randomUUID())
+                .eventType("WITHDRAWAL_COMPLETED")
+                .transactionId(txId)
+                .transactionType("WITHDRAWAL")
+                .senderAccountId(account.getId())
+                .receiverAccountId(null)
+                .amount(request.getAmount())
+                .currency(account.getCurrency())
+                .targetAmount(request.getAmount())
+                .targetCurrency(account.getCurrency())
+                .senderNewBalance(newBalance)
+                .description(description)
+                .timestamp(LocalDateTime.now())
+                .build());
+
         log.info("Withdrawal [{}] completed: Debited {} {} from account {}", txId, request.getAmount(), account.getCurrency(), account.getAccountNumber());
         return savedAccount;
     }
@@ -178,6 +224,7 @@ public class AccountService {
 
         account.setStatus(request.getStatus().trim().toUpperCase());
         Account saved = accountRepository.save(account);
+        balanceCacheService.evictBalance(accountId);
         log.info("Account {} status updated to {}", account.getAccountNumber(), saved.getStatus());
         return saved;
     }

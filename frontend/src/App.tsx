@@ -8,12 +8,14 @@ import { ArchitectureView } from './components/ArchitectureView';
 import { MerchantPortal } from './components/MerchantPortal';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { CurrencyExchange } from './components/CurrencyExchange';
+import { SystemBufferDashboard } from './components/SystemBufferDashboard';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
 import { getAccounts, getHealth, getUsers, removeToken, updateAccountStatus } from './api/client';
+import { walletSocket } from './api/websocket';
 import type { Account, SystemHealth, User } from './types';
-import { ArrowDownLeft, ArrowUpRight, Lock, RefreshCw, Send, Unlock } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Lock, RefreshCw, Send, Unlock, X } from 'lucide-react';
 
 export function App() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
@@ -23,9 +25,10 @@ export function App() {
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
+  const [liveToast, setLiveToast] = useState<{ message: string; type: string } | null>(null);
 
-  // View state: landing, console, transfer, merchant, ledger, exchange, architecture
-  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture'>('landing');
+  // View state: landing, console, transfer, merchant, ledger, exchange, system, architecture
+  const [activeTab, setActiveTab] = useState<'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture'>('landing');
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -77,8 +80,30 @@ export function App() {
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 12000);
-    return () => clearInterval(interval);
+
+    // Phase 7: Real-Time WebSocket stream integration
+    walletSocket.connect();
+    const unbind = walletSocket.onEvent((event) => {
+      setLiveToast({
+        message: `${event.eventType}: ${event.amount} ${event.currency} [${event.transactionId}]`,
+        type: event.eventType,
+      });
+      fetchData();
+      setRefreshTrigger((prev) => prev + 1);
+      setTimeout(() => setLiveToast(null), 6000);
+    });
+
+    return () => {
+      clearInterval(interval);
+      unbind();
+    };
   }, []);
+
+  useEffect(() => {
+    if (selectedAccountId) {
+      walletSocket.subscribe(selectedAccountId);
+    }
+  }, [selectedAccountId]);
 
   const handleSelectUser = (user: User) => {
     setCurrentUser(user);
@@ -155,6 +180,27 @@ export function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
       />
+
+      {/* Phase 7: Real-Time WebSocket Toast Notification */}
+      {liveToast && (
+        <div className="fixed top-16 right-4 z-50 max-w-md bg-slate-900 text-white p-3.5 rounded-xl shadow-2xl border border-emerald-500/40 flex items-center justify-between gap-3 font-mono text-xs animate-in slide-in-from-top-2">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+            <div>
+              <span className="text-[10px] text-emerald-400 font-bold block uppercase tracking-wider">
+                ⚡ Real-Time WebSocket Push
+              </span>
+              <span className="text-xs text-slate-200 block truncate">{liveToast.message}</span>
+            </div>
+          </div>
+          <button
+            onClick={() => setLiveToast(null)}
+            className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition cursor-pointer"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
         {/* Course & Attribution Banner (visible on interior tabs) */}
@@ -441,7 +487,10 @@ export function App() {
               />
             )}
 
-            {/* View 6: System Architecture */}
+            {/* View 6: Redis Balance Cache & Async Queue Buffer (Phase 7) */}
+            {activeTab === 'system' && <SystemBufferDashboard />}
+
+            {/* View 7: System Architecture */}
             {activeTab === 'architecture' && <ArchitectureView />}
           </>
         )}

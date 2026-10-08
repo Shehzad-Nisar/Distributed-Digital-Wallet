@@ -352,3 +352,39 @@ export interface ExchangeResponse {
   timestamp: string;
 }
 
+// --- Phase 7: Redis Cache, Async Queue & Real-Time WebSocket Types ---
+export interface CacheStatsResponse {
+  hits: number;
+  misses: number;
+  evictions: number;
+  inMemoryEntries: number;
+  redisConnected: boolean;
+  hitRatePercentage: number;
+}
+
+export interface QueueStatsResponse {
+  totalEnqueued: number;
+  totalProcessed: number;
+  pendingBufferSize: number;
+  activeWebSocketConnections: number;
+  queueStatus: string;
+}
+
+export interface TransactionEvent {
+  eventId: string;
+  eventType: string;
+  transactionId: string;
+  transactionType: string;
+  senderAccountId?: number;
+  receiverAccountId?: number;
+  amount: number;
+  currency: string;
+  targetAmount?: number;
+  targetCurrency?: string;
+  senderNewBalance?: number;
+  receiverNewBalance?: number;
+  description?: string;
+  timestamp: string;
+}
+
+

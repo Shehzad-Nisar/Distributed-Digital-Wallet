@@ -27,6 +27,8 @@ import type {
   FxQuoteResponse,
   ExchangeRequest,
   ExchangeResponse,
+  CacheStatsResponse,
+  QueueStatsResponse,
 } from '../types';
 
 const api = axios.create({
@@ -366,4 +368,26 @@ export const executeFxExchange = async (
   );
   return response.data.data;
 };
+
+// --- Phase 7: Redis Cache & Async Queue Buffer APIs ---
+export const getCacheStats = async (): Promise<CacheStatsResponse> => {
+  const response = await api.get<ApiResponse<CacheStatsResponse>>('/system/cache-stats');
+  return response.data.data;
+};
+
+export const clearCache = async (): Promise<string> => {
+  const response = await api.post<ApiResponse<string>>('/system/cache-clear');
+  return response.data.data;
+};
+
+export const getQueueStats = async (): Promise<QueueStatsResponse> => {
+  const response = await api.get<ApiResponse<QueueStatsResponse>>('/system/queue-stats');
+  return response.data.data;
+};
+
+export const warmCache = async (): Promise<number> => {
+  const response = await api.post<ApiResponse<number>>('/system/warm-cache');
+  return response.data.data;
+};
+
 

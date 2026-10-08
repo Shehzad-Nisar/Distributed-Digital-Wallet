@@ -8,6 +8,8 @@ import {
   Store,
   Users,
   ArrowRightLeft,
+  Cpu,
+  Zap,
 } from 'lucide-react';
 import type { Account, SystemHealth, User } from '../types';
 import logoImg from '../assets/logo.png';
@@ -21,8 +23,8 @@ interface HeaderProps {
   onOpenAuth: (mode: 'signin' | 'signup') => void;
   onOpenCreateAccount: () => void;
   onLogout: () => void;
-  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture';
-  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'architecture') => void;
+  activeTab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture';
+  setActiveTab: (tab: 'landing' | 'console' | 'transfer' | 'merchant' | 'ledger' | 'exchange' | 'system' | 'architecture') => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -112,6 +114,17 @@ export const Header: React.FC<HeaderProps> = ({
               <span>FX Exchange</span>
             </button>
             <button
+              onClick={() => setActiveTab('system')}
+              className={`px-3 py-1.5 rounded-md transition cursor-pointer flex items-center gap-1.5 font-medium ${
+                activeTab === 'system'
+                  ? 'bg-black text-white font-semibold'
+                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+              }`}
+            >
+              <Cpu className="w-3.5 h-3.5 text-amber-500" />
+              <span>Redis &amp; Buffer</span>
+            </button>
+            <button
               onClick={() => setActiveTab('architecture')}
               className={`px-3 py-1.5 rounded-md transition cursor-pointer font-medium ${
                 activeTab === 'architecture'
@@ -126,6 +139,12 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Right Tools & User Session */}
         <div className="flex items-center gap-2.5">
+          {/* WebSocket real-time badge */}
+          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded border border-emerald-200 bg-emerald-50 font-mono text-[11px] text-emerald-800">
+            <Zap className="w-3 h-3 text-emerald-600 animate-pulse" />
+            <span>WS Real-Time</span>
+          </div>
+
           {/* Network health indicator */}
           <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded border border-slate-200 bg-slate-50 font-mono text-[11px] text-slate-700">
             <span

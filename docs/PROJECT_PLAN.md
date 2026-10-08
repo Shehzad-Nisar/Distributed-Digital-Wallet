@@ -19,8 +19,8 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 | **04** | **Merchant Services, QR Payments & Settlement** | P1 | ✅ **COMPLETED** | Oct 2026 |
 | **05** | **Double-Entry Financial Ledger & Audit Reporting** | P0 | ✅ **COMPLETED** | Oct 2026 |
 | **06** | **Multi-Currency & Cross-Border Exchange Engine** | P1 | ✅ **COMPLETED** | Oct 2026 |
-| **07** | **Redis Caching & Asynchronous Queue Buffer** | P1 | 🔄 *Ready for Dev* | Target: Sprint 6 |
-| **08** | **High Concurrency Load Simulator & Chaos Injection** | P1 | ⏳ *Planned* | Target: Sprint 7 |
+| **07** | **Redis Caching & Asynchronous Queue Buffer** | P1 | ✅ **COMPLETED** | Oct 2026 |
+| **08** | **High Concurrency Load Simulator & Chaos Injection** | P1 | 🔄 *Ready for Dev* | Target: Sprint 7 |
 | **09** | **Real-Time Fraud Detection, Velocity & Rate Limiting** | P1 | ⏳ *Planned* | Target: Sprint 8 |
 | **10** | **Dockerization, Prometheus/Grafana & CI/CD** | P0 | ⏳ *Planned* | Target: Sprint 9 |
 
@@ -124,17 +124,26 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 ---
 
 ### Phase 7: Redis Caching & Asynchronous Queue Buffer
-**Status:** ⏳ *Planned*  
-**Core Objective:** Accelerate balance inquiries and offload heavy audit notifications to an asynchronous message broker.
+**Status:** ✅ **COMPLETED**  
+**Core Objective:** Accelerate balance inquiries via dual-tier Redis caching, decouple heavy post-transaction side effects via an asynchronous message buffer, and broadcast instant WebSocket updates to connected clients.
 
-- [ ] **Redis Balance Cache**: Cache frequently read balances with cache-invalidation on 2PC commit.
-- [ ] **Message Queue Integration**: Decouple notification emails, webhooks, and analytics via message queue.
-- [ ] **WebSocket Push Updates**: Real-time push updates to frontend whenever an account receives an inbound transfer.
+- [x] **Redis Balance Cache**: Distributed caching (`wallet:balance:<id>`) with resilient local in-memory fallback, sub-millisecond retrieval, and active invalidation on 2PC commit (`BalanceCacheService`).
+- [x] **Cache Eviction Invariant**: Automatically invalidates sender and receiver caches on 2PC transfers, FX exchanges, merchant QR payments, deposits, withdrawals, and account status updates.
+- [x] **Asynchronous Queue Buffer**: Decoupled message buffer (`AsyncQueueBufferService`) isolating heavy side effects (notifications, audit event dispatch) from the synchronous ACID commit path.
+- [x] **Async Consumer Worker**: Daemon thread worker (`AsyncTransactionEventConsumer`) draining events, managing dual-tier invalidation, and broadcasting push frames.
+- [x] **Real-Time WebSocket Stream**: Configured native WebSocket endpoint (`/ws/wallet`) broadcasting instant transaction frames and balance updates with auto-reconnection and per-account subscription.
+- [x] **System & Cache Dashboard UI**: Interactive metrics monitoring dashboard (`SystemBufferDashboard.tsx`) featuring real-time cache hit ratios, queue throughput, live WebSocket terminal stream, pre-warm cache, and purge controls.
+- [x] **REST Endpoints**:
+  - `GET /api/system/cache-stats`: Live Redis & local cache hit/miss statistics.
+  - `POST /api/system/cache-clear`: Purge balance cache across tiers.
+  - `GET /api/system/queue-stats`: Queue buffer throughput and active WebSocket connection count.
+  - `POST /api/system/warm-cache`: Pre-warm account balance cache.
+- [x] **Automated Testing**: Verified cache hit/miss lifecycle, 2PC multi-shard cache eviction, async queue buffer event dispatch, and metrics endpoints in `RedisCacheAndAsyncQueueIntegrationTest.java`.
 
 ---
 
 ### Phase 8: High Concurrency Load Simulator & Chaos Injection
-**Status:** ⏳ *Planned*  
+**Status:** 🔄 *Ready for Dev*  
 **Core Objective:** Rigorous stress testing, concurrent 2PC benchmarking, and network partition resiliency testing.
 
 - [ ] **Load Generation Script**: Multi-threaded simulator generating 1,000+ transfers/sec.
@@ -166,7 +175,7 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 
 ## Verification & Quality Assurance Summary
 
-* **Automated Test Results**: 27/27 Tests Passed (`mvnw.cmd test`, 0 failures, 0 errors)
+* **Automated Test Results**: **30/30 Tests Passed** (`mvnw.cmd test`, 0 failures, 0 errors)
   * `AuthAndAccountLifecycleIntegrationTest`: 2/2 tests pass (Auth, BCrypt, JWT, Deposit, Withdraw, Freeze).
   * `TwoPhaseCommitIntegrationTest`: 2/2 tests pass (Atomic 2PC commit, balance rollback on abort).
   * `TransactionSearchAndApiIntegrationTest`: 5/5 tests pass (Paginated queries, shard routing, OpenAPI).
@@ -174,5 +183,6 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
   * `MerchantAndQrPaymentIntegrationTest`: 6/6 tests pass (Onboarding, QR generation, 2PC QR payments, MDR fees, idempotency replay, tampered QR rejection, settlement batches).
   * `LedgerAndReconciliationIntegrationTest`: 2/2 tests pass (GAAP zero-sum double-entry ledger invariant & CSV statement export).
   * `MultiCurrencyAndFxIntegrationTest`: 5/5 tests pass (FX rates engine, quotes, cross-currency 2PC transfers, slippage protection abort, exchange idempotency replay).
+  * `RedisCacheAndAsyncQueueIntegrationTest`: 3/3 tests pass (Cache hit/miss acceleration, 2PC multi-shard cache eviction, async queue buffer throughput, and system buffer endpoints).
   * `BackendApplicationTests`: 1/1 tests pass.
-* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.32s**.
+* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.29s**.

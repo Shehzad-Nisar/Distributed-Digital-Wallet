@@ -1,5 +1,6 @@
 package com.transmoney.backend.service.coordinator;
 
+import com.transmoney.backend.dto.event.TransactionEvent;
 import com.transmoney.backend.dto.request.TransferRequest;
 import com.transmoney.backend.entity.Account;
 import com.transmoney.backend.entity.LedgerEntry;
@@ -14,6 +15,8 @@ import com.transmoney.backend.repository.AccountRepository;
 import com.transmoney.backend.repository.LedgerEntryRepository;
 import com.transmoney.backend.repository.TransactionRepository;
 import com.transmoney.backend.service.LedgerService;
+import com.transmoney.backend.service.cache.BalanceCacheService;
+import com.transmoney.backend.service.queue.AsyncQueueBufferService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,6 +24,7 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -33,6 +37,8 @@ public class TwoPhaseCommitCoordinator {
     private final LedgerEntryRepository ledgerEntryRepository;
     private final LedgerService ledgerService;
     private final com.transmoney.backend.service.FxRateService fxRateService;
+    private final BalanceCacheService balanceCacheService;
+    private final AsyncQueueBufferService queueBufferService;
 
     /**
      * Executes an atomic transfer using Two-Phase Commit protocol semantics
@@ -177,6 +183,25 @@ public class TwoPhaseCommitCoordinator {
             ledgerService.recordSingleEntry(transaction, receiverAccount.getId(), LedgerEntryType.CREDIT, targetAmount, receiverBalanceAfter);
         }
 
+        // Phase 7: Evict balance cache for both accounts and buffer event asynchronously
+        balanceCacheService.evictBalances(senderAccount.getId(), receiverAccount.getId());
+        queueBufferService.enqueueEvent(TransactionEvent.builder()
+                .eventId("EVT-" + UUID.randomUUID())
+                .eventType("P2P_TRANSFER_COMMITTED")
+                .transactionId(txId)
+                .transactionType(isCrossCurrency ? "CURRENCY_EXCHANGE" : "P2P_TRANSFER")
+                .senderAccountId(senderAccount.getId())
+                .receiverAccountId(receiverAccount.getId())
+                .amount(request.getAmount())
+                .currency(senderAccount.getCurrency())
+                .targetAmount(targetAmount)
+                .targetCurrency(receiverAccount.getCurrency())
+                .senderNewBalance(senderBalanceAfter)
+                .receiverNewBalance(receiverBalanceAfter)
+                .description(request.getDescription())
+                .timestamp(LocalDateTime.now())
+                .build());
+
         log.info("2PC transfer [{}] COMMITTED successfully across shards [senderShard={}, receiverShard={}, crossCurrency={}]",
                 txId, senderAccount.getShard(), receiverAccount.getShard(), isCrossCurrency);
 
@@ -289,6 +314,25 @@ public class TwoPhaseCommitCoordinator {
         ledgerService.recordSingleEntry(transaction, sourceAccount.getId(), LedgerEntryType.DEBIT, request.getSourceAmount(), sourceBalanceAfter);
         ledgerService.recordSingleEntry(transaction, targetAccount.getId(), LedgerEntryType.CREDIT, conversion.targetAmount(), targetBalanceAfter);
 
+        // Phase 7: Evict balance cache for both accounts and buffer event asynchronously
+        balanceCacheService.evictBalances(sourceAccount.getId(), targetAccount.getId());
+        queueBufferService.enqueueEvent(TransactionEvent.builder()
+                .eventId("EVT-" + UUID.randomUUID())
+                .eventType("EXCHANGE_COMMITTED")
+                .transactionId(txId)
+                .transactionType("CURRENCY_EXCHANGE")
+                .senderAccountId(sourceAccount.getId())
+                .receiverAccountId(targetAccount.getId())
+                .amount(request.getSourceAmount())
+                .currency(sourceAccount.getCurrency())
+                .targetAmount(conversion.targetAmount())
+                .targetCurrency(targetAccount.getCurrency())
+                .senderNewBalance(sourceBalanceAfter)
+                .receiverNewBalance(targetBalanceAfter)
+                .description(transaction.getDescription())
+                .timestamp(LocalDateTime.now())
+                .build());
+
         log.info("2PC Currency Exchange [{}] COMMITTED: Debited {} {} from acc {}, Credited {} {} to acc {}",
                 txId, request.getSourceAmount(), sourceAccount.getCurrency(), sourceAccount.getId(),
                 conversion.targetAmount(), targetAccount.getCurrency(), targetAccount.getId());
@@ -398,6 +442,25 @@ public class TwoPhaseCommitCoordinator {
 
         ledgerService.recordSingleEntry(transaction, payerAccount.getId(), LedgerEntryType.DEBIT, grossAmount, payerBalanceAfter);
         ledgerService.recordSingleEntry(transaction, merchantAccount.getId(), LedgerEntryType.CREDIT, netAmount, merchantBalanceAfter);
+
+        // Phase 7: Evict balance cache for both accounts and buffer event asynchronously
+        balanceCacheService.evictBalances(payerAccount.getId(), merchantAccount.getId());
+        queueBufferService.enqueueEvent(TransactionEvent.builder()
+                .eventId("EVT-" + UUID.randomUUID())
+                .eventType("MERCHANT_PAYMENT_COMMITTED")
+                .transactionId(txId)
+                .transactionType("MERCHANT_PAYMENT")
+                .senderAccountId(payerAccount.getId())
+                .receiverAccountId(merchantAccount.getId())
+                .amount(grossAmount)
+                .currency(transaction.getCurrency())
+                .targetAmount(netAmount)
+                .targetCurrency(merchantAccount.getCurrency())
+                .senderNewBalance(payerBalanceAfter)
+                .receiverNewBalance(merchantBalanceAfter)
+                .description(transaction.getDescription())
+                .timestamp(LocalDateTime.now())
+                .build());
 
         log.info("2PC Merchant Payment [{}] COMMITTED successfully across shards [payerShard={}, merchantShard={}]",
                 txId, payerAccount.getShard(), merchantAccount.getShard());
