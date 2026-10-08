@@ -191,7 +191,7 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
 
 ## Verification & Quality Assurance Summary
 
-* **Automated Test Results**: **30/30 Tests Passed** (`mvnw.cmd test`, 0 failures, 0 errors)
+* **Automated Test Results**: **35/35 Tests Passed** (`mvnw.cmd test`, 0 failures, 0 errors)
   * `AuthAndAccountLifecycleIntegrationTest`: 2/2 tests pass (Auth, BCrypt, JWT, Deposit, Withdraw, Freeze).
   * `TwoPhaseCommitIntegrationTest`: 2/2 tests pass (Atomic 2PC commit, balance rollback on abort).
   * `TransactionSearchAndApiIntegrationTest`: 5/5 tests pass (Paginated queries, shard routing, OpenAPI).
@@ -200,5 +200,6 @@ TransMoney is an enterprise-grade digital wallet application engineered with hig
   * `LedgerAndReconciliationIntegrationTest`: 2/2 tests pass (GAAP zero-sum double-entry ledger invariant & CSV statement export).
   * `MultiCurrencyAndFxIntegrationTest`: 5/5 tests pass (FX rates engine, quotes, cross-currency 2PC transfers, slippage protection abort, exchange idempotency replay).
   * `RedisCacheAndAsyncQueueIntegrationTest`: 3/3 tests pass (Cache hit/miss acceleration, 2PC multi-shard cache eviction, async queue buffer throughput, and system buffer endpoints).
+  * `LoadSimulationAndChaosIntegrationTest`: 5/5 tests pass (Multi-threaded 2PC load benchmark, hot account contention with 0 deadlocks, latency injection, coordinator crash and recovery sweep, simulator and chaos REST endpoints).
   * `BackendApplicationTests`: 1/1 tests pass.
-* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **1.29s**.
+* **Frontend Verification**: TypeScript build `tsc -b && vite build` completed with **0 errors** in **783ms**.
