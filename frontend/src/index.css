@@ -2,8 +2,8 @@
 @import "./theme.css";
 
 html, body {
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -15,8 +15,8 @@ html, body {
 
 #root {
   min-height: 100vh;
-  background-color: #ffffff !important;
-  color: #000000 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
   display: flex;
   flex-direction: column;
 }

@@ -161,7 +161,7 @@ export function App() {
   );
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       {/* Universal Clean FinTech Header */}
       <Header
         health={health}
@@ -181,19 +181,19 @@ export function App() {
 
       {/* Real-Time WebSocket Toast Notification */}
       {liveToast && (
-        <div className="fixed top-16 right-4 z-50 max-w-md bg-neutral-900 text-white p-3.5 rounded-2xl shadow-2xl border border-neutral-700 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2">
+        <div className="fixed top-16 right-4 z-50 max-w-md bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-slate-800 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2">
           <div className="flex items-center gap-2.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
             <div>
               <span className="text-[10px] text-emerald-400 font-bold block uppercase tracking-wider font-mono">
-                Live Transaction Event
+                Live Transaction Update
               </span>
-              <span className="text-xs text-neutral-200 block truncate">{liveToast.message}</span>
+              <span className="text-xs text-slate-200 block truncate">{liveToast.message}</span>
             </div>
           </div>
           <button
             onClick={() => setLiveToast(null)}
-            className="text-neutral-400 hover:text-white p-1 rounded-lg hover:bg-neutral-800 transition cursor-pointer"
+            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -203,9 +203,9 @@ export function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
         {initialLoading ? (
           <div className="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3 font-mono">
-            <RefreshCw className="w-7 h-7 animate-spin text-black" />
-            <span className="text-xs uppercase tracking-wider">
-              Securing Bank Vault &amp; Account Balances...
+            <RefreshCw className="w-7 h-7 animate-spin text-emerald-600" />
+            <span className="text-xs tracking-wider text-slate-500 font-medium">
+              Loading your account balances...
             </span>
           </div>
         ) : (

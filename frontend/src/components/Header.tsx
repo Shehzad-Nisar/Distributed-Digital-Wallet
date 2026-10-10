@@ -57,36 +57,38 @@ export const Header: React.FC<HeaderProps> = ({
   const activeAccount = userAccounts.find((a) => a.id === activeAccountId) || userAccounts[0];
 
   return (
-    <header className="bg-white border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-6 py-3 font-sans shadow-xs">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 sm:px-6 py-3 font-sans shadow-xs">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand Logo & Clean FinTech Navigation */}
         <div className="flex items-center gap-8">
           <div
             onClick={() => setActiveTab('console')}
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="flex items-center gap-3 cursor-pointer group"
           >
-            <img src={logoImg} alt="TransMoney" className="w-8 h-8 rounded-lg object-cover shadow-2xs" />
+            <div className="relative">
+              <img src={logoImg} alt="TransMoney" className="w-8 h-8 rounded-xl object-cover shadow-xs border border-slate-200" />
+            </div>
             <div className="flex flex-col">
-              <span className="font-black text-sm tracking-tight text-black flex items-center gap-1.5">
+              <span className="font-bold text-base tracking-tight text-slate-900 flex items-center gap-1.5">
                 TransMoney
               </span>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase font-mono">
-                Digital Wallet
+              <span className="text-[10px] text-emerald-700 font-semibold tracking-wider uppercase font-mono">
+                Multi-Currency Wallet
               </span>
             </div>
           </div>
 
-          {/* Clean Consumer Tabs (SadaPay + Wise model) */}
+          {/* Clean Consumer Tabs (Option B Warm Light Wise & Stripe theme) */}
           <nav className="hidden lg:flex items-center gap-1 text-xs">
             <button
               onClick={() => setActiveTab('console')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer font-medium flex items-center gap-1.5 ${
                 activeTab === 'console'
-                  ? 'bg-black text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Wallet className="w-3.5 h-3.5" />
+              <Wallet className={`w-3.5 h-3.5 ${activeTab === 'console' ? 'text-emerald-400' : 'text-slate-500'}`} />
               <span>Wallet Home</span>
             </button>
 
@@ -94,11 +96,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveTab('transfer')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-medium ${
                 activeTab === 'transfer'
-                  ? 'bg-black text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Send className="w-3.5 h-3.5" />
+              <Send className={`w-3.5 h-3.5 ${activeTab === 'transfer' ? 'text-emerald-400' : 'text-slate-500'}`} />
               <span>Send Money</span>
             </button>
 
@@ -106,11 +108,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveTab('merchant')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-medium ${
                 activeTab === 'merchant'
-                  ? 'bg-black text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Store className="w-3.5 h-3.5" />
+              <Store className={`w-3.5 h-3.5 ${activeTab === 'merchant' ? 'text-emerald-400' : 'text-slate-500'}`} />
               <span>Pay Merchants</span>
             </button>
 
@@ -118,11 +120,11 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveTab('exchange')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-medium ${
                 activeTab === 'exchange'
-                  ? 'bg-black text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
+              <ArrowRightLeft className={`w-3.5 h-3.5 ${activeTab === 'exchange' ? 'text-amber-400' : 'text-slate-500'}`} />
               <span>Currency FX</span>
             </button>
 
@@ -130,25 +132,25 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={() => setActiveTab('ledger')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 font-medium ${
                 activeTab === 'ledger'
-                  ? 'bg-black text-white font-semibold shadow-xs'
-                  : 'text-slate-600 hover:text-black hover:bg-slate-100'
+                  ? 'bg-slate-900 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
               }`}
             >
-              <Scale className="w-3.5 h-3.5" />
-              <span>Statements &amp; Activity</span>
+              <Scale className={`w-3.5 h-3.5 ${activeTab === 'ledger' ? 'text-emerald-400' : 'text-slate-500'}`} />
+              <span>Activity &amp; Statements</span>
             </button>
 
-            {/* Core Banking Console (Dedicated Professional Section for Evaluators & Infrastructure) */}
+            {/* Core Banking Console */}
             <button
               onClick={() => setActiveTab('core')}
               className={`px-3 py-1.5 ml-2 rounded-xl transition cursor-pointer flex items-center gap-1.5 text-[11px] font-mono border ${
                 activeTab === 'core'
-                  ? 'bg-neutral-900 text-emerald-400 border-neutral-800 font-bold shadow-xs'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:text-black hover:bg-slate-100'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-bold shadow-xs'
+                  : 'bg-slate-100 text-slate-600 border-slate-200 hover:text-slate-900 hover:bg-slate-200/70'
               }`}
             >
-              <Server className="w-3 h-3 text-emerald-500" />
-              <span>Core Banking Engine</span>
+              <Server className="w-3 h-3 text-emerald-600" />
+              <span>Core Banking</span>
             </button>
           </nav>
         </div>
@@ -156,13 +158,13 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right Tools & User Session */}
         <div className="flex items-center gap-3">
           {/* Live System Status Pill */}
-          <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-[11px] text-slate-600">
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] text-emerald-800 font-mono">
             <span
               className={`w-2 h-2 rounded-full ${
                 isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'
               }`}
             />
-            <span className="font-medium">{isHealthy ? 'Online' : 'Offline'}</span>
+            <span className="font-semibold">{isHealthy ? 'System Active' : 'Offline'}</span>
           </div>
 
           {/* User authentication pill / switcher */}
@@ -170,13 +172,13 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:border-black text-xs transition cursor-pointer shadow-2xs"
+                className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-2xl border border-slate-200 bg-white hover:border-slate-300 text-xs transition cursor-pointer shadow-xs"
               >
-                <div className="w-6 h-6 rounded-full bg-black text-white text-[11px] flex items-center justify-center font-bold">
+                <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] flex items-center justify-center font-bold font-mono">
                   {currentUser.fullName.charAt(0)}
                 </div>
                 <div className="text-left hidden sm:block">
-                  <span className="font-bold text-black block leading-tight truncate max-w-[130px]">
+                  <span className="font-bold text-slate-900 block leading-tight truncate max-w-[130px]">
                     {currentUser.fullName}
                   </span>
                   {activeAccount && (
@@ -190,18 +192,18 @@ export const Header: React.FC<HeaderProps> = ({
 
               {/* Session Dropdown */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xl z-50 font-sans space-y-1 animate-in fade-in slide-in-from-top-1">
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl border border-slate-200 bg-white p-2.5 shadow-xl z-50 font-sans space-y-1 animate-in fade-in slide-in-from-top-1 text-slate-800">
                   <div className="p-2 border-b border-slate-100">
-                    <span className="text-[10px] font-mono uppercase text-slate-400 block tracking-wider">
+                    <span className="text-[10px] font-mono uppercase text-slate-500 block tracking-wider">
                       Active Profile
                     </span>
-                    <span className="text-xs font-bold text-black block">{currentUser.fullName}</span>
+                    <span className="text-xs font-bold text-slate-900 block">{currentUser.fullName}</span>
                     <span className="text-[11px] text-slate-500 truncate block">{currentUser.email}</span>
                   </div>
 
                   {userAccounts.length > 0 && (
                     <div className="py-1">
-                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 px-2 block mb-1">
+                      <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 px-2 block mb-1">
                         My Accounts ({userAccounts.length})
                       </span>
                       {userAccounts.map((acc) => (
@@ -213,8 +215,8 @@ export const Header: React.FC<HeaderProps> = ({
                           }}
                           className={`w-full p-2 rounded-xl text-left text-xs font-mono flex items-center justify-between transition cursor-pointer ${
                             acc.id === activeAccountId
-                              ? 'bg-black text-white font-bold'
-                              : 'text-slate-700 hover:bg-slate-100 hover:text-black'
+                              ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200'
+                              : 'text-slate-700 hover:bg-slate-50'
                           }`}
                         >
                           <span className="truncate">{acc.accountNumber}</span>
@@ -232,9 +234,9 @@ export const Header: React.FC<HeaderProps> = ({
                         setDropdownOpen(false);
                         onOpenCreateAccount();
                       }}
-                      className="w-full px-2.5 py-2 rounded-lg text-left text-xs text-slate-700 hover:text-black hover:bg-slate-100 flex items-center gap-2 transition cursor-pointer"
+                      className="w-full px-2.5 py-2 rounded-xl text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition cursor-pointer"
                     >
-                      <Plus className="w-3.5 h-3.5" />
+                      <Plus className="w-3.5 h-3.5 text-emerald-600" />
                       <span>Open New Currency Account</span>
                     </button>
                     <button
@@ -242,9 +244,9 @@ export const Header: React.FC<HeaderProps> = ({
                         setDropdownOpen(false);
                         onOpenAuth('signin');
                       }}
-                      className="w-full px-2.5 py-2 rounded-lg text-left text-xs text-slate-700 hover:text-black hover:bg-slate-100 flex items-center gap-2 transition cursor-pointer"
+                      className="w-full px-2.5 py-2 rounded-xl text-left text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2 transition cursor-pointer"
                     >
-                      <Users className="w-3.5 h-3.5" />
+                      <Users className="w-3.5 h-3.5 text-slate-500" />
                       <span>Switch Profile</span>
                     </button>
                     <button
@@ -252,7 +254,7 @@ export const Header: React.FC<HeaderProps> = ({
                         setDropdownOpen(false);
                         onLogout();
                       }}
-                      className="w-full px-2.5 py-2 rounded-lg text-left text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition cursor-pointer"
+                      className="w-full px-2.5 py-2 rounded-xl text-left text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition cursor-pointer font-medium"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Sign Out</span>
@@ -265,13 +267,13 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => onOpenAuth('signin')}
-                className="px-3.5 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-black hover:border-black transition cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
               >
                 Sign In
               </button>
               <button
                 onClick={() => onOpenAuth('signup')}
-                className="px-3.5 py-1.5 rounded-xl bg-black text-white text-xs font-semibold hover:bg-neutral-800 transition cursor-pointer shadow-xs"
+                className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-semibold text-xs transition cursor-pointer shadow-xs"
               >
                 Register
               </button>
