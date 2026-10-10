@@ -177,10 +177,16 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
   // Other accounts for quick recipient picker
   const eligibleReceivers = accounts.filter((a) => a.id !== sender?.id);
 
+  // Clean raw database test hashes like 'Bob Ahmed 979fab2f' into clean 'Bob Ahmed'
+  const cleanUserName = (name: string | undefined) => {
+    if (!name) return 'Personal Account';
+    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6 font-sans">
       {/* Main Send Money Card (SadaPay / NayaPay / Wise UX) */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex items-center justify-between pb-6 border-b border-slate-100">
           <div>
             <h2 className="text-lg font-bold text-black flex items-center gap-2">
@@ -236,7 +242,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               >
                 {accounts.map((acc) => (
                   <option key={acc.id} value={acc.id}>
-                    {acc.accountNumber} — {acc.user?.fullName || `Account #${acc.id}`} (Balance: {Number(acc.balance).toLocaleString()} {acc.currency})
+                    {acc.accountNumber} — {cleanUserName(acc.user?.fullName) || `Account #${acc.id}`} ({Number(acc.balance).toLocaleString()} {acc.currency})
                   </option>
                 ))}
               </select>
@@ -246,8 +252,8 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             </div>
             {sender && (
               <div className="flex items-center justify-between px-1 text-xs text-slate-500">
-                <span>Available Balance: <strong className="text-black">{Number(sender.balance).toLocaleString()} {sender.currency}</strong></span>
-                <span className="text-[11px] font-mono text-slate-400">Vault: {sender.shard}</span>
+                <span>Available Balance: <strong className="text-slate-900">{Number(sender.balance).toLocaleString()} {sender.currency}</strong></span>
+                <span className="text-[11px] font-mono text-slate-400">{sender.shard}</span>
               </div>
             )}
           </div>
@@ -262,21 +268,21 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             <div className="flex items-center gap-2 overflow-x-auto pb-1">
               {eligibleReceivers.slice(0, 5).map((acc) => {
                 const isSelected = acc.id === Number(receiverId);
-                const name = acc.user?.fullName || `Acc #${acc.id}`;
+                const name = cleanUserName(acc.user?.fullName) || `Acc #${acc.id}`;
                 return (
                   <button
                     key={acc.id}
                     type="button"
                     onClick={() => setReceiverId(acc.id)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition cursor-pointer shrink-0 ${
+                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border transition cursor-pointer shrink-0 ${
                       isSelected
-                        ? 'bg-black text-white border-black'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400'
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     }`}
                   >
                     <div
                       className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                        isSelected ? 'bg-white text-black' : 'bg-slate-100 text-slate-700'
+                        isSelected ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700'
                       }`}
                     >
                       {name.charAt(0)}
@@ -292,11 +298,11 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               <select
                 value={receiverId}
                 onChange={(e) => setReceiverId(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-black text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition cursor-pointer appearance-none"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:outline-none focus:border-slate-900 focus:bg-white transition cursor-pointer appearance-none"
               >
                 {eligibleReceivers.map((acc) => (
                   <option key={acc.id} value={acc.id}>
-                    {acc.user?.fullName || `Account #${acc.id}`} — {acc.accountNumber} ({acc.currency})
+                    {cleanUserName(acc.user?.fullName) || `Account #${acc.id}`} — {acc.accountNumber} ({acc.currency})
                   </option>
                 ))}
               </select>
@@ -535,12 +541,12 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
               <div className="flex justify-between text-slate-600">
                 <span>To:</span>
-                <span className="font-bold text-black">{receiver?.user?.fullName || receiver?.accountNumber}</span>
+                <span className="font-bold text-slate-900">{cleanUserName(receiver?.user?.fullName) || receiver?.accountNumber}</span>
               </div>
 
               <div className="flex justify-between text-slate-600">
                 <span>From:</span>
-                <span className="font-bold text-black">{sender?.user?.fullName || sender?.accountNumber}</span>
+                <span className="font-bold text-slate-900">{cleanUserName(sender?.user?.fullName) || sender?.accountNumber}</span>
               </div>
 
               <div className="flex justify-between text-slate-600">

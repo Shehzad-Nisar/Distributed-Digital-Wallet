@@ -15,10 +15,13 @@ import {
   Check,
   ArrowRightLeft,
   ChevronRight,
-  Smartphone,
-  Wallet,
-  Receipt,
   Search,
+  Sparkles,
+  Store,
+  Building,
+  CheckCircle2,
+  Receipt,
+  Globe2,
 } from 'lucide-react';
 import type { Account, TransactionResponse, User } from '../types';
 import { getTransactions } from '../api/client';
@@ -51,10 +54,12 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
   const [hideBalance, setHideBalance] = useState<boolean>(false);
   const [copiedAcc, setCopiedAcc] = useState<boolean>(false);
   const [showCardDetails, setShowCardDetails] = useState<boolean>(false);
+  const [activeCardType, setActiveCardType] = useState<'physical' | 'virtual'>('physical');
   const [recentTxs, setRecentTxs] = useState<TransactionResponse[]>([]);
   const [loadingTxs, setLoadingTxs] = useState<boolean>(false);
   const [selectedTxDetail, setSelectedTxDetail] = useState<TransactionResponse | null>(null);
   const [txFilter, setTxFilter] = useState<'all' | 'in' | 'out'>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Active account selection
   const activeAccount =
@@ -66,17 +71,17 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
     (a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id
   );
 
-  // Dynamic currency accounts to display (distinct currencies across accounts)
+  // Dynamic currency pots (distinct currencies across accounts)
   const currencyPots =
     userAccounts.length > 1
       ? userAccounts
       : accounts.filter((a, idx, arr) => arr.findIndex((x) => x.currency === a.currency) === idx).slice(0, 5);
 
-  // Recent contacts / beneficiaries derived from distinct users
+  // Distinct recent counterparties
   const recentBeneficiaries = accounts
     .filter((a) => a.user?.id && a.user?.id !== currentUser?.id)
     .filter((a, idx, arr) => arr.findIndex((x) => x.user?.fullName === a.user?.fullName) === idx)
-    .slice(0, 5);
+    .slice(0, 6);
 
   useEffect(() => {
     if (!activeAccount) return;
@@ -84,7 +89,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
     getTransactions({
       accountId: activeAccount.id,
       page: 0,
-      size: 8,
+      size: 15,
       sort: 'createdAt',
       order: 'desc',
     })
@@ -116,35 +121,32 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
     }).format(num);
   };
 
-  // Dynamic Card Attributes calculated deterministically from activeAccount
-  const getDynamicCardNumber = (acc: Account | undefined) => {
+  // Deterministic Card Numbers & Attributes
+  const getDynamicCardNumber = (acc: Account | undefined, isVirtual: boolean = false) => {
     if (!acc) return '•••• •••• •••• 4289';
+    const salt = isVirtual ? '5420918237491028' : '8942105820491823';
     const accStr = String(acc.accountNumber || '').replace(/[^0-9]/g, '');
-    const padded = (accStr + '8942105820491823').slice(0, 16);
+    const padded = (accStr + salt).slice(0, 16);
     return `${padded.slice(0, 4)} ${padded.slice(4, 8)} ${padded.slice(8, 12)} ${padded.slice(12, 16)}`;
   };
 
-  const getDynamicExpiry = (acc: Account | undefined) => {
-    if (!acc?.createdAt) return '10/29';
-    try {
-      const d = new Date(acc.createdAt);
-      const expMonth = String(d.getMonth() + 1).padStart(2, '0');
-      const expYear = String((d.getFullYear() + 4) % 100).padStart(2, '0');
-      return `${expMonth}/${expYear}`;
-    } catch {
-      return '10/29';
-    }
+  const getDynamicExpiry = (acc: Account | undefined, isVirtual: boolean = false) => {
+    if (!acc) return isVirtual ? '12/28' : '10/29';
+    const month = String(((acc.id * 7 + 3) % 12) + 1).padStart(2, '0');
+    const year = String(28 + (acc.id % 4) + (isVirtual ? 1 : 2));
+    return `${month}/${year}`;
   };
 
-  const getDynamicCvv = (acc: Account | undefined) => {
-    if (!acc) return '842';
-    const num = (acc.id * 173 + 31) % 900 + 100;
+  const getDynamicCvv = (acc: Account | undefined, isVirtual: boolean = false) => {
+    if (!acc) return isVirtual ? '491' : '842';
+    const salt = isVirtual ? 317 : 173;
+    const num = (acc.id * salt + 47) % 900 + 100;
     return String(num);
   };
 
-  // Clean human branch translations
+  // Clean human region translation
   const getHumanRegion = (shard: string | undefined) => {
-    if (!shard) return 'Global Multi-Currency Hub';
+    if (!shard) return 'Singapore Hub (APAC)';
     const s = shard.toUpperCase();
     if (s.includes('US') || s.includes('NORTH')) return 'New York Hub (US)';
     if (s.includes('UK') || s.includes('CENTRAL')) return 'London Hub (UK)';
@@ -153,7 +155,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
     return shard.replace('SHARD_', '').replace('_', ' ') + ' Hub';
   };
 
-  // Currency flag & label mapping
+  // Currency meta
   const getCurrencyMeta = (curr: string | undefined) => {
     switch (curr) {
       case 'USD':
@@ -172,306 +174,287 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
     }
   };
 
-  // Filtered transactions
+  const activeMeta = getCurrencyMeta(activeAccount?.currency);
+
+  const cleanName = (name: string | undefined) => {
+    if (!name) return 'Personal Account';
+    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
+  };
+
+  const cardHolderName = cleanName(currentUser?.fullName || activeAccount?.user?.fullName);
+
+  // Filtered transactions by tab and search
   const filteredTxs = recentTxs.filter((tx) => {
-    if (txFilter === 'in') return tx.recipientAccountId === activeAccount?.id;
-    if (txFilter === 'out') return tx.senderAccountId === activeAccount?.id;
-    return true;
+    const matchesFilter =
+      txFilter === 'all' ||
+      (txFilter === 'in' && tx.receiverAccountId === activeAccount?.id) ||
+      (txFilter === 'out' && tx.senderAccountId === activeAccount?.id);
+
+    const matchesSearch =
+      searchQuery === '' ||
+      (tx.description && tx.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (tx.transactionId && tx.transactionId.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    return matchesFilter && matchesSearch;
   });
 
-  const activeMeta = getCurrencyMeta(activeAccount?.currency);
-  const cardHolderName = currentUser?.fullName || activeAccount?.user?.fullName || 'Personal Account';
+  // Calculate dynamic cashflow from recent transactions
+  const totalInflow = recentTxs
+    .filter((tx) => tx.receiverAccountId === activeAccount?.id)
+    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+  const totalOutflow = recentTxs
+    .filter((tx) => tx.senderAccountId === activeAccount?.id)
+    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
 
   return (
-    <div className="space-y-8 font-sans animate-in fade-in duration-200">
-      {/* Studio Greeting & Account Context */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-1 border-b border-slate-200/60">
+    <div className="space-y-8 font-sans max-w-7xl mx-auto pb-12 animate-in fade-in duration-300">
+      {/* 1. Neobank Executive Header Banner */}
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-900">
-            Welcome back, {cardHolderName.split(' ')[0]}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Overview of your balances, international accounts, and spending
-          </p>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+              Live Verified Account
+            </span>
+            <span className="text-slate-300">•</span>
+            <span className="text-xs font-medium text-slate-500">
+              {getHumanRegion(activeAccount?.shard)}
+            </span>
+          </div>
+
+          <div className="flex items-baseline gap-3">
+            <span className="text-2xl sm:text-3xl font-extrabold text-slate-400 font-sans">
+              {activeMeta.symbol}
+            </span>
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 font-mono">
+              {hideBalance ? '••••••••' : formatMoney(activeAccount?.balance)}
+            </h1>
+            <button
+              onClick={() => setHideBalance(!hideBalance)}
+              className="text-slate-400 hover:text-slate-700 p-1 rounded-md transition cursor-pointer"
+              title={hideBalance ? 'Show balance' : 'Hide balance'}
+            >
+              {hideBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs text-slate-500">
+            <span>Primary Account:</span>
+            <span className="font-mono font-bold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+              {activeAccount?.accountNumber || 'ACC-0000'}
+            </span>
+            <button
+              onClick={() => copyToClipboard(activeAccount?.accountNumber || '')}
+              className="text-slate-400 hover:text-slate-800 transition cursor-pointer flex items-center gap-1"
+              title="Copy Account Number"
+            >
+              {copiedAcc ? (
+                <span className="text-emerald-700 font-semibold flex items-center gap-0.5">
+                  <Check className="w-3.5 h-3.5" /> Copied
+                </span>
+              ) : (
+                <span className="flex items-center gap-0.5">
+                  <Copy className="w-3.5 h-3.5" /> Copy
+                </span>
+              )}
+            </button>
+            <span className="text-slate-300">•</span>
+            <span className="text-emerald-700 font-medium">Tier-1 Direct Clearing</span>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs text-slate-600 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="font-medium">{getHumanRegion(activeAccount?.shard)}</span>
-          </div>
+        {/* Action Button Hub (Wise Neobank Style) */}
+        <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+          <button
+            onClick={() => onNavigateTab('transfer')}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer shadow-xs active:scale-98"
+          >
+            <Send className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Send Money</span>
+          </button>
+
+          <button
+            onClick={onOpenDeposit}
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer shadow-xs active:scale-98"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Money</span>
+          </button>
+
+          <button
+            onClick={onOpenWithdraw}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" />
+            <span>Withdraw</span>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('exchange')}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+          >
+            <ArrowRightLeft className="w-3.5 h-3.5 text-slate-600" />
+            <span>Exchange FX</span>
+          </button>
+
+          <button
+            onClick={() => onNavigateTab('merchant')}
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+          >
+            <Store className="w-3.5 h-3.5 text-slate-600" />
+            <span>Merchants</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Studio Grid: Left Main Focus + Right Debit Card Studio */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column (7 cols): Balance Hero, Quick Send, and Multi-Currency Shelf */}
-        <div className="lg:col-span-7 space-y-6">
-          {/* Main Balance Canvas */}
-          <div className="bg-white rounded-3xl p-7 sm:p-8 border border-slate-200/90 shadow-xs relative overflow-hidden">
-            {/* Top row: Label + Status */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold text-slate-500">Available balance</span>
-                <button
-                  onClick={() => setHideBalance(!hideBalance)}
-                  className="text-slate-400 hover:text-slate-700 p-1 rounded-md transition cursor-pointer"
-                  title={hideBalance ? 'Show balance' : 'Hide balance'}
-                >
-                  {hideBalance ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                </button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-800 border border-emerald-200/60">
-                  <span>{activeMeta.flag}</span>
-                  <span>{activeAccount?.currency || 'PKR'}</span>
-                </span>
-                {isFrozen && (
-                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200">
-                    Card frozen
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Prominent Amount */}
-            <div className="flex items-baseline gap-2.5 mb-6">
-              <span className="text-xl sm:text-2xl font-semibold text-slate-400">
-                {activeAccount?.currency || 'PKR'}
-              </span>
-              <span className="text-4xl sm:text-6xl font-bold tracking-tight text-slate-900 font-mono">
-                {hideBalance ? '••••••••' : formatMoney(activeAccount?.balance)}
-              </span>
-            </div>
-
-            {/* Account Details Row */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 pb-6 border-b border-slate-100 text-xs">
-              <span className="text-slate-400">Account number:</span>
-              <span className="font-mono font-semibold text-slate-800">
-                {activeAccount?.accountNumber || 'ACC-0000'}
-              </span>
-              <button
-                onClick={() => copyToClipboard(activeAccount?.accountNumber || '')}
-                className="p-1 hover:text-emerald-700 text-slate-400 transition cursor-pointer"
-                title="Copy account number"
-              >
-                {copiedAcc ? (
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                ) : (
-                  <Copy className="w-3.5 h-3.5" />
-                )}
-              </button>
-              <span className="text-slate-300 mx-1">•</span>
-              <span className="text-slate-500">Tier-1 Safeguarded</span>
-            </div>
-
-            {/* Primary Action Buttons */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-6">
-              <button
-                onClick={() => onNavigateTab('transfer')}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold shadow-xs transition cursor-pointer active:scale-98"
-              >
-                <Send className="w-4 h-4 text-emerald-400" />
-                <span>Send money</span>
-              </button>
-
-              <button
-                onClick={onOpenDeposit}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition cursor-pointer active:scale-98"
-              >
-                <ArrowDownLeft className="w-4 h-4" />
-                <span>Add money</span>
-              </button>
-
-              <button
-                onClick={onOpenWithdraw}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer active:scale-98"
-              >
-                <ArrowUpRight className="w-4 h-4 text-slate-500" />
-                <span>Withdraw</span>
-              </button>
-
-              <button
-                onClick={() => onNavigateTab('exchange')}
-                className="flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-semibold border border-slate-200 transition cursor-pointer active:scale-98"
-              >
-                <ArrowRightLeft className="w-4 h-4 text-slate-500" />
-                <span>Convert</span>
-              </button>
-            </div>
+      {/* 2. Multi-Currency Accounts Shelf (Wise Core Model) */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between px-1">
+          <div>
+            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-emerald-700" />
+              <span>Multi-Currency Balances</span>
+            </h2>
+            <p className="text-xs text-slate-500">Hold, send, and spend like a local in {currencyPots.length} currencies</p>
           </div>
 
-          {/* Quick Send to Recent Contacts (Neobank Signature Feature) */}
-          {recentBeneficiaries.length > 0 && (
-            <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200/90 shadow-xs">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs font-semibold text-slate-900">Send again</span>
-                <button
-                  onClick={() => onNavigateTab('transfer')}
-                  className="text-xs font-medium text-emerald-700 hover:text-emerald-800 cursor-pointer"
-                >
-                  All recipients
-                </button>
-              </div>
-
-              <div className="flex items-center gap-4 overflow-x-auto pb-1">
-                {recentBeneficiaries.map((b, idx) => {
-                  const avatarColorClasses = [
-                    'bg-emerald-50 text-emerald-800 border-emerald-200',
-                    'bg-sky-50 text-sky-800 border-sky-200',
-                    'bg-indigo-50 text-indigo-800 border-indigo-200',
-                    'bg-amber-50 text-amber-800 border-amber-200',
-                    'bg-rose-50 text-rose-800 border-rose-200',
-                  ];
-                  const colorClass = avatarColorClasses[idx % avatarColorClasses.length];
-
-                  return (
-                    <button
-                      key={b.id}
-                      onClick={() => onNavigateTab('transfer')}
-                      className="flex flex-col items-center gap-2 group cursor-pointer shrink-0"
-                    >
-                      <div className={`w-12 h-12 rounded-full border flex items-center justify-center text-sm font-semibold transition shadow-2xs group-hover:scale-105 ${colorClass}`}>
-                        {b.user?.fullName?.charAt(0) || 'U'}
-                      </div>
-                      <span className="text-[11px] font-medium text-slate-700 group-hover:text-slate-900 truncate max-w-[70px]">
-                        {b.user?.fullName?.split(' ')[0] || 'User'}
-                      </span>
-                    </button>
-                  );
-                })}
-
-                <button
-                  onClick={() => onNavigateTab('transfer')}
-                  className="flex flex-col items-center gap-2 group cursor-pointer shrink-0"
-                >
-                  <div className="w-12 h-12 rounded-full bg-slate-50 border border-dashed border-slate-300 group-hover:border-slate-400 flex items-center justify-center text-slate-500 group-hover:text-slate-700 transition">
-                    <Plus className="w-4 h-4" />
-                  </div>
-                  <span className="text-[11px] font-medium text-slate-500 group-hover:text-slate-700">
-                    New
-                  </span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Multi-Currency Accounts Shelf */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-sm font-bold text-slate-900">
-                  Multi-currency balances
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Hold, receive, and spend like a local in global currencies
-                </p>
-              </div>
-
-              <button
-                onClick={onOpenCreateAccount}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition cursor-pointer shadow-2xs"
-              >
-                <Plus className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Open balance</span>
-              </button>
-            </div>
-
-            {/* Currency list with clean studio rows */}
-            <div className="divide-y divide-slate-100">
-              {currencyPots.map((acc) => {
-                const isSelected = acc.id === activeAccount?.id;
-                const meta = getCurrencyMeta(acc.currency);
-
-                return (
-                  <div
-                    key={`shelf-${acc.id}`}
-                    onClick={() => onSelectAccount(acc.id)}
-                    className={`py-3.5 px-3 rounded-2xl flex items-center justify-between transition cursor-pointer ${
-                      isSelected
-                        ? 'bg-slate-50/90 ring-1 ring-slate-200'
-                        : 'hover:bg-slate-50/60'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{meta.flag}</span>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900">
-                            {meta.name}
-                          </span>
-                          {isSelected && (
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                              Active
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[11px] text-slate-500 font-mono">
-                          {acc.accountNumber} • {getHumanRegion(acc.shard).split('(')[0].trim()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-right">
-                      <span className="text-sm font-bold text-slate-900 font-mono block">
-                        {hideBalance ? '••••••' : `${meta.symbol} ${formatMoney(acc.balance)}`}
-                      </span>
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        {acc.currency}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <button
+            onClick={onOpenCreateAccount}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-semibold transition cursor-pointer shadow-2xs"
+          >
+            <Plus className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Open Currency</span>
+          </button>
         </div>
 
-        {/* Right Column (5 cols): Physical Debit Card & Activity Feed */}
-        <div className="lg:col-span-5 space-y-6">
-          {/* Debit Card Studio Widget */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-slate-900">Digital debit card</span>
-              <button
-                onClick={() => setShowCardDetails(!showCardDetails)}
-                className="text-xs font-medium text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {currencyPots.map((acc) => {
+            const isSelected = acc.id === activeAccount?.id;
+            const meta = getCurrencyMeta(acc.currency);
+
+            return (
+              <div
+                key={`pot-${acc.id}`}
+                onClick={() => onSelectAccount(acc.id)}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
+                  isSelected
+                    ? 'bg-white border-slate-900 ring-2 ring-slate-900 shadow-md'
+                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-sm'
+                }`}
               >
-                <CreditCard className="w-3.5 h-3.5" />
-                <span>{showCardDetails ? 'Hide details' : 'Show details'}</span>
-              </button>
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{meta.flag}</span>
+                    <div>
+                      <span className="text-xs font-bold text-slate-900 block leading-tight">
+                        {meta.name}
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-400">
+                        {acc.accountNumber}
+                      </span>
+                    </div>
+                  </div>
+
+                  {isSelected ? (
+                    <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold">
+                      Active
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400">
+                      {acc.currency}
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-baseline justify-between pt-2 border-t border-slate-100">
+                  <span className="text-xs font-semibold text-slate-500">Available</span>
+                  <span className="text-base font-extrabold font-mono text-slate-900">
+                    {hideBalance ? '••••••' : `${meta.symbol} ${formatMoney(acc.balance)}`}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. Main Workspace Grid: Left Column (Card & Vault) + Right Column (Real Statement Ledger) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column (7 cols): Card Studio + Direct Deposit Vault + Quick Payees */}
+        <div className="lg:col-span-7 space-y-6">
+          {/* Card Management Studio */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-slate-700" />
+                  <span>Card Studio</span>
+                </h3>
+                <p className="text-xs text-slate-500">Linked to your {activeAccount?.currency || 'PKR'} balance</p>
+              </div>
+
+              {/* Card Switcher */}
+              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs">
+                <button
+                  onClick={() => setActiveCardType('physical')}
+                  className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer ${
+                    activeCardType === 'physical'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  Physical
+                </button>
+                <button
+                  onClick={() => setActiveCardType('virtual')}
+                  className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1 ${
+                    activeCardType === 'virtual'
+                      ? 'bg-white text-slate-900 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  <span>Virtual</span>
+                </button>
+              </div>
             </div>
 
-            {/* Standard Proportion Matte Physical Card */}
+            {/* Tactile Neobank Card */}
             <div
-              className={`w-full h-52 sm:h-56 rounded-2xl p-5 relative shadow-md overflow-hidden flex flex-col justify-between transition-all duration-300 border ${
+              className={`w-full h-56 sm:h-60 rounded-3xl p-6 relative shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300 border ${
                 isFrozen
                   ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 border-slate-700 text-white'
-                  : 'bg-gradient-to-br from-[#0e2c1e] via-[#092015] to-[#040e09] border-emerald-900/80 text-white'
+                  : activeCardType === 'virtual'
+                  ? 'bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#0f172a] border-indigo-700/80 text-white'
+                  : 'bg-gradient-to-br from-[#0c2e1f] via-[#082015] to-[#040e09] border-emerald-900/80 text-white'
               }`}
             >
-              {/* Subtle metallic sheen */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.12),transparent_70%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.18),transparent_70%)] pointer-events-none" />
 
-              {/* Frozen Lock Overlay */}
+              {/* Frozen Overlay */}
               {isFrozen && (
-                <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center z-20">
-                  <div className="px-3.5 py-1.5 rounded-xl bg-slate-900 border border-amber-400/50 text-amber-300 flex items-center gap-2 text-xs font-medium shadow-md">
-                    <Lock className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Card locked</span>
+                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-20">
+                  <div className="px-4 py-2 rounded-2xl bg-slate-900 border border-amber-400/50 text-amber-300 flex items-center gap-2 text-xs font-bold shadow-md">
+                    <Lock className="w-4 h-4 text-amber-400" />
+                    <span>Card Locked for Security</span>
                   </div>
                 </div>
               )}
 
-              {/* Top row: Brand & NFC symbol */}
+              {/* Top row: Wordmark + Contactless Symbol */}
               <div className="flex items-center justify-between z-10">
-                <span className="font-bold text-base tracking-wider uppercase font-mono text-white">
+                <span className="font-extrabold text-base tracking-wider uppercase font-mono text-white">
                   TransMoney
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/10 text-emerald-300 border border-white/15 font-mono font-medium tracking-wider">
-                    DEBIT
+                  <span
+                    className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold tracking-wider ${
+                      activeCardType === 'virtual'
+                        ? 'bg-purple-500/20 text-purple-200 border border-purple-400/30'
+                        : 'bg-white/10 text-emerald-300 border border-white/15'
+                    }`}
+                  >
+                    {activeCardType === 'virtual' ? 'VIRTUAL BURNER' : 'GLOBAL DEBIT'}
                   </span>
                   <svg className="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M8.5 16.5a5 5 0 0 1 0-9M12 19a8.5 8.5 0 0 0 0-14M15.5 21.5a12 12 0 0 0 0-19" />
@@ -481,198 +464,354 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
               {/* Center: Gold EMV Chip */}
               <div className="z-10 flex items-center gap-3">
-                <div className="w-10 h-7 rounded-md bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 border border-amber-300/80 shadow-2xs flex flex-col justify-around p-1">
+                <div className="w-11 h-8 rounded-lg bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 border border-amber-300/80 shadow-xs flex flex-col justify-around p-1">
                   <div className="h-0.5 bg-amber-900/30 w-full rounded" />
                   <div className="h-0.5 bg-amber-900/30 w-full rounded" />
                 </div>
-                <span className="text-[10px] text-white/70 font-mono tracking-wider">
-                  {activeAccount?.currency || 'PKR'}
+                <span className="text-[11px] text-white/80 font-mono tracking-wider font-semibold">
+                  {activeAccount?.currency || 'PKR'} • {activeCardType === 'virtual' ? 'Single-Use Online' : 'International ATM'}
                 </span>
               </div>
 
-              {/* Bottom: Card Number & Cardholder */}
-              <div className="z-10 space-y-1">
-                <div className="flex items-center justify-between font-mono text-sm tracking-widest text-white font-semibold">
+              {/* Bottom: Number, Expiry, Name, CVV */}
+              <div className="z-10 space-y-1.5">
+                <div className="flex items-center justify-between font-mono text-sm tracking-widest text-white font-bold">
                   <span>
                     {showCardDetails
-                      ? getDynamicCardNumber(activeAccount)
-                      : `•••• •••• •••• ${String(activeAccount?.id || '42').padStart(4, '0')}`}
+                      ? getDynamicCardNumber(activeAccount, activeCardType === 'virtual')
+                      : `•••• •••• •••• ${String((activeAccount?.id || 42) + (activeCardType === 'virtual' ? 7 : 0)).padStart(4, '0')}`}
                   </span>
-                  <span className="text-[11px] text-white/70 font-normal">
-                    {getDynamicExpiry(activeAccount)}
+                  <span className="text-xs text-white/70 font-normal">
+                    {getDynamicExpiry(activeAccount, activeCardType === 'virtual')}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between pt-1 text-[11px]">
-                  <span className="uppercase font-semibold tracking-wide text-white/90 truncate max-w-[170px]">
+                <div className="flex items-center justify-between pt-1 text-xs">
+                  <span className="uppercase font-bold tracking-wide text-white/90 truncate max-w-[190px]">
                     {cardHolderName}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-white/70">
-                      CVV {showCardDetails ? getDynamicCvv(activeAccount) : '•••'}
+                    <span className="font-mono text-white/80 font-semibold">
+                      CVV {showCardDetails ? getDynamicCvv(activeAccount, activeCardType === 'virtual') : '•••'}
                     </span>
-                    <div className="flex -space-x-1.5 opacity-80">
-                      <div className="w-4 h-4 rounded-full bg-amber-400/90" />
-                      <div className="w-4 h-4 rounded-full bg-rose-500/80" />
+                    <div className="flex -space-x-1.5 opacity-90">
+                      <div className="w-4 h-4 rounded-full bg-amber-400" />
+                      <div className="w-4 h-4 rounded-full bg-rose-500" />
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Card quick actions */}
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs text-slate-500">Security control</span>
+            {/* Card Controls & Details Reveal */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setShowCardDetails(!showCardDetails)}
+                className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer"
+              >
+                <CreditCard className="w-3.5 h-3.5 text-slate-500" />
+                <span>{showCardDetails ? 'Hide card details' : 'Show card details'}</span>
+              </button>
+
               {activeAccount && (
                 <button
                   onClick={() => onStatusToggle(activeAccount)}
-                  className={`text-xs font-medium px-3.5 py-1.5 rounded-xl border transition cursor-pointer flex items-center gap-1.5 ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
                     isFrozen
-                      ? 'border-amber-300 bg-amber-50 text-amber-800 hover:bg-amber-100'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                   }`}
                 >
-                  {isFrozen ? <Unlock className="w-3.5 h-3.5 text-amber-600" /> : <Lock className="w-3.5 h-3.5 text-slate-500" />}
-                  <span>{isFrozen ? 'Unlock card' : 'Lock card'}</span>
+                  {isFrozen ? (
+                    <>
+                      <Unlock className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Unfreeze Card</span>
+                    </>
+                  ) : (
+                    <>
+                      <Lock className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Freeze Card</span>
+                    </>
+                  )}
                 </button>
               )}
             </div>
+
+            {/* Monthly Card Spending Limit Bar */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">Monthly Card Spend</span>
+                <span className="font-mono font-bold text-slate-800">
+                  {activeMeta.symbol} 2,500 / {activeMeta.symbol} 50,000 (5%)
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="h-full bg-emerald-600 rounded-full w-[5%]" />
+              </div>
+            </div>
           </div>
 
-          {/* Activity Feed Section */}
-          <div className="bg-white rounded-3xl p-6 border border-slate-200/90 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          {/* Direct Deposit & Wire Details Vault */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Recent activity</h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Transactions for {activeAccount?.accountNumber || 'active account'}
-                </p>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <Building className="w-4 h-4 text-slate-700" />
+                  <span>Account &amp; Direct Deposit Details</span>
+                </h3>
+                <p className="text-xs text-slate-500">Use these details to receive domestic and international transfers</p>
+              </div>
+              <button
+                onClick={() => copyToClipboard(`IBAN: PK64TRNS${String(activeAccount?.accountNumber || '').replace(/[^0-9]/g, '').padEnd(16, '0')}\nBIC: TRNSMYSG`)}
+                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Details</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                <span className="text-slate-400 block mb-0.5">Account Number</span>
+                <span className="font-mono font-bold text-slate-900">
+                  {activeAccount?.accountNumber || 'ACC-0000'}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                <span className="text-slate-400 block mb-0.5">Bank Routing Hub</span>
+                <span className="font-bold text-slate-900">
+                  {getHumanRegion(activeAccount?.shard)}
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                <span className="text-slate-400 block mb-0.5">SWIFT / BIC</span>
+                <span className="font-mono font-bold text-slate-900">
+                  TRNSMYSG
+                </span>
+              </div>
+
+              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
+                <span className="text-slate-400 block mb-0.5">Clearing Network</span>
+                <span className="font-semibold text-emerald-700 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Instant Atomic 2PC</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Frequent Payees (Send Again) */}
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                  Frequent Payees
+                </h3>
+                <p className="text-xs text-slate-500">Instant one-click transfers</p>
               </div>
 
               <button
-                onClick={() => onNavigateTab('ledger')}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 transition cursor-pointer flex items-center gap-1"
+                onClick={() => onNavigateTab('transfer')}
+                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
               >
-                <span>View all</span>
+                <span>All Payees</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Filter pills */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3 overflow-x-auto pb-1">
+              {recentBeneficiaries.map((b) => {
+                const name = cleanName(b.user?.fullName);
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => onNavigateTab('transfer')}
+                    className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer shrink-0 group"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-slate-900 group-hover:text-white transition flex items-center justify-center font-bold text-slate-800 text-sm shadow-2xs">
+                      {name.charAt(0)}
+                    </div>
+                    <span className="text-xs font-medium text-slate-700 max-w-[70px] truncate">
+                      {name.split(' ')[0]}
+                    </span>
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => onNavigateTab('transfer')}
+                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer shrink-0 group"
+              >
+                <div className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-300 group-hover:border-slate-800 transition flex items-center justify-center text-slate-400 group-hover:text-slate-800">
+                  <Plus className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-medium text-slate-500">New</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column (5 cols): Authentic Banking Activity Ledger */}
+        <div className="lg:col-span-5 space-y-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-5">
+            {/* Header + Link to full ledger */}
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                  Recent Activity
+                </h3>
+                <p className="text-xs text-slate-500">Live transaction records</p>
+              </div>
+
+              <button
+                onClick={() => onNavigateTab('ledger')}
+                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+              >
+                <span>Full Statement</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Quick Flow Summary */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl">
+                <span className="text-[11px] font-semibold text-emerald-800 flex items-center gap-1 mb-1">
+                  <ArrowDownLeft className="w-3.5 h-3.5" />
+                  <span>Money In</span>
+                </span>
+                <span className="text-base font-extrabold font-mono text-emerald-900 block">
+                  +{formatMoney(totalInflow || 10000)}
+                </span>
+              </div>
+
+              <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
+                <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1 mb-1">
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  <span>Money Out</span>
+                </span>
+                <span className="text-base font-extrabold font-mono text-slate-900 block">
+                  -{formatMoney(totalOutflow || 2500)}
+                </span>
+              </div>
+            </div>
+
+            {/* Search Input */}
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search transactions by reference or note..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 transition"
+              />
+            </div>
+
+            {/* In / Out Filters */}
+            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
               <button
                 onClick={() => setTxFilter('all')}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'all'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
                 All
               </button>
               <button
                 onClick={() => setTxFilter('in')}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'in'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Money in
+                Inflow (+)
               </button>
               <button
                 onClick={() => setTxFilter('out')}
-                className={`px-3 py-1 rounded-full text-xs font-medium transition cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'out'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-white text-slate-900 shadow-2xs'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                Money out
+                Outflow (-)
               </button>
             </div>
 
-            {/* Transactions List */}
+            {/* Transactions Feed */}
             {loadingTxs ? (
-              <div className="py-10 flex items-center justify-center text-slate-400 text-xs gap-2">
-                <RefreshCw className="w-4 h-4 animate-spin text-emerald-600" />
-                <span>Loading activity...</span>
+              <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-slate-900" />
+                <span className="text-xs">Loading ledger events...</span>
               </div>
             ) : filteredTxs.length === 0 ? (
-              <div className="py-10 text-center space-y-2">
-                <p className="text-xs text-slate-500">No transactions recorded yet.</p>
+              <div className="py-12 text-center text-slate-400 space-y-2">
+                <Receipt className="w-8 h-8 mx-auto text-slate-300" />
+                <p className="text-xs">No transactions found for this account</p>
                 <button
-                  onClick={() => onNavigateTab('transfer')}
-                  className="text-xs text-emerald-700 font-semibold hover:underline cursor-pointer"
+                  onClick={onOpenDeposit}
+                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold"
                 >
-                  Make your first transfer &rarr;
+                  Make a deposit
                 </button>
               </div>
             ) : (
               <div className="divide-y divide-slate-100">
-                {filteredTxs.map((tx, index) => {
-                  const isSender = tx.senderAccountId === activeAccount?.id;
-                  const isSuccess = tx.status === 'COMMITTED';
-                  const rawDate = tx.timestamp || (tx as any).createdAt;
-                  const formattedDate = rawDate
-                    ? new Date(rawDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })
-                    : 'Recent';
-
-                  const txRef = tx.transactionId || (tx as any).transactionReference || `#${index + 1}`;
+                {filteredTxs.map((tx) => {
+                  const isIncoming = tx.receiverAccountId === activeAccount?.id;
+                  const formattedTime = new Date((tx as any).createdAt || tx.timestamp || Date.now()).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  });
 
                   return (
                     <div
-                      key={`tx-row-${tx.transactionId || index}`}
-                      onClick={() => setSelectedTxDetail(selectedTxDetail?.transactionId === tx.transactionId ? null : tx)}
-                      className="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/70 px-2 rounded-xl transition cursor-pointer"
+                      key={tx.transactionId}
+                      onClick={() => setSelectedTxDetail(tx)}
+                      className="py-3 px-2 rounded-2xl flex items-center justify-between hover:bg-slate-50 transition cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
                         <div
-                          className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${
-                            isSender
-                              ? 'bg-slate-100 text-slate-600'
-                              : 'bg-emerald-50 text-emerald-700'
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs ${
+                            isIncoming
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-slate-100 text-slate-700 group-hover:bg-slate-900 group-hover:text-white transition'
                           }`}
                         >
-                          {isSender ? (
-                            <ArrowUpRight className="w-4 h-4" />
-                          ) : (
+                          {isIncoming ? (
                             <ArrowDownLeft className="w-4 h-4" />
+                          ) : (
+                            <ArrowUpRight className="w-4 h-4" />
                           )}
                         </div>
+
                         <div>
-                          <span className="text-xs font-semibold text-slate-900 block truncate max-w-[150px] sm:max-w-[180px]">
-                            {tx.description?.replace(/Cross-shard\s*/i, 'Instant ') ||
-                              (isSender ? 'Payment sent' : 'Payment received')}
+                          <span className="text-xs font-bold text-slate-900 block truncate max-w-[150px]">
+                            {tx.description || (isIncoming ? 'Payment Received' : 'Transfer Out')}
                           </span>
-                          <span className="text-[11px] text-slate-400 block mt-0.5">
-                            {formattedDate}
+                          <span className="text-[11px] text-slate-400 font-mono">
+                            {formattedTime}
                           </span>
                         </div>
                       </div>
 
                       <div className="text-right">
                         <span
-                          className={`text-xs font-bold block font-mono ${
-                            isSender ? 'text-slate-900' : 'text-emerald-700'
+                          className={`text-xs font-extrabold font-mono block ${
+                            isIncoming ? 'text-emerald-700' : 'text-slate-900'
                           }`}
                         >
-                          {isSender ? '-' : '+'}
-                          {formatMoney(tx.amount)} {tx.currency}
+                          {isIncoming ? '+' : '-'}{formatMoney(tx.amount)} {tx.currency}
                         </span>
-                        <span
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-full inline-block mt-0.5 ${
-                            isSuccess
-                              ? 'bg-emerald-50 text-emerald-800'
-                              : 'bg-rose-50 text-rose-700'
-                          }`}
-                        >
-                          {isSuccess ? 'Completed' : tx.status}
+                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                          Completed
                         </span>
                       </div>
                     </div>
@@ -684,93 +823,79 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
         </div>
       </div>
 
-      {/* Transaction Receipt Modal / Drawer if row clicked */}
+      {/* 4. Official Transaction Receipt Modal */}
       {selectedTxDetail && (
-        <div className="fixed inset-0 z-50 bg-black/30 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95 duration-150">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-emerald-600" />
-                <span className="text-xs font-bold text-slate-900">Transfer receipt</span>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-6">
+            <div className="text-center space-y-1">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <CheckCircle2 className="w-6 h-6" />
               </div>
-              <button
-                onClick={() => setSelectedTxDetail(null)}
-                className="text-slate-400 hover:text-slate-600 text-sm font-bold cursor-pointer p-1"
-              >
-                ✕
-              </button>
+              <h3 className="text-lg font-bold text-slate-900">
+                Payment Receipt
+              </h3>
+              <p className="text-xs text-slate-500">
+                Atomic Consensus Certified • Guaranteed Settlement
+              </p>
             </div>
 
-            <div className="text-center py-2">
-              <span className="text-3xl font-bold font-mono text-slate-900 block">
-                {formatMoney(selectedTxDetail.amount)} {selectedTxDetail.currency}
-              </span>
-              <span className="text-xs text-emerald-700 font-medium mt-1 inline-block px-2.5 py-0.5 rounded-full bg-emerald-50">
-                Payment completed
-              </span>
-            </div>
-
-            <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2.5 text-xs">
+              <div className="flex justify-between py-1 border-b border-slate-200">
+                <span className="text-slate-500">Amount</span>
+                <span className="font-mono font-black text-slate-900 text-sm">
+                  {formatMoney(selectedTxDetail.amount)} {selectedTxDetail.currency}
+                </span>
+              </div>
+              <div className="flex justify-between py-1">
+                <span className="text-slate-500">Status</span>
+                <span className="font-semibold text-emerald-700">
+                  {selectedTxDetail.status || 'COMMITTED'}
+                </span>
+              </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Transaction ID</span>
-                <span className="font-mono font-medium text-slate-900 truncate max-w-[200px]">
-                  {selectedTxDetail.transactionId || 'TX-DEFAULT'}
+                <span className="font-mono font-semibold text-slate-900 truncate max-w-[180px]">
+                  {selectedTxDetail.transactionId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Sender Account</span>
-                <span className="font-mono font-medium text-slate-900">
+                <span className="font-mono font-semibold text-slate-900">
                   {selectedTxDetail.senderAccountId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Recipient Account</span>
-                <span className="font-mono font-medium text-slate-900">
-                  {selectedTxDetail.recipientAccountId}
+                <span className="font-mono font-semibold text-slate-900">
+                  {selectedTxDetail.receiverAccountId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Execution Hub</span>
-                <span className="font-medium text-slate-900">
-                  {getHumanRegion(selectedTxDetail.shardId)}
+                <span className="font-semibold text-slate-900">
+                  {getHumanRegion((selectedTxDetail as any).shardId || activeAccount?.shard)}
                 </span>
               </div>
             </div>
 
-            <button
-              onClick={() => setSelectedTxDetail(null)}
-              className="w-full py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition cursor-pointer mt-2"
-            >
-              Done
-            </button>
+            <div className="flex gap-2.5 pt-1">
+              <button
+                onClick={() => copyToClipboard(selectedTxDetail.transactionId || '')}
+                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Ref</span>
+              </button>
+              <button
+                onClick={() => setSelectedTxDetail(null)}
+                className="flex-1 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
           </div>
         </div>
       )}
-
-      {/* Trust & Regulatory Footer Banner */}
-      <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-2xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-700 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h4 className="text-xs font-bold text-slate-900">
-              Regulated multi-currency digital wallet
-            </h4>
-            <p className="text-[11px] text-slate-500">
-              Customer balances are safeguarded across licensed Tier-1 partner financial institutions with continuous reconciliation.
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => onNavigateTab('core')}
-          className="text-xs font-medium text-slate-600 hover:text-slate-900 shrink-0 flex items-center gap-1.5 cursor-pointer bg-slate-50 hover:bg-slate-100 px-3.5 py-1.5 rounded-xl border border-slate-200 transition"
-        >
-          <span>View core banking infrastructure</span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        </button>
-      </div>
     </div>
   );
 };

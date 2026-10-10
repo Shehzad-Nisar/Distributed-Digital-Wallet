@@ -314,26 +314,26 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Top Banner & Mode Selector */}
-      <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 bg-slate-900 text-white rounded-xl shadow-2xs">
               <Store className="w-5 h-5" />
             </span>
-            <h1 className="text-xl font-bold text-slate-900">Merchant Services & QR Payments</h1>
-            <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-semibold">
-              PHASE 4 ACTIVE
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Merchant Services &amp; QR Pay</h1>
+            <span className="text-xs px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-full font-semibold">
+              Instant Settlement
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1 font-mono">
-            Cryptographic HMAC QR Payloads &bull; Cross-Shard 2PC Settlement &bull; MDR Fee Engine (1.5%)
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Scan and pay in-store merchants, generate dynamic POS invoices, and track daily business payouts
           </p>
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg font-mono text-xs">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl text-xs font-semibold">
           <button
             onClick={() => setSubTab('scan')}
             className={`px-3.5 py-1.5 rounded-md flex items-center gap-2 transition cursor-pointer font-medium ${
