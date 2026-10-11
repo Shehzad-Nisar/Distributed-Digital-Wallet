@@ -11,7 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 public class LoginRequest {
 
-    @Schema(description = "Registered email address", example = "alice@transmoney.com")
+    @Schema(description = "Registered email address", example = "user@example.com")
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;

@@ -89,10 +89,6 @@ public class AuthService {
             passwordValid = true;
         } else if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             passwordValid = true;
-        } else if (request.getPassword().equals("password123") || request.getPassword().equals("alice123") || request.getPassword().equals("bob123")) {
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
-            userRepository.save(user);
-            passwordValid = true;
         }
 
         if (!passwordValid) {
