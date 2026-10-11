@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
-  ArrowUpRight,
   CheckCircle2,
   Globe,
   Lock,
@@ -10,11 +9,11 @@ import {
   QrCode,
   Shield,
   Star,
-  Sparkles,
-  Wallet,
   Check,
   Building2,
   TrendingUp,
+  Menu,
+  X,
 } from 'lucide-react';
 import logoImg from '../assets/logo.png';
 import type { Account, SystemHealth, User } from '../types';
@@ -24,122 +23,168 @@ interface LandingPageProps {
   accounts?: Account[];
   users?: User[];
   currentUser?: User | null;
-  onEnterConsole: () => void;
+  onEnterConsole?: () => void;
   onOpenAuth: (mode: 'signin' | 'signup') => void;
   onNavigateTab?: (tab: 'console' | 'transfer' | 'ledger' | 'architecture' | 'exchange' | 'merchant') => void;
   onSelectAccount?: (id: number) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  onEnterConsole,
   onOpenAuth,
-  onNavigateTab,
 }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeNumberTab, setActiveNumberTab] = useState<'pakistan' | 'international'>('pakistan');
   const [cardFrozen, setCardFrozen] = useState<boolean>(false);
   const [activeCurrency, setActiveCurrency] = useState<'PKR' | 'USD' | 'EUR' | 'GBP'>('PKR');
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
 
-  const handleGoToConsole = () => {
-    if (onNavigateTab) {
-      onNavigateTab('console');
-    } else {
-      onEnterConsole();
-    }
-  };
-
   return (
     <div className="min-h-screen bg-[#FAF7F4] text-[#1E2024] font-sans antialiased selection:bg-[#FF6651] selection:text-white relative overflow-x-hidden">
       
       {/* =========================================================================
-          1. NAVIGATION BAR (Exact SadaPay Layout & Aesthetics)
+          1. TOP SECURITY ALERT BANNER (Exact SadaPay Phishing Warning Bar)
          ========================================================================= */}
-      <header className="sticky top-0 z-50 bg-[#FAF7F4]/90 backdrop-blur-md border-b border-[#F2ECE5]/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Left: Brand Identity */}
-          <div className="flex items-center gap-8">
-            <a href="#top" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center shadow-xs shadow-[#00A389]/20 group-hover:scale-105 transition-transform">
-                <img
-                  src={logoImg}
-                  alt="TransMoney"
-                  className="w-full h-full object-contain filter invert"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-xl tracking-tight text-[#1A1D20] leading-none">
-                  TransMoney
-                </span>
-                <span className="text-[10px] font-bold text-[#00A389] tracking-wider uppercase mt-0.5">
-                  Digital Wallet
-                </span>
-              </div>
-            </a>
+      <div className="bg-[#FF6651] text-white text-[11px] sm:text-xs py-2 px-4 text-center font-medium tracking-wide relative z-50">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+          <span>
+            Beware of phishing websites. The only official TransMoney website is{' '}
+            <span className="font-bold underline decoration-white/60">transmoney.pk</span>. We will never ask for your sensitive information.
+          </span>
+        </div>
+      </div>
 
-            {/* Middle: SadaPay Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1.5 text-sm font-medium text-[#4F5561]">
+      {/* =========================================================================
+          2. NAVIGATION BAR (Exact SadaPay Layout: Logo, Links & "Download now")
+         ========================================================================= */}
+      <header className="sticky top-0 z-40 bg-[#FAF7F4]/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          {/* Left: Brand Identity with SadaPay's Dual-Tone Teal & Coral Icon */}
+          <a href="#top" className="flex items-center gap-2.5 group cursor-pointer">
+            <div className="w-9 h-9 rounded-xl bg-[#FAF7F4] flex items-center justify-center relative">
+              {/* Dual-tone geometric mark matching SadaPay emblem */}
+              <div className="relative w-8 h-8 flex items-center justify-center">
+                <span className="w-4 h-4 rounded-full bg-[#00A389] absolute top-1 left-1 opacity-90 group-hover:scale-105 transition-transform" />
+                <span className="w-4 h-4 rounded-full bg-[#FF6651] absolute bottom-1 right-1 opacity-90 group-hover:scale-105 transition-transform" />
+                <div className="relative z-10 w-4 h-4 rounded-sm bg-white/40 backdrop-blur-xs flex items-center justify-center text-[10px] font-black text-black">
+                  T
+                </div>
+              </div>
+            </div>
+            <span className="font-black text-2xl tracking-tight text-[#1A1D20]">
+              TransMoney
+            </span>
+          </a>
+
+          {/* Center: Exact SadaPay Navigation Links */}
+          {/* Center: Exact SadaPay Navigation Links (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-[#4B5563]">
+            <a
+              href="#top"
+              className="text-[#1A1D20] font-bold relative py-1 hover:text-[#FF6651] transition"
+            >
+              Personal
+              <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#00A389] rounded-full" />
+            </a>
+            <a
+              href="#international"
+              className="hover:text-[#1A1D20] transition"
+            >
+              Remittance
+            </a>
+            <a
+              href="#features"
+              className="hover:text-[#1A1D20] transition"
+            >
+              Blog
+            </a>
+            <a
+              href="#reviews"
+              className="hover:text-[#1A1D20] transition"
+            >
+              Careers
+            </a>
+            <a
+              href="#regulation"
+              className="hover:text-[#1A1D20] transition"
+            >
+              Help Center
+            </a>
+          </nav>
+
+          {/* Right: Exact Coral Pill "Download now" Button + Mobile/Tablet Hamburger */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => onOpenAuth('signup')}
+              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-xs sm:text-[15px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer"
+            >
+              Download now
+            </button>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden w-10 h-10 rounded-2xl bg-white border border-[#EFE7DE] flex items-center justify-center text-[#1A1D20] hover:bg-[#FAF7F4] transition cursor-pointer shadow-xs"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#FF6651]" /> : <Menu className="w-5 h-5" />}
+            </button>
+          </div>
+
+        </div>
+
+        {/* Mobile / Tablet Dropdown Drawer */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-[#EFE7DE] bg-[#FAF7F4] px-6 py-5 space-y-4 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex flex-col space-y-3 text-base font-semibold text-[#1A1D20]">
               <a
-                href="#features"
-                className="px-4 py-2 rounded-full bg-white shadow-xs text-[#1A1D20] font-semibold transition hover:bg-white/80"
+                href="#top"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 text-[#00A389] font-bold"
               >
                 Personal
               </a>
               <a
                 href="#international"
-                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition flex items-center gap-1.5"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#FF6651]"
               >
-                <span>Business</span>
-                <span className="text-[9px] uppercase font-bold bg-[#FFEAE5] text-[#FF6651] px-2 py-0.5 rounded-full">
-                  Biz
-                </span>
+                Remittance
               </a>
               <a
-                href="#security"
-                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+                href="#features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#FF6651]"
               >
-                Security
+                Blog
               </a>
               <a
                 href="#reviews"
-                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#FF6651]"
               >
-                Reviews
+                Careers
               </a>
               <a
                 href="#regulation"
-                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 hover:text-[#FF6651]"
               >
-                Regulations
+                Help Center
               </a>
-            </nav>
+            </div>
+            <div className="pt-3 border-t border-[#EFE7DE]">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAuth('signup');
+                }}
+                className="w-full bg-[#FF6651] text-white font-bold py-3 rounded-full text-sm shadow-md cursor-pointer"
+              >
+                Open Account Online
+              </button>
+            </div>
           </div>
-
-          {/* Right: Console App & Action CTAs */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleGoToConsole}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#00A389] hover:bg-[#E6F7F3] rounded-full border border-[#00A389]/30 transition cursor-pointer"
-            >
-              <Wallet className="w-3.5 h-3.5" />
-              <span>Launch Wallet Console</span>
-            </button>
-
-            <button
-              onClick={() => onOpenAuth('signin')}
-              className="text-sm font-semibold text-[#1A1D20] hover:text-[#FF6651] px-3.5 py-2 rounded-full transition cursor-pointer"
-            >
-              Log In
-            </button>
-
-            <button
-              onClick={() => onOpenAuth('signup')}
-              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-sm font-extrabold px-5 py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Open an account</span>
-              <ArrowUpRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+        )}
       </header>
 
       {/* =========================================================================
@@ -156,8 +201,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Left Column: Heading, Subtitle & Primary CTA */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F7F3] border border-[#00A389]/25 text-[#00A389] text-xs font-bold tracking-wide">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Next-Gen Multi-Currency Digital Banking</span>
+                <span>✨ Simple, fee-free digital banking</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#1A1D20] tracking-tight leading-[1.08]">
@@ -166,9 +210,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </h1>
 
               <p className="text-base sm:text-lg text-[#5F6773] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                Say goodbye to paperwork, long bank queues, and hidden branch fees.
-                Experience lightning-fast zero-fee money transfers, a gorgeous numberless card,
-                and seamless global payments.
+                Join 3 million users and get your free virtual card to shop online.
+                Enjoy free money transfers, receive remittances, pay bills, and top up your mobile balance.
+                Finally, experience banking that's simple, fast, and transparent.
               </p>
 
               {/* 5-Star Social Proof */}
@@ -179,7 +223,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   ))}
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-[#4B5563]">
-                  Rated <span className="font-extrabold text-[#1A1D20]">4.8 / 5</span> by 2M+ happy users
+                  Over <span className="font-extrabold text-[#1A1D20]">120,000+</span> 5-star reviews
                 </div>
               </div>
 
@@ -189,7 +233,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   onClick={() => onOpenAuth('signup')}
                   className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
                 >
-                  <span>Get the app</span>
+                  <span>Download now</span>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
 
@@ -198,7 +242,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="w-full sm:w-auto bg-white hover:bg-[#F9F5F0] border border-[#E6DDD3] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
                   <QrCode className="w-5 h-5 text-[#FF6651]" />
-                  <span>Scan QR Code</span>
+                  <span>Scan to get the app</span>
                 </button>
               </div>
 
@@ -1064,16 +1108,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div className="pt-2 flex flex-wrap gap-4">
                   <button
                     onClick={() => onOpenAuth('signup')}
-                    className="bg-white text-[#FF6651] hover:bg-gray-100 font-black text-sm px-7 py-3.5 rounded-full shadow-lg transition cursor-pointer"
+                    className="bg-white text-[#FF6651] hover:bg-gray-100 font-black text-sm px-8 py-3.5 rounded-full shadow-lg transition cursor-pointer"
                   >
-                    Open Account Now
-                  </button>
-
-                  <button
-                    onClick={handleGoToConsole}
-                    className="bg-black/20 hover:bg-black/30 border border-white/40 text-white font-bold text-sm px-6 py-3.5 rounded-full transition cursor-pointer"
-                  >
-                    Test Web Demo Console
+                    Open Free Account
                   </button>
                 </div>
               </div>
@@ -1163,9 +1200,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               © 2026 TransMoney Technologies Inc. All rights reserved.
             </div>
             <div className="flex items-center gap-6">
-              <button onClick={handleGoToConsole} className="hover:text-[#1A1D20] cursor-pointer font-bold text-[#00A389]">
-                Switch to Wallet Console →
-              </button>
+              <a href="#top" className="hover:text-[#FF6651] cursor-pointer font-bold text-[#00A389]">
+                Back to top ↑
+              </a>
             </div>
           </div>
 

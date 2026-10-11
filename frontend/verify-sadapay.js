@@ -26,9 +26,20 @@ async function main() {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForTimeout(1000);
 
+  // 1. Capture full landing page
   const screenshotPath = path.join(screenshotsDir, 'sadapay_landing_clone.png');
   await page.screenshot({ path: screenshotPath, fullPage: true });
   console.log(`Saved screenshot to: ${screenshotPath}`);
+
+  // 2. Click "Download now" button in the navbar to open AuthModal
+  const downloadBtn = page.getByRole('button', { name: 'Download now' }).first();
+  if (await downloadBtn.isVisible()) {
+    await downloadBtn.click();
+    await page.waitForTimeout(500);
+    const modalPath = path.join(screenshotsDir, 'sadapay_auth_modal.png');
+    await page.screenshot({ path: modalPath });
+    console.log(`Saved auth modal screenshot to: ${modalPath}`);
+  }
 
   await browser.close();
   await server.httpServer.close();

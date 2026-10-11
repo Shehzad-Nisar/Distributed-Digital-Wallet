@@ -1,5 +1,5 @@
-﻿import React, { useState } from 'react';
-import { Check, KeyRound, Lock, LogIn, Mail, ShieldCheck, X, Zap } from 'lucide-react';
+import React, { useState } from 'react';
+import { Lock, Mail, User as UserIcon, X, Check, Phone } from 'lucide-react';
 import { login, register } from '../api/client';
 import type { Account, ShardType, User } from '../types';
 
@@ -14,22 +14,20 @@ interface AuthModalProps {
   initialMode?: 'signin' | 'signup';
 }
 
-const REGION_OPTIONS: { value: ShardType; label: string; desc: string; flag: string }[] = [
-  { value: 'SHARD_1_US', label: 'United States', desc: 'AWS us-east-1 (New York)', flag: '🇺🇸' },
-  { value: 'SHARD_2_UK', label: 'United Kingdom', desc: 'AWS eu-west-2 (London)', flag: '🇬🇧' },
-  { value: 'SHARD_3_SG', label: 'Singapore', desc: 'AWS ap-southeast-1 (SG Hub)', flag: '🇸🇬' },
-  { value: 'SHARD_4_UAE', label: 'United Arab Emirates', desc: 'AWS me-central-1 (Dubai)', flag: '🇦🇪' },
-  { value: 'SHARD_1_NORTH', label: 'North Region', desc: 'Islamabad / KPK', flag: '🇵🇰' },
-  { value: 'SHARD_2_CENTRAL', label: 'Central Region', desc: 'Lahore / Punjab', flag: '🇵🇰' },
-  { value: 'SHARD_3_SOUTH', label: 'South Region', desc: 'Karachi / Sindh', flag: '🇵🇰' },
-  { value: 'SHARD_4_ENTERPRISE', label: 'Enterprise Hub', desc: 'Merchant & Corporate', flag: '🏢' },
+const REGION_OPTIONS: { value: ShardType; label: string; flag: string }[] = [
+  { value: 'SHARD_3_SOUTH', label: 'Pakistan (Karachi & Sindh)', flag: '🇵🇰' },
+  { value: 'SHARD_2_CENTRAL', label: 'Pakistan (Lahore & Punjab)', flag: '🇵🇰' },
+  { value: 'SHARD_1_NORTH', label: 'Pakistan (Islamabad & North)', flag: '🇵🇰' },
+  { value: 'SHARD_1_US', label: 'United States & Americas', flag: '🇺🇸' },
+  { value: 'SHARD_2_UK', label: 'United Kingdom & Europe', flag: '🇬🇧' },
+  { value: 'SHARD_4_UAE', label: 'UAE & Middle East', flag: '🇦🇪' },
 ];
 
 const DEMO_ACCOUNTS = [
-  { name: 'Alice Khan', email: 'alice@transmoney.com', role: 'Personal Banking', shard: 'SHARD_3_SOUTH', flag: '🇵🇰' },
-  { name: 'Bob Malik', email: 'bob@transmoney.com', role: 'Cross-Border User', shard: 'SHARD_2_CENTRAL', flag: '🇵🇰' },
-  { name: 'Charlie Tariq', email: 'charlie@transmoney.com', role: 'Global Remittance', shard: 'SHARD_1_NORTH', flag: '🇵🇰' },
-  { name: 'Daraz Merchant', email: 'daraz@merchants.transmoney.com', role: 'Enterprise Merchant', shard: 'SHARD_4_ENTERPRISE', flag: '🏢' },
+  { name: 'Alice Khan', email: 'alice@transmoney.com', city: 'Karachi', flag: '🇵🇰' },
+  { name: 'Bob Malik', email: 'bob@transmoney.com', city: 'Lahore', flag: '🇵🇰' },
+  { name: 'Charlie Tariq', email: 'charlie@transmoney.com', city: 'Islamabad', flag: '🇵🇰' },
+  { name: 'Daraz Merchant', email: 'daraz@merchants.transmoney.com', city: 'Business Account', flag: '🏢' },
 ];
 
 export const AuthModal: React.FC<AuthModalProps> = ({
@@ -50,8 +48,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [initialBalance, setInitialBalance] = useState('5000');
-  const [shard, setShard] = useState<ShardType>('SHARD_1_US');
+  const [shard, setShard] = useState<ShardType>('SHARD_3_SOUTH');
   const [currency, setCurrency] = useState('PKR');
 
   const [loading, setLoading] = useState(false);
@@ -76,7 +73,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Authentication failed. Please check your credentials.';
+        'Unable to log in. Please check your email and password.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -101,7 +98,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         password: signUpPassword,
         phoneNumber: phoneNumber.trim() || undefined,
         shard,
-        initialBalance: Number(initialBalance) || 0,
+        initialBalance: 5000,
         currency,
       });
 
@@ -110,7 +107,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         : {
             id: 0,
             accountNumber: 'ACC-NEW',
-            balance: Number(initialBalance) || 0,
+            balance: 5000,
             currency,
             shard,
             status: 'ACTIVE',
@@ -124,7 +121,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       const msg =
         err?.response?.data?.message ||
         err?.message ||
-        'Could not complete registration. Please try again.';
+        'Could not create account. Please try again.';
       setErrorMsg(msg);
     } finally {
       setLoading(false);
@@ -132,71 +129,77 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs font-sans">
-      <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden text-black animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs font-sans">
+      <div className="bg-[#FFFFFF] border border-[#F0EAE1] rounded-[32px] w-full max-w-md shadow-2xl overflow-hidden text-[#1A1D20] animate-in fade-in zoom-in-95 duration-200">
+        
         {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-slate-200 bg-slate-50/60">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white font-black text-xs flex items-center justify-center font-mono shadow-xs">
-              TM
+        <div className="p-6 pb-4 flex items-center justify-between border-b border-[#F7F3EE]">
+          <div className="flex items-center gap-3">
+            {/* Dual-Tone SadaPay Emblem */}
+            <div className="w-10 h-10 rounded-2xl bg-[#FAF7F4] flex items-center justify-center relative shadow-xs">
+              <span className="w-4 h-4 rounded-full bg-[#00A389] absolute top-1 left-1 opacity-90" />
+              <span className="w-4 h-4 rounded-full bg-[#FF6651] absolute bottom-1 right-1 opacity-90" />
+              <div className="relative z-10 w-4 h-4 rounded-sm bg-white/40 flex items-center justify-center text-[10px] font-black text-black">
+                T
+              </div>
             </div>
             <div>
-              <h3 className="text-base font-bold text-black uppercase tracking-tight flex items-center gap-2">
-                TransMoney Identity
-                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-mono font-medium lowercase">
-                  v2.0-jwt
-                </span>
+              <h3 className="text-lg font-black text-[#1A1D20] tracking-tight">
+                TransMoney
               </h3>
-              <p className="text-[11px] text-slate-500 font-mono">Distributed Relational Shard Authentication</p>
+              <p className="text-xs text-[#5F6773]">
+                Simple, effortless digital money
+              </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-black hover:bg-slate-200/60 transition cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#FAF7F4] hover:bg-[#F2ECE5] text-[#5F6773] hover:text-[#1A1D20] flex items-center justify-center transition cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Tab switch */}
-        <div className="grid grid-cols-2 border-b border-slate-200 bg-slate-100/60 font-mono text-xs">
-          <button
-            type="button"
-            onClick={() => {
-              setTab('signin');
-              setErrorMsg(null);
-            }}
-            className={`py-3 text-center transition cursor-pointer flex items-center justify-center gap-2 ${
-              tab === 'signin'
-                ? 'border-b-2 border-emerald-600 text-black font-bold bg-white'
-                : 'text-slate-500 hover:text-black'
-            }`}
-          >
-            <LogIn className="w-3.5 h-3.5" />
-            Secure Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setTab('signup');
-              setErrorMsg(null);
-            }}
-            className={`py-3 text-center transition cursor-pointer flex items-center justify-center gap-2 ${
-              tab === 'signup'
-                ? 'border-b-2 border-emerald-600 text-black font-bold bg-white'
-                : 'text-slate-500 hover:text-black'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Open Shard Account
-          </button>
+        {/* Pill Tab Switch */}
+        <div className="px-6 pt-4">
+          <div className="p-1 bg-[#FAF7F4] rounded-full flex gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                setTab('signin');
+                setErrorMsg(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-full transition cursor-pointer ${
+                tab === 'signin'
+                  ? 'bg-white text-[#1A1D20] shadow-xs'
+                  : 'text-[#5F6773] hover:text-[#1A1D20]'
+              }`}
+            >
+              Log In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTab('signup');
+                setErrorMsg(null);
+              }}
+              className={`flex-1 py-2 text-xs font-bold rounded-full transition cursor-pointer ${
+                tab === 'signup'
+                  ? 'bg-white text-[#1A1D20] shadow-xs'
+                  : 'text-[#5F6773] hover:text-[#1A1D20]'
+              }`}
+            >
+              Open Account
+            </button>
+          </div>
         </div>
 
         {/* Content */}
         <div className="p-6 max-h-[75vh] overflow-y-auto space-y-4">
           {errorMsg && (
-            <div className="p-3.5 rounded-xl border border-rose-300 bg-rose-50 text-xs text-rose-800 font-mono flex items-start gap-2">
-              <span className="font-bold shrink-0">⚠️ Error:</span>
+            <div className="p-3 rounded-2xl bg-[#FFEAE5] text-xs text-[#FF6651] font-medium flex items-center gap-2">
+              <span>⚠️</span>
               <span>{errorMsg}</span>
             </div>
           )}
@@ -205,35 +208,35 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <div className="space-y-4">
               <form onSubmit={handleSignIn} className="space-y-3.5">
                 <div>
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-slate-600 block mb-1">
+                  <label className="text-xs font-bold text-[#1A1D20] block mb-1.5">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Mail className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
                     <input
                       type="email"
                       required
                       value={signInEmail}
                       onChange={(e) => setSignInEmail(e.target.value)}
-                      placeholder="user@transmoney.com"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
+                      placeholder="yourname@example.com"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-[11px] font-mono uppercase tracking-wider text-slate-600 block mb-1">
+                  <label className="text-xs font-bold text-[#1A1D20] block mb-1.5">
                     Password
                   </label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <Lock className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
                     <input
                       type="password"
                       required
                       value={signInPassword}
                       onChange={(e) => setSignInPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-9 pr-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                     />
                   </div>
                 </div>
@@ -241,27 +244,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-2.5 px-4 rounded-xl bg-black hover:bg-slate-800 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-xs transition disabled:opacity-50 cursor-pointer"
+                  className="w-full py-3.5 px-4 rounded-full bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FF6651]/25 transition disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? (
-                    <span>Authenticating...</span>
+                    <span>Logging in...</span>
                   ) : (
-                    <>
-                      <KeyRound className="w-3.5 h-3.5" />
-                      Sign In with BCrypt & JWT
-                    </>
+                    <span>Log In</span>
                   )}
                 </button>
               </form>
 
-              {/* Demo Profiles Quick Selector */}
-              <div className="pt-2 border-t border-slate-200">
+              {/* Quick Sample Accounts (Clean, zero tech jargon) */}
+              <div className="pt-3 border-t border-[#F2ECE5]">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-mono uppercase text-slate-500 flex items-center gap-1.5">
-                    <Zap className="w-3 h-3 text-amber-500" />
-                    Evaluator Demo Profiles (1-Click Fill)
+                  <span className="text-[11px] font-bold text-[#5F6773]">
+                    Quick Test Sign In
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">Password: password123</span>
+                  <span className="text-[10px] text-[#8C939E]">1-Click select</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
@@ -270,17 +269,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       key={d.email}
                       type="button"
                       onClick={() => handleQuickDemoFill(d.email)}
-                      className={`p-2.5 rounded-lg border text-left transition cursor-pointer ${
+                      className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
                         signInEmail === d.email
-                          ? 'border-emerald-600 bg-emerald-50/50 shadow-xs'
-                          : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/70'
+                          ? 'border-[#00A389] bg-[#E8F8F5]'
+                          : 'border-[#EFE7DE] bg-[#FAF7F4] hover:bg-[#F2ECE5]'
                       }`}
                     >
                       <div className="flex items-center gap-1.5">
-                        <span>{d.flag}</span>
-                        <span className="font-semibold text-xs text-black truncate">{d.name}</span>
+                        <span className="text-xs">{d.flag}</span>
+                        <span className="font-bold text-xs text-[#1A1D20] truncate">{d.name}</span>
                       </div>
-                      <span className="text-[10px] text-slate-500 block truncate font-mono">{d.role}</span>
+                      <span className="text-[10px] text-[#5F6773] block truncate mt-0.5">{d.city}</span>
                     </button>
                   ))}
                 </div>
@@ -288,40 +287,46 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
           ) : (
             <form onSubmit={handleSignUp} className="space-y-3.5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Full Name *
-                  </label>
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Full Name
+                </label>
+                <div className="relative">
+                  <UserIcon className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
                   <input
                     type="text"
                     required
                     placeholder="e.g. Tariq Mehmood"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                   />
                 </div>
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Email Address *
-                  </label>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Email Address
+                </label>
+                <div className="relative">
+                  <Mail className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
                   <input
                     type="email"
                     required
                     placeholder="tariq@example.com"
                     value={signUpEmail}
                     onChange={(e) => setSignUpEmail(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Password *
-                  </label>
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
                   <input
                     type="password"
                     required
@@ -329,93 +334,72 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     placeholder="Min 6 characters"
                     value={signUpPassword}
                     onChange={(e) => setSignUpPassword(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Phone (Optional)
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="+923001234567"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-emerald-600 transition"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                  Assigned Geographic Shard Partition *
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Mobile Number (Optional)
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {REGION_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={() => setShard(opt.value)}
-                      className={`p-2.5 rounded-lg border text-left transition cursor-pointer ${
-                        shard === opt.value
-                          ? 'border-emerald-600 bg-emerald-50 text-black font-semibold'
-                          : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5 text-xs">
-                        <span>{opt.flag}</span>
-                        <span className="truncate">{opt.label}</span>
-                      </div>
-                      <span className="text-[10px] text-slate-400 block font-mono truncate">{opt.desc}</span>
-                    </button>
-                  ))}
+                <div className="relative">
+                  <Phone className="w-4 h-4 text-[#8C939E] absolute left-3.5 top-3" />
+                  <input
+                    type="text"
+                    placeholder="+92 300 1234567"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-1">
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Initial Balance
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="100"
-                    value={initialBalance}
-                    onChange={(e) => setInitialBalance(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs font-mono focus:outline-none focus:border-emerald-600 transition"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-mono uppercase text-slate-600 block mb-1">
-                    Account Currency
-                  </label>
-                  <select
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-white border border-slate-300 text-black text-xs font-mono focus:outline-none focus:border-emerald-600 transition"
-                  >
-                    <option value="PKR">PKR (Pakistani Rupee)</option>
-                    <option value="USD">USD (US Dollar)</option>
-                    <option value="GBP">GBP (British Pound)</option>
-                    <option value="EUR">EUR (Euro)</option>
-                    <option value="AED">AED (Emirati Dirham)</option>
-                    <option value="SGD">SGD (Singapore Dollar)</option>
-                  </select>
-                </div>
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Account Location
+                </label>
+                <select
+                  value={shard}
+                  onChange={(e) => setShard(e.target.value as ShardType)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs focus:outline-none focus:border-[#00A389] focus:bg-white transition"
+                >
+                  {REGION_OPTIONS.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.flag} {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Primary Currency
+                </label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs focus:outline-none focus:border-[#00A389] focus:bg-white transition"
+                >
+                  <option value="PKR">PKR (Pakistani Rupee)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                  <option value="AED">AED (Emirati Dirham)</option>
+                </select>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs flex items-center justify-center gap-2 shadow-xs transition disabled:opacity-50 cursor-pointer"
+                className="w-full py-3.5 px-4 rounded-full bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-md shadow-[#FF6651]/25 transition disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
-                  <span>Provisioning Account & Generating JWT...</span>
+                  <span>Opening account...</span>
                 ) : (
                   <>
                     <Check className="w-4 h-4" />
-                    Create Account & Issue Bearer Token
+                    <span>Open My Free Account</span>
                   </>
                 )}
               </button>
