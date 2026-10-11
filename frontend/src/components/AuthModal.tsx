@@ -26,8 +26,8 @@ const REGION_OPTIONS: { value: ShardType; label: string; flag: string }[] = [
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
-  users = [],
-  accounts = [],
+  users: _users = [],
+  accounts: _accounts = [],
   currentUser,
   onSelectUser,
   onUserCreated,
@@ -35,33 +35,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 }) => {
   const [tab, setTab] = useState<'signin' | 'signup'>(initialMode);
 
-  // Clean raw database test hashes like 'Alice Khan 979fab2f' into clean 'Alice Khan'
-  const cleanUserName = (name: string | undefined) => {
-    if (!name) return 'User';
-    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
-  };
-
-  const getUserAccountMeta = (userId: number) => {
-    const acc = accounts.find((a) => a.user?.id === userId || (a as any).userId === userId);
-    if (!acc) return { curr: 'PKR', flag: '🇵🇰', label: 'Primary Account' };
-    let flag = '🇵🇰';
-    if (acc.currency === 'USD') flag = '🇺🇸';
-    else if (acc.currency === 'GBP') flag = '🇬🇧';
-    else if (acc.currency === 'EUR') flag = '🇪🇺';
-    else if (acc.currency === 'AED') flag = '🇦🇪';
-    else if (acc.currency === 'SGD') flag = '🇸🇬';
-    return {
-      curr: acc.currency,
-      flag,
-      label: `${acc.accountNumber} • ${Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${acc.currency}`,
-    };
-  };
-
-  // Sign In state (Dynamic default)
-  const [signInEmail, setSignInEmail] = useState(() => {
-    return currentUser?.email || (users.length > 0 ? users[0].email : '');
-  });
-  const [signInPassword, setSignInPassword] = useState('password123');
+  // Sign In state
+  const [signInEmail, setSignInEmail] = useState(() => currentUser?.email || '');
+  const [signInPassword, setSignInPassword] = useState('');
 
   // Sign Up state
   const [fullName, setFullName] = useState('');
@@ -99,12 +75,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickUserSelect = (user: User) => {
-    setSignInEmail(user.email);
-    setSignInPassword('password123');
-    setErrorMsg(null);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -275,54 +245,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   )}
                 </button>
               </form>
-
-              {/* Dynamic Database Accounts */}
-              {users.length > 0 && (
-                <div className="pt-3 border-t border-[#F2ECE5]">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-bold text-[#5F6773]">
-                      Available Accounts ({users.length})
-                    </span>
-                    <span className="text-[10px] text-[#8C939E]">1-Click select</span>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-0.5">
-                    {users.map((u) => {
-                      const meta = getUserAccountMeta(u.id);
-                      const isCurrent = currentUser?.id === u.id;
-                      const isSelected = signInEmail.toLowerCase() === u.email.toLowerCase();
-
-                      return (
-                        <button
-                          key={u.id}
-                          type="button"
-                          onClick={() => handleQuickUserSelect(u)}
-                          className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
-                            isSelected
-                              ? 'border-[#00A389] bg-[#E8F8F5]'
-                              : isCurrent
-                              ? 'border-[#FF6651]/50 bg-[#FFF5F2]'
-                              : 'border-[#EFE7DE] bg-[#FAF7F4] hover:bg-[#F2ECE5]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs">{meta.flag}</span>
-                            <span className="font-bold text-xs text-[#1A1D20] truncate">
-                              {cleanUserName(u.fullName)}
-                            </span>
-                          </div>
-                          <span className="text-[10px] text-[#5F6773] block truncate mt-0.5 font-mono">
-                            {u.email}
-                          </span>
-                          <span className="text-[9px] text-[#00A389] block truncate font-medium mt-0.5">
-                            {meta.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
             </div>
           ) : (
             <form onSubmit={handleSignUp} className="space-y-3.5">

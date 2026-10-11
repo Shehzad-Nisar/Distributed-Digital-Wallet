@@ -32,7 +32,7 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({
   health,
   accounts = [],
-  users = [],
+  users: _users = [],
   currentUser,
   onEnterConsole,
   onOpenAuth,
@@ -47,13 +47,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   // Clean raw database hashes
   const cleanUserName = (name: string | undefined) => {
-    if (!name) return 'Valued Member';
+    if (!name) return 'Personal Account';
     return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
   };
 
-  const activeUserAccount =
-    accounts.find((a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id) ||
-    accounts[0];
+  const activeUserAccount = currentUser
+    ? (accounts.find((a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id) || accounts[0])
+    : null;
 
   const formatMoney = (val: number | string | undefined) => {
     const num = Number(val || 0);
@@ -65,7 +65,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const heroBalance = activeUserAccount ? formatMoney(activeUserAccount.balance) : '15,000.00';
   const heroCurrency = activeUserAccount?.currency || 'PKR';
-  const heroCardholder = cleanUserName(currentUser?.fullName || activeUserAccount?.user?.fullName);
+  const heroCardholder = currentUser ? cleanUserName(currentUser.fullName) : 'YOUR NAME';
 
   const handleQuickNav = (tab: 'console' | 'transfer' | 'merchant' | 'exchange') => {
     if (activeUserAccount && onSelectAccount) {
@@ -175,7 +175,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 onClick={() => onOpenAuth('signup')}
                 className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-xs sm:text-[15px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer"
               >
-                Download now
+                Create Account
               </button>
             )}
 
@@ -277,30 +277,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </h1>
 
               <p className="text-base sm:text-lg text-[#5F6773] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                Join {users.length > 0 ? `${users.length} active registered member accounts` : 'thousands of active members'} and get your free virtual card to shop online.
-                Enjoy free money transfers, receive remittances, pay bills, and manage multi-currency balances with instant direct settlement.
+                Experience instant multi-currency transfers, zero-fee direct settlements, and secure virtual card issuance powered by distributed high-throughput banking rails.
               </p>
 
-              {/* 5-Star Social Proof */}
+              {/* Status pill */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
-                <div className="flex items-center gap-1 text-[#FFB800]">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-4 h-4 fill-current" />
-                  ))}
-                </div>
-                <div className="text-xs sm:text-sm font-semibold text-[#4B5563]">
-                  Over <span className="font-extrabold text-[#1A1D20]">120,000+</span> 5-star reviews
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-800 text-xs font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>Distributed Ledger Rails • Verified Direct Settlement</span>
                 </div>
               </div>
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                {onEnterConsole ? (
+                {currentUser ? (
                   <button
                     onClick={onEnterConsole}
                     className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
                   >
-                    <span>{currentUser ? 'Go to My Wallet' : 'Open Web App'}</span>
+                    <span>Go to My Wallet</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 ) : (
@@ -308,7 +303,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     onClick={() => onOpenAuth('signup')}
                     className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
                   >
-                    <span>Download now</span>
+                    <span>Create Account</span>
                     <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </button>
                 )}
@@ -318,7 +313,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   className="w-full sm:w-auto bg-white hover:bg-[#F9F5F0] border border-[#E6DDD3] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
                   <QrCode className="w-5 h-5 text-[#FF6651]" />
-                  <span>{currentUser ? 'Switch User' : 'Sign In / Register'}</span>
+                  <span>{currentUser ? 'Switch User' : 'Log In'}</span>
                 </button>
               </div>
 
@@ -344,29 +339,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               {/* Radial Backdrop Glow */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="w-80 sm:w-[420px] h-80 sm:h-[420px] rounded-full bg-gradient-to-tr from-[#00A389]/15 via-[#FF6651]/15 to-transparent blur-3xl pointer-events-none" />
-              </div>
-
-              {/* 3D Floating Ecosystem Badges */}
-              {/* Spotify Icon */}
-              <div className="absolute top-2 left-6 sm:left-12 z-20 animate-pulse bg-[#191414] text-white p-3 rounded-2xl shadow-xl flex items-center justify-center border border-white/20">
-                <svg className="w-6 h-6 fill-[#1DB954]" viewBox="0 0 24 24">
-                  <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.792-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.502 9.721 1.113.294.18.387.563.207.857zm1.224-2.719c-.226.368-.707.483-1.075.257-2.69-1.654-6.79-2.133-9.972-1.167-.413.125-.85-.108-.975-.521-.125-.413.108-.85.521-.975 3.633-1.102 8.167-.568 11.244 1.33.368.227.483.708.257 1.076zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.018-.13-1.168-.624-.15-.494.13-1.018.624-1.168 3.532-1.072 9.404-.868 13.153 1.357.444.263.59.84.327 1.284-.264.444-.84.59-1.284.327z"/>
-                </svg>
-              </div>
-
-              {/* Netflix Icon */}
-              <div className="absolute bottom-12 left-4 sm:left-8 z-20 bg-black text-[#E50914] font-black text-xl px-3.5 py-2 rounded-2xl shadow-xl border border-white/20">
-                N
-              </div>
-
-              {/* Foodpanda Icon */}
-              <div className="absolute top-10 right-4 sm:right-10 z-20 bg-[#D70F64] text-white p-2.5 rounded-2xl shadow-xl border border-white/20">
-                <span className="text-xs font-black tracking-tight">🐼 Panda</span>
-              </div>
-
-              {/* Amazon Icon */}
-              <div className="absolute bottom-20 right-2 sm:right-8 z-20 bg-white text-[#FF9900] p-2.5 rounded-2xl shadow-xl border border-[#F0EAE1]">
-                <span className="text-xs font-extrabold text-black">amazon</span>
               </div>
 
               {/* Central Smartphone Mockup (Tilted SadaPay Style) */}
@@ -437,36 +409,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </button>
                   </div>
 
-                  {/* Recent Activity List */}
+                  {/* Core Status & Capabilities */}
                   <div className="mt-3 flex-1 overflow-hidden space-y-1.5">
                     <span className="text-[10px] font-bold text-[#8C939E] uppercase tracking-wider block">
-                      Recent Activity
+                      Live Network
                     </span>
                     
-                    <div className="bg-white p-2 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
+                    <div className="bg-white p-2.5 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-[#E50914] text-white text-[10px] font-bold flex items-center justify-center">
-                          N
+                        <div className="w-6 h-6 rounded-lg bg-[#E5F7F3] text-[#00A389] text-[10px] font-bold flex items-center justify-center">
+                          ✓
                         </div>
                         <div className="text-left">
-                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Digital Service</span>
-                          <span className="text-[8px] text-[#8C939E]">Subscription</span>
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Banking Rail</span>
+                          <span className="text-[8px] text-[#00A389]">Active &amp; Ready</span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-[#1A1D20]">-₨ 1,100</span>
+                      <span className="text-[9px] font-mono font-bold text-[#00A389]">2PC Live</span>
                     </div>
 
-                    <div className="bg-white p-2 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
+                    <div className="bg-white p-2.5 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-lg bg-[#00A389] text-white text-[10px] font-bold flex items-center justify-center">
-                          $
+                        <div className="w-6 h-6 rounded-lg bg-[#FFEAE5] text-[#FF6651] text-[10px] font-bold flex items-center justify-center">
+                          ⚡
                         </div>
                         <div className="text-left">
-                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Direct Deposit</span>
-                          <span className="text-[8px] text-[#00A389]">Received</span>
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Direct Transfers</span>
+                          <span className="text-[8px] text-[#5F6773]">Raast &amp; Direct IBAN</span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-[#00A389]">+₨ 25,000</span>
+                      <span className="text-[9px] font-bold text-[#1A1D20]">₨ 0 Fee</span>
                     </div>
                   </div>
                 </div>
@@ -1211,7 +1183,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v2h-4v-2zm-4 0h2v4h-2v-4zm2 4h4v4h-4v-4zm2-2h2v2h-2v-2zM5 5h2v2H5V5zm12 0h2v2h-2V5zM5 17h2v2H5v-2z"/>
                     </svg>
                   </div>
-                  <span className="text-xs font-black mt-3">Scan to download</span>
+                  <span className="text-xs font-black mt-3">Scan to get started</span>
                   <span className="text-[10px] text-gray-400 mt-0.5">iOS &amp; Android</span>
                 </div>
               </div>
@@ -1311,10 +1283,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <QrCode className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-black text-[#1A1D20]">
-              Scan to Download TransMoney
+              Scan to Open Account
             </h3>
             <p className="text-xs text-[#5F6773]">
-              Point your phone's camera at the QR code below to download from the App Store or Google Play Store.
+              Point your phone's camera at the QR code below or open an account online directly.
             </p>
             <div className="w-48 h-48 bg-gray-50 border border-gray-200 rounded-2xl p-4 mx-auto flex items-center justify-center">
               <svg className="w-full h-full text-[#1A1D20]" viewBox="0 0 24 24" fill="currentColor">
