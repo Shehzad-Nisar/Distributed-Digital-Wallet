@@ -35,6 +35,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenAuth,
   onNavigateTab,
 }) => {
+  const [activeNumberTab, setActiveNumberTab] = useState<'pakistan' | 'international'>('pakistan');
+  const [cardFrozen, setCardFrozen] = useState<boolean>(false);
+  const [activeCurrency, setActiveCurrency] = useState<'PKR' | 'USD' | 'EUR' | 'GBP'>('PKR');
+  const [showQrModal, setShowQrModal] = useState<boolean>(false);
+
   const handleGoToConsole = () => {
     if (onNavigateTab) {
       onNavigateTab('console');
@@ -43,23 +48,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
-  // Interactive UI states for micro-interactions
-  const [activeNumberTab, setActiveNumberTab] = useState<'pakistan' | 'international'>('pakistan');
-  const [cardFrozen, setCardFrozen] = useState<boolean>(false);
-  const [activeCurrency, setActiveCurrency] = useState<'PKR' | 'USD' | 'EUR' | 'GBP'>('PKR');
-  const [showQrModal, setShowQrModal] = useState<boolean>(false);
-
   return (
-    <div className="min-h-screen bg-[#FCF9F6] text-[#1A1D20] font-sans antialiased selection:bg-[#FF6651] selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FAF7F4] text-[#1E2024] font-sans antialiased selection:bg-[#FF6651] selection:text-white relative overflow-x-hidden">
+      
       {/* =========================================================================
-          1. NAVIGATION BAR (SadaPay Authentic Layout)
+          1. NAVIGATION BAR (Exact SadaPay Layout & Aesthetics)
          ========================================================================= */}
-      <header className="sticky top-0 z-50 bg-[#FCF9F6]/90 backdrop-blur-md border-b border-[#F0EAE1]">
+      <header className="sticky top-0 z-50 bg-[#FAF7F4]/90 backdrop-blur-md border-b border-[#F2ECE5]/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           {/* Left: Brand Identity */}
           <div className="flex items-center gap-8">
             <a href="#top" className="flex items-center gap-2.5 group cursor-pointer">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center shadow-sm shadow-[#00A389]/20 group-hover:scale-105 transition-transform">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center shadow-xs shadow-[#00A389]/20 group-hover:scale-105 transition-transform">
                 <img
                   src={logoImg}
                   alt="TransMoney"
@@ -70,17 +70,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <span className="font-extrabold text-xl tracking-tight text-[#1A1D20] leading-none">
                   TransMoney
                 </span>
-                <span className="text-[10px] font-semibold text-[#00A389] tracking-wider uppercase mt-0.5">
+                <span className="text-[10px] font-bold text-[#00A389] tracking-wider uppercase mt-0.5">
                   Digital Wallet
                 </span>
               </div>
             </a>
 
             {/* Middle: SadaPay Navigation Links */}
-            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium text-[#4B5563]">
+            <nav className="hidden lg:flex items-center gap-1.5 text-sm font-medium text-[#4F5561]">
               <a
                 href="#features"
-                className="px-4 py-2 rounded-full bg-white shadow-xs text-[#1A1D20] font-semibold transition"
+                className="px-4 py-2 rounded-full bg-white shadow-xs text-[#1A1D20] font-semibold transition hover:bg-white/80"
               >
                 Personal
               </a>
@@ -89,7 +89,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition flex items-center gap-1.5"
               >
                 <span>Business</span>
-                <span className="text-[10px] uppercase font-bold bg-[#FFECE7] text-[#FF6651] px-2 py-0.5 rounded-full">
+                <span className="text-[9px] uppercase font-bold bg-[#FFEAE5] text-[#FF6651] px-2 py-0.5 rounded-full">
                   Biz
                 </span>
               </a>
@@ -114,11 +114,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </nav>
           </div>
 
-          {/* Right: Quick Console Link + Auth CTAs */}
+          {/* Right: Console App & Action CTAs */}
           <div className="flex items-center gap-3">
             <button
               onClick={handleGoToConsole}
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#00A389] hover:bg-[#E6F7F3] rounded-full border border-[#00A389]/30 transition cursor-pointer"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-[#00A389] hover:bg-[#E6F7F3] rounded-full border border-[#00A389]/30 transition cursor-pointer"
             >
               <Wallet className="w-3.5 h-3.5" />
               <span>Launch Wallet Console</span>
@@ -126,14 +126,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <button
               onClick={() => onOpenAuth('signin')}
-              className="text-sm font-semibold text-[#1A1D20] hover:text-[#FF6651] px-3 py-2 rounded-full transition cursor-pointer"
+              className="text-sm font-semibold text-[#1A1D20] hover:text-[#FF6651] px-3.5 py-2 rounded-full transition cursor-pointer"
             >
               Log In
             </button>
 
             <button
               onClick={() => onOpenAuth('signup')}
-              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer flex items-center gap-1.5"
+              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-sm font-extrabold px-5 py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer flex items-center gap-1.5"
             >
               <span>Open an account</span>
               <ArrowUpRight className="w-4 h-4" />
@@ -145,17 +145,17 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* =========================================================================
           2. HERO SECTION ("Break Free From Banking Hassles")
          ========================================================================= */}
-      <section id="top" className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden">
-        {/* Soft background glow orbs */}
-        <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#FFE7DF]/60 rounded-full blur-3xl pointer-events-none -z-10" />
-        <div className="absolute top-40 right-10 w-[420px] h-[420px] bg-[#E1F7F1]/60 rounded-full blur-3xl pointer-events-none -z-10" />
+      <section id="top" className="relative pt-12 pb-24 md:pt-20 md:pb-32 overflow-hidden">
+        {/* Soft atmospheric ambient glow orbs */}
+        <div className="absolute top-10 left-1/4 w-[450px] h-[450px] bg-[#FFEAE5]/60 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-32 right-10 w-[480px] h-[480px] bg-[#E1F7F1]/60 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
             {/* Left Column: Heading, Subtitle & Primary CTA */}
             <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8F8F5] border border-[#00A389]/20 text-[#00A389] text-xs font-bold tracking-wide">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E5F7F3] border border-[#00A389]/25 text-[#00A389] text-xs font-bold tracking-wide">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Next-Gen Multi-Currency Digital Banking</span>
               </div>
@@ -172,19 +172,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </p>
 
               {/* 5-Star Social Proof */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
                 <div className="flex items-center gap-1 text-[#FFB800]">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-5 h-5 fill-current" />
+                    <Star key={i} className="w-4 h-4 fill-current" />
                   ))}
                 </div>
-                <div className="text-xs sm:text-sm font-semibold text-[#374151]">
+                <div className="text-xs sm:text-sm font-semibold text-[#4B5563]">
                   Rated <span className="font-extrabold text-[#1A1D20]">4.8 / 5</span> by 2M+ happy users
                 </div>
               </div>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-3">
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
                 <button
                   onClick={() => onOpenAuth('signup')}
                   className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
@@ -195,15 +195,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
                 <button
                   onClick={() => setShowQrModal(true)}
-                  className="w-full sm:w-auto bg-white hover:bg-[#F7F3EE] border border-[#E3DBD2] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full sm:w-auto bg-white hover:bg-[#F9F5F0] border border-[#E6DDD3] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
                   <QrCode className="w-5 h-5 text-[#FF6651]" />
                   <span>Scan QR Code</span>
                 </button>
               </div>
 
-              {/* Mini trust checklist */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-6 pt-4 text-xs font-semibold text-[#6B7280]">
+              {/* Trust checklist */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-6 pt-3 text-xs font-semibold text-[#6B7280]">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#00A389]" />
                   <span>Zero account opening fees</span>
@@ -220,44 +220,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Right Column: High-Fidelity 3D Mockup Stage */}
-            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[440px] sm:min-h-[520px]">
-              {/* Atmospheric Backing Radial Glow */}
+            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[460px] sm:min-h-[540px]">
+              {/* Radial Backdrop Glow */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gradient-to-tr from-[#00A389]/15 via-[#FF6651]/15 to-transparent blur-2xl" />
+                <div className="w-80 sm:w-[420px] h-80 sm:h-[420px] rounded-full bg-gradient-to-tr from-[#00A389]/15 via-[#FF6651]/15 to-transparent blur-3xl pointer-events-none" />
               </div>
 
-              {/* 3D Floating Ecosystem Icons */}
+              {/* 3D Floating Ecosystem Badges */}
               {/* Spotify Icon */}
-              <div className="absolute top-2 left-6 sm:left-10 z-20 animate-bounce duration-1000 bg-[#191414] text-white p-3 rounded-2xl shadow-xl flex items-center justify-center border border-white/20">
+              <div className="absolute top-2 left-6 sm:left-12 z-20 animate-pulse bg-[#191414] text-white p-3 rounded-2xl shadow-xl flex items-center justify-center border border-white/20">
                 <svg className="w-6 h-6 fill-[#1DB954]" viewBox="0 0 24 24">
                   <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.792-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.502 9.721 1.113.294.18.387.563.207.857zm1.224-2.719c-.226.368-.707.483-1.075.257-2.69-1.654-6.79-2.133-9.972-1.167-.413.125-.85-.108-.975-.521-.125-.413.108-.85.521-.975 3.633-1.102 8.167-.568 11.244 1.33.368.227.483.708.257 1.076zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.018-.13-1.168-.624-.15-.494.13-1.018.624-1.168 3.532-1.072 9.404-.868 13.153 1.357.444.263.59.84.327 1.284-.264.444-.84.59-1.284.327z"/>
                 </svg>
               </div>
 
               {/* Netflix Icon */}
-              <div className="absolute bottom-12 left-2 sm:left-4 z-20 bg-black text-[#E50914] font-black text-xl px-3 py-2 rounded-2xl shadow-xl border border-white/20">
+              <div className="absolute bottom-12 left-4 sm:left-8 z-20 bg-black text-[#E50914] font-black text-xl px-3.5 py-2 rounded-2xl shadow-xl border border-white/20">
                 N
               </div>
 
               {/* Foodpanda Icon */}
-              <div className="absolute top-10 right-4 sm:right-8 z-20 bg-[#D70F64] text-white p-2.5 rounded-2xl shadow-xl border border-white/20">
+              <div className="absolute top-10 right-4 sm:right-10 z-20 bg-[#D70F64] text-white p-2.5 rounded-2xl shadow-xl border border-white/20">
                 <span className="text-xs font-black tracking-tight">🐼 Panda</span>
               </div>
 
-              {/* Amazon / Careem Icon */}
-              <div className="absolute bottom-20 right-2 sm:right-6 z-20 bg-white text-[#FF9900] p-2.5 rounded-2xl shadow-xl border border-[#F0EAE1]">
+              {/* Amazon Icon */}
+              <div className="absolute bottom-20 right-2 sm:right-8 z-20 bg-white text-[#FF9900] p-2.5 rounded-2xl shadow-xl border border-[#F0EAE1]">
                 <span className="text-xs font-extrabold text-black">amazon</span>
               </div>
 
-              {/* The Central Smartphone Mockup (Tilted Perspective) */}
-              <div className="relative z-10 w-[240px] sm:w-[270px] h-[480px] sm:h-[530px] bg-gradient-to-b from-[#2B2D31] to-[#121316] rounded-[44px] p-2.5 shadow-2xl shadow-black/35 ring-1 ring-white/20 transform rotate-1 sm:rotate-2 hover:rotate-0 transition-transform duration-500">
-                {/* Phone Notch / Island */}
+              {/* Central Smartphone Mockup (Tilted SadaPay Style) */}
+              <div className="relative z-10 w-[245px] sm:w-[275px] h-[490px] sm:h-[540px] bg-gradient-to-b from-[#2B2D31] to-[#121316] rounded-[46px] p-2.5 shadow-2xl shadow-black/35 ring-1 ring-white/20 transform rotate-1 sm:rotate-2 hover:rotate-0 transition-transform duration-500">
+                {/* Dynamic Island */}
                 <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-end px-2">
                   <div className="w-2 h-2 rounded-full bg-[#00A389]" />
                 </div>
 
-                {/* Inner Screen Canvas */}
-                <div className="w-full h-full bg-[#FBF9F6] rounded-[36px] overflow-hidden flex flex-col pt-8 px-4 pb-4 select-none">
+                {/* Inner Screen */}
+                <div className="w-full h-full bg-[#FAF7F4] rounded-[38px] overflow-hidden flex flex-col pt-8 px-4 pb-4 select-none">
                   {/* App Header */}
                   <div className="flex items-center justify-between py-1">
                     <div className="flex items-center gap-2">
@@ -269,7 +269,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <div className="w-2 h-2 rounded-full bg-emerald-500" />
                   </div>
 
-                  {/* Main Wallet Balance Card inside App */}
+                  {/* Main Wallet Balance Card */}
                   <div className="mt-3 bg-white rounded-2xl p-3.5 shadow-xs border border-[#F0EAE1]">
                     <span className="text-[10px] uppercase font-bold text-[#8C939E] tracking-wider block">
                       Current Balance
@@ -305,7 +305,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </div>
                   </div>
 
-                  {/* Recent Activity List inside App */}
+                  {/* Recent Activity List */}
                   <div className="mt-3 flex-1 overflow-hidden space-y-1.5">
                     <span className="text-[10px] font-bold text-[#8C939E] uppercase tracking-wider block">
                       Recent Activity
@@ -340,9 +340,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              {/* The Iconic Floating Vertical TransMoney Debit Card (SadaPay Style) */}
-              <div className="absolute -bottom-6 -right-2 sm:right-2 z-30 w-[170px] sm:w-[190px] h-[260px] sm:h-[290px] rounded-2xl bg-gradient-to-br from-[#00A389] via-[#00947C] to-[#006F5D] text-white p-4 shadow-2xl shadow-[#00A389]/40 transform rotate-6 hover:rotate-3 hover:scale-105 transition-all duration-300 flex flex-col justify-between border border-white/30 backdrop-blur-xs select-none">
-                {/* Card Top: TransMoney Brand + EMV Chip */}
+              {/* Iconic Floating Vertical TransMoney Debit Card (SadaPay Teal Mastercard) */}
+              <div className="absolute -bottom-6 -right-2 sm:right-2 z-30 w-[170px] sm:w-[190px] h-[260px] sm:h-[295px] rounded-2xl bg-gradient-to-br from-[#00A389] via-[#00947C] to-[#006F5D] text-white p-4 shadow-2xl shadow-[#00A389]/40 transform rotate-6 hover:rotate-2 hover:scale-105 transition-all duration-300 flex flex-col justify-between border border-white/30 backdrop-blur-xs select-none">
                 <div>
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black tracking-wider uppercase text-white/95">
@@ -353,12 +352,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     </span>
                   </div>
 
-                  {/* 3D Chip & Contactless Wave */}
+                  {/* 3D Chip & Contactless */}
                   <div className="flex items-center justify-between mt-6">
                     <div className="w-8 h-6 rounded-md bg-gradient-to-br from-[#F5D061] to-[#D4A325] border border-[#FFE885] shadow-xs flex items-center justify-center">
                       <div className="w-5 h-4 border border-black/20 rounded-xs" />
                     </div>
-                    {/* Contactless waves SVG */}
                     <svg className="w-4 h-4 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                       <path d="M8.5 16.5a5 5 0 0 1 0-7" />
                       <path d="M12 19a8.5 8.5 0 0 0 0-14" />
@@ -367,7 +365,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </div>
 
-                {/* Card Middle: Minimal Numberless Design */}
                 <div className="space-y-1">
                   <div className="text-[9px] uppercase tracking-widest text-white/60 font-mono">
                     NUMBERLESS CARD
@@ -377,7 +374,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </div>
 
-                {/* Card Bottom: Mastercard Interlocking Circles */}
                 <div className="flex items-end justify-between">
                   <div className="text-[8px] font-semibold text-white/70">
                     WORLD
@@ -395,9 +391,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          3. FEATURE CAROUSEL / TRIO CARDS (Free transfers, Global card, Bills)
+          3. FEATURE CAROUSEL / TRIO CARDS
          ========================================================================= */}
-      <section id="features" className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+      <section id="features" className="py-20 md:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
@@ -410,8 +406,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
-            {/* Card 1: Free money transfers (Origami Paper Airplane + Gold Coins) */}
-            <div className="group bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
+            {/* Card 1: Free money transfers */}
+            <div className="group bg-white/80 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
                   Free money transfers
@@ -421,11 +417,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              {/* 3D Visual: Soaring Paper Airplane with Golden Coins */}
-              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center overflow-hidden">
-                <div className="absolute inset-0 bg-radial from-[#FFE6DF]/60 to-transparent rounded-2xl" />
+              {/* 3D Paper Airplane with Golden Coins */}
+              <div className="mt-8 pt-6 relative h-52 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-radial from-[#FFEAE5]/70 to-transparent rounded-2xl" />
                 
-                {/* 3D Paper Airplane SVG Illustration */}
                 <div className="relative z-10 transform -rotate-12 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500">
                   <svg className="w-32 h-32 drop-shadow-2xl" viewBox="0 0 120 120" fill="none">
                     <polygon points="10,60 110,15 70,105 55,68" fill="#FF806E" />
@@ -435,7 +430,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </svg>
                 </div>
 
-                {/* Floating 3D Gold Coins */}
                 <div className="absolute top-4 left-6 z-20 w-8 h-8 rounded-full bg-gradient-to-tr from-[#E6B800] to-[#FFE680] shadow-md flex items-center justify-center font-bold text-xs text-[#8A6D00] border border-white">
                   ₨
                 </div>
@@ -445,8 +439,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Card 2: Cards with global acceptance (Vertical Debit Card + Millimeter Ruler) */}
-            <div className="group bg-[#F4FAF8] rounded-3xl p-8 border border-[#E0EFEA] hover:border-[#00A389]/40 transition-all hover:shadow-xl hover:shadow-[#00A389]/5 flex flex-col justify-between">
+            {/* Card 2: Cards with global acceptance */}
+            <div className="group bg-white/80 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] hover:border-[#00A389]/40 transition-all hover:shadow-xl hover:shadow-[#00A389]/5 flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
                   Cards with global acceptance
@@ -456,11 +450,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              {/* 3D Visual: Vertical Teal Card + Architectural Scale */}
-              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center">
-                <div className="absolute inset-0 bg-radial from-[#DCF4EE]/60 to-transparent rounded-2xl" />
+              {/* 3D Vertical Card + Precision Scale */}
+              <div className="mt-8 pt-6 relative h-52 flex items-center justify-center">
+                <div className="absolute inset-0 bg-radial from-[#DCF4EE]/70 to-transparent rounded-2xl" />
 
-                {/* Precision Ruler Mockup */}
                 <div className="absolute left-8 top-6 bottom-6 w-8 bg-white/80 rounded-lg border border-[#00A389]/20 flex flex-col justify-between py-2 px-1 text-[8px] font-mono text-[#00A389]">
                   <span>— 0</span>
                   <span>— 2</span>
@@ -469,7 +462,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   <span>— 8cm</span>
                 </div>
 
-                {/* Mini Vertical Card */}
                 <div className="relative z-10 w-24 h-36 rounded-xl bg-gradient-to-br from-[#00A389] to-[#00705E] p-2.5 text-white shadow-xl flex flex-col justify-between transform rotate-3 group-hover:rotate-0 transition-transform duration-500">
                   <div className="flex justify-between items-center">
                     <span className="text-[7px] font-bold">TM</span>
@@ -488,8 +480,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Card 3: Pay your bills (Pink Receipt Register + Floating Coins) */}
-            <div className="group bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
+            {/* Card 3: Pay your bills */}
+            <div className="group bg-white/80 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
               <div>
                 <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
                   Pay your bills
@@ -499,11 +491,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              {/* 3D Visual: Receipt Printer Roll & Golden Tokens */}
-              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center">
-                <div className="absolute inset-0 bg-radial from-[#FFE6DF]/60 to-transparent rounded-2xl" />
+              {/* 3D Receipt Printer Roll & Golden Tokens */}
+              <div className="mt-8 pt-6 relative h-52 flex items-center justify-center">
+                <div className="absolute inset-0 bg-radial from-[#FFEAE5]/70 to-transparent rounded-2xl" />
 
-                {/* Receipt Card Mockup */}
                 <div className="relative z-10 w-36 bg-white rounded-xl shadow-xl p-3 border border-[#F0EAE1] transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
                   <div className="flex items-center justify-between pb-2 border-b border-dashed border-gray-200">
                     <span className="text-[9px] font-bold text-gray-500">K-ELECTRIC</span>
@@ -530,9 +521,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          4. "SIGN UP FROM ANYWHERE" SECTION (Pakistan +92 & Overseas Support)
+          4. "SIGN UP FROM ANYWHERE" (Pakistan +92 & Overseas Support)
          ========================================================================= */}
-      <section className="py-16 md:py-24 bg-[#FCF9F6]">
+      <section className="py-20 md:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-14">
             <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
@@ -543,7 +534,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
 
             {/* Interactive Toggle Pill */}
-            <div className="inline-flex p-1.5 bg-[#EFE9DF] rounded-full mt-6">
+            <div className="inline-flex p-1.5 bg-[#EAE3D9] rounded-full mt-6">
               <button
                 onClick={() => setActiveNumberTab('pakistan')}
                 className={`px-5 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
@@ -562,18 +553,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     : 'text-[#5F6773] hover:text-[#1A1D20]'
                 }`}
               >
-                🌍 From Overseas & Global
+                🌍 From Overseas &amp; Global
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
             
-            {/* Card A: From Pakistan (+92 3D Phone Code Box) */}
-            <div className={`bg-white rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between ${
+            {/* Card A: From Pakistan */}
+            <div className={`bg-white/90 backdrop-blur-xs rounded-[32px] p-8 border transition-all duration-300 flex flex-col justify-between ${
               activeNumberTab === 'pakistan'
                 ? 'border-[#FF6651] shadow-xl shadow-[#FF6651]/10 ring-2 ring-[#FF6651]/20'
-                : 'border-[#F0EAE1]'
+                : 'border-[#EFE7DE]'
             }`}>
               <div>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFEAE5] text-[#FF6651] text-xs font-bold mb-4">
@@ -588,14 +579,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {/* 3D Extruded +92 Phone Code Sculpture */}
-              <div className="mt-8 pt-4 relative h-44 bg-[#FFF8F5] rounded-2xl border border-[#F4EBE3] flex items-center justify-center overflow-hidden">
+              <div className="mt-8 pt-4 relative h-48 bg-[#FFF8F5] rounded-2xl border border-[#F4EBE3] flex items-center justify-center overflow-hidden">
                 <div className="flex items-center gap-3">
-                  {/* Volumetric +92 3D Block */}
                   <div className="px-6 py-4 bg-gradient-to-r from-[#FF6651] to-[#E54D34] rounded-2xl text-white font-mono font-black text-3xl shadow-xl shadow-[#FF6651]/30 tracking-tight transform -rotate-2">
                     +92 - 3...
                   </div>
 
-                  {/* 3D WhatsApp badge */}
                   <div className="w-12 h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-lg shadow-[#25D366]/30 transform rotate-6">
                     <MessageCircle className="w-7 h-7 fill-current" />
                   </div>
@@ -603,15 +592,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Card B: From Overseas & Global (+1, +44, Passport, Globe) */}
-            <div className={`bg-white rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between ${
+            {/* Card B: From Overseas & Global */}
+            <div className={`bg-white/90 backdrop-blur-xs rounded-[32px] p-8 border transition-all duration-300 flex flex-col justify-between ${
               activeNumberTab === 'international'
                 ? 'border-[#00A389] shadow-xl shadow-[#00A389]/10 ring-2 ring-[#00A389]/20'
-                : 'border-[#F0EAE1]'
+                : 'border-[#EFE7DE]'
             }`}>
               <div>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F7F3] text-[#00A389] text-xs font-bold mb-4">
-                  <span>🌍 Overseas Expats & Nomads</span>
+                  <span>🌍 Overseas Expats &amp; Nomads</span>
                 </div>
                 <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
                   From Overseas
@@ -621,16 +610,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              {/* 3D Globe with TransMoney Card */}
-              <div className="mt-8 pt-4 relative h-44 bg-[#F2FAF7] rounded-2xl border border-[#DEF1EB] flex items-center justify-center overflow-hidden">
+              {/* 3D Globe with Flight Badges */}
+              <div className="mt-8 pt-4 relative h-48 bg-[#F0FAF7] rounded-2xl border border-[#DEF1EB] flex items-center justify-center overflow-hidden">
                 <div className="flex items-center gap-4">
-                  {/* 3D Globe Ring */}
                   <div className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-[#00A389] to-[#20D2B4] shadow-xl flex items-center justify-center text-white">
-                    <Globe className="w-14 h-14 animate-spin-slow opacity-90" />
+                    <Globe className="w-14 h-14 opacity-90" />
                     <div className="absolute inset-0 rounded-full border-2 border-white/40" />
                   </div>
 
-                  {/* International Flight Country Code Badges */}
                   <div className="space-y-1.5 font-mono text-xs font-bold">
                     <div className="px-3 py-1 rounded-lg bg-white shadow-xs border border-[#DEF1EB] text-[#1A1D20] flex items-center gap-2">
                       <span>🇬🇧 +44</span>
@@ -654,9 +641,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          5. "YOUR MONEY STAYS SAFE" SECTION (Bento Security Grid)
+          5. "YOUR MONEY STAYS SAFE" (Bento Security Grid)
          ========================================================================= */}
-      <section id="security" className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+      <section id="security" className="py-20 md:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
@@ -669,8 +656,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Bento Block 1: Biometric & Instant Authentication (Left Tall Card) */}
-            <div className="lg:col-span-5 bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] flex flex-col justify-between">
+            {/* Bento Block 1: Biometric Authentication (Left Tall Card) */}
+            <div className="lg:col-span-5 bg-white/90 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-2xl bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mb-6">
                   <Shield className="w-6 h-6" />
@@ -683,10 +670,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              {/* 3D Visual: Coral Biometric Shield with Fingerprint Sensor */}
-              <div className="mt-10 relative h-56 flex items-center justify-center">
+              {/* 3D Coral Biometric Shield with Fingerprint Sensor */}
+              <div className="mt-10 relative h-60 flex items-center justify-center">
                 <div className="w-36 h-44 rounded-3xl bg-gradient-to-b from-[#FF6651] to-[#E54D34] shadow-2xl shadow-[#FF6651]/30 flex flex-col items-center justify-center text-white relative">
-                  {/* Fingerprint Icon */}
                   <svg className="w-16 h-16 text-white/90 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M12 11c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z" />
                     <path d="M12 2a10 10 0 0 0-7.07 17.07" />
@@ -695,7 +681,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <path d="M19.07 4.93A10 10 0 0 1 22 12c0 3.87-1.57 7.37-4.1 9.9" />
                   </svg>
                   
-                  {/* Teal Verified Badge */}
                   <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-full bg-[#00A389] text-white flex items-center justify-center shadow-lg border-2 border-white">
                     <Check className="w-5 h-5 stroke-[3]" />
                   </div>
@@ -707,7 +692,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <div className="lg:col-span-7 flex flex-col gap-8">
               
               {/* Card 2: Freeze card in a tap */}
-              <div className="bg-[#F4FAF8] rounded-3xl p-8 border border-[#E0EFEA] flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="bg-white/90 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="max-w-md">
                   <h3 className="text-xl sm:text-2xl font-black text-[#1A1D20] tracking-tight">
                     Freeze card in a tap
@@ -716,7 +701,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     Misplaced your card at a café? Freeze it instantly from the app with zero phone calls. Found it in your pocket? Unfreeze with a tap.
                   </p>
                   
-                  {/* Interactive toggle switch for live demo */}
                   <div className="mt-4 flex items-center gap-3">
                     <button
                       onClick={() => setCardFrozen(!cardFrozen)}
@@ -736,7 +720,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </div>
                 </div>
 
-                {/* 3D Stacking Cards Mockup */}
+                {/* Stacking Cards Mockup */}
                 <div className="relative w-36 h-24">
                   <div className={`absolute top-0 right-4 w-28 h-18 rounded-xl ${cardFrozen ? 'bg-gray-400' : 'bg-[#00A389]'} shadow-lg transform -rotate-6 transition-all`} />
                   <div className={`absolute top-3 right-0 w-28 h-18 rounded-xl ${cardFrozen ? 'bg-gray-600' : 'bg-[#FF6651]'} shadow-lg transform rotate-3 transition-all flex items-center justify-center text-white text-[9px] font-bold`}>
@@ -746,7 +730,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               {/* Card 3: Safety first (Numberless Card + Padlock) */}
-              <div className="bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="bg-white/90 backdrop-blur-xs rounded-[32px] p-8 border border-[#EFE7DE] flex flex-col sm:flex-row items-center justify-between gap-6">
                 <div className="max-w-md">
                   <h3 className="text-xl sm:text-2xl font-black text-[#1A1D20] tracking-tight">
                     Safety first: 100% Numberless
@@ -756,8 +740,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                   </p>
                 </div>
 
-                {/* 3D Padlock Illustration */}
-                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#FFE7DF] to-[#FFD5C9] flex items-center justify-center shadow-lg border border-[#FF6651]/20">
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#FFEAE5] to-[#FFD5C9] flex items-center justify-center shadow-lg border border-[#FF6651]/20">
                   <Lock className="w-12 h-12 text-[#FF6651]" />
                 </div>
               </div>
@@ -771,13 +754,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       {/* =========================================================================
           6. "ACCEPT INTERNATIONAL TRANSFERS FROM ANYWHERE IN THE WORLD"
          ========================================================================= */}
-      <section id="international" className="py-20 md:py-28 bg-[#FCF9F6] overflow-hidden">
+      <section id="international" className="py-20 md:py-28 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           
           <div className="max-w-2xl mx-auto mb-14">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F7F3] text-[#00A389] text-xs font-bold mb-3">
               <Globe className="w-3.5 h-3.5" />
-              <span>Direct Global Remittance & Freelancer Hub</span>
+              <span>Direct Global Remittance &amp; Freelancer Hub</span>
             </div>
             
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1D20] tracking-tight">
@@ -791,49 +774,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           {/* Interactive Satellite Orbit of Global Platforms */}
           <div className="relative max-w-3xl mx-auto py-12 flex items-center justify-center">
-            {/* Outer dotted orbit ring */}
             <div className="absolute w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full border-2 border-dashed border-[#E3DBD2] pointer-events-none" />
             
-            {/* Center Core Hub (TransMoney) */}
+            {/* Center TransMoney Hub */}
             <div className="relative z-10 w-24 h-24 rounded-3xl bg-gradient-to-br from-[#00A389] to-[#00705E] p-4 text-white shadow-2xl shadow-[#00A389]/40 flex flex-col items-center justify-center">
               <img src={logoImg} alt="TransMoney" className="w-8 h-8 object-contain filter invert" />
               <span className="text-[10px] font-extrabold uppercase mt-1">TransMoney</span>
             </div>
 
-            {/* Orbiting Satellite Badges */}
-            {/* 1. PayPal */}
+            {/* Orbiting Badges */}
             <div className="absolute top-2 left-1/4 -translate-x-1/2 bg-white px-4 py-2 rounded-2xl shadow-lg border border-[#F0EAE1] flex items-center gap-2 hover:scale-110 transition-transform cursor-default">
               <span className="font-black text-[#003087] text-sm">PayPal</span>
             </div>
 
-            {/* 2. Wise */}
             <div className="absolute top-8 right-16 bg-[#2ED06E] text-[#163300] px-4 py-2 rounded-2xl shadow-lg font-black text-sm hover:scale-110 transition-transform cursor-default">
               Wise
             </div>
 
-            {/* 3. Payoneer */}
             <div className="absolute bottom-6 left-12 bg-white px-4 py-2 rounded-2xl shadow-lg border border-[#F0EAE1] flex items-center gap-1.5 hover:scale-110 transition-transform cursor-default">
               <div className="w-3 h-3 rounded-full bg-[#FF4800]" />
               <span className="font-extrabold text-[#1A1D20] text-sm">payoneer</span>
             </div>
 
-            {/* 4. Upwork */}
             <div className="absolute bottom-4 right-1/4 bg-[#14A800] text-white px-4 py-2 rounded-2xl shadow-lg font-bold text-sm hover:scale-110 transition-transform cursor-default">
               Upwork
             </div>
 
-            {/* 5. Fiverr */}
             <div className="absolute top-1/2 -left-2 -translate-y-1/2 bg-[#1DBF73] text-white px-3 py-1.5 rounded-2xl shadow-lg font-black text-xs hover:scale-110 transition-transform cursor-default">
               fiverr.
             </div>
 
-            {/* 6. Stripe */}
             <div className="absolute top-1/2 -right-2 -translate-y-1/2 bg-[#635BFF] text-white px-4 py-2 rounded-2xl shadow-lg font-black text-xs hover:scale-110 transition-transform cursor-default">
               stripe
             </div>
           </div>
 
-          {/* Supported Global Currencies Strip */}
+          {/* Currencies Strip */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             {(['PKR', 'USD', 'EUR', 'GBP'] as const).map((curr) => (
               <button
@@ -842,7 +818,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
                   activeCurrency === curr
                     ? 'bg-[#1A1D20] text-white shadow-md'
-                    : 'bg-white text-[#5F6773] border border-[#F0EAE1] hover:bg-gray-50'
+                    : 'bg-white text-[#5F6773] border border-[#EFE7DE] hover:bg-gray-50'
                 }`}
               >
                 {curr === 'PKR' && '🇵🇰 PKR (Rupee)'}
@@ -857,20 +833,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          7. "24/7 IN-APP SUPPORT" SECTION
+          7. "24/7 IN-APP SUPPORT" (SadaPay Pastel Block Layout)
          ========================================================================= */}
-      <section className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+      <section className="py-20 md:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-[#FFF9F6] rounded-3xl p-8 sm:p-12 lg:p-16 border border-[#F4EBE3] grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="bg-white/90 backdrop-blur-xs rounded-[36px] p-8 sm:p-12 lg:p-16 border border-[#EFE7DE] grid grid-cols-1 lg:grid-cols-12 gap-10 items-center shadow-xs">
             
-            {/* 3D Volumetric 24/7 Block with Speech Bubbles */}
+            {/* Volumetric 3D "24/7" Text Block */}
             <div className="lg:col-span-6 relative flex items-center justify-center min-h-[220px]">
-              {/* Volumetric 3D "24/7" Text */}
               <div className="relative text-7xl sm:text-8xl md:text-9xl font-black text-[#FF6651] tracking-tighter drop-shadow-xl select-none">
                 24/7
               </div>
 
-              {/* Floating 3D Support Speech Bubbles */}
               <div className="absolute top-0 right-10 w-12 h-12 rounded-2xl bg-[#FF6651] text-white flex items-center justify-center font-black text-xl shadow-lg shadow-[#FF6651]/30 transform rotate-12">
                 ?
               </div>
@@ -879,7 +853,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Right: Copy & Talk to us button */}
+            {/* Right: Copy & CTA Button */}
             <div className="lg:col-span-6 space-y-5 text-center lg:text-left">
               <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
                 24/7 in-app support
@@ -904,20 +878,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          8. "REGULATED BY STATE BANK" SECTION
+          8. "REGULATED BY STATE BANK" (Dual 3D Embossed Seals)
          ========================================================================= */}
-      <section id="regulation" className="py-16 md:py-24 bg-[#FCF9F6]">
+      <section id="regulation" className="py-20 md:py-28 relative">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          {/* Dual 3D Embossed Seals */}
           <div className="flex items-center justify-center gap-6">
-            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#F0EAE1] p-3 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#EFE7DE] p-3 flex items-center justify-center">
               <div className="w-full h-full rounded-2xl border-2 border-[#00A389] flex flex-col items-center justify-center text-[#00A389]">
                 <Building2 className="w-6 h-6" />
                 <span className="text-[8px] font-black mt-0.5">SBP</span>
               </div>
             </div>
 
-            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#F0EAE1] p-3 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#EFE7DE] p-3 flex items-center justify-center">
               <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center">
                 <img src={logoImg} alt="TM" className="w-full h-full object-contain filter invert" />
               </div>
@@ -944,9 +917,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          9. "OVER 2 MILLION+ HAPPY USERS!" (Testimonial Video Reviews)
+          9. "OVER 2 MILLION+ HAPPY USERS!" (Video Testimonials)
          ========================================================================= */}
-      <section id="reviews" className="py-20 md:py-28 bg-white border-t border-[#F0EAE1]">
+      <section id="reviews" className="py-20 md:py-28 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1D20] tracking-tight">
@@ -961,14 +934,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             
             {/* Review 1: Bilal (Freelancer) */}
-            <div className="bg-[#FFF9F6] rounded-3xl p-6 border border-[#F4EBE3] flex flex-col justify-between hover:shadow-lg transition">
+            <div className="bg-white/90 backdrop-blur-xs rounded-[32px] p-6 border border-[#EFE7DE] flex flex-col justify-between hover:shadow-lg transition">
               <div className="space-y-4">
-                {/* Video Avatar Thumbnail with Play Button */}
                 <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
-                  {/* Subtle portrait gradient */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-slate-800 to-slate-900" />
                   
-                  {/* Play Overlay */}
                   <div className="relative z-10 w-14 h-14 rounded-full bg-white/90 text-[#FF6651] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
                     <Play className="w-6 h-6 fill-current translate-x-0.5" />
                   </div>
@@ -997,9 +967,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Review 2: Hamza (Founder / Commuter) */}
-            <div className="bg-[#F4FAF8] rounded-3xl p-6 border border-[#E0EFEA] flex flex-col justify-between hover:shadow-lg transition">
+            <div className="bg-white/90 backdrop-blur-xs rounded-[32px] p-6 border border-[#EFE7DE] flex flex-col justify-between hover:shadow-lg transition">
               <div className="space-y-4">
-                {/* Video Thumbnail */}
                 <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950 to-slate-900" />
                   
@@ -1017,7 +986,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-[#E0EFEA] flex items-center justify-between">
+              <div className="mt-4 pt-4 border-t border-[#EFE7DE] flex items-center justify-between">
                 <div>
                   <div className="font-extrabold text-sm text-[#1A1D20]">Hamza Munir</div>
                   <div className="text-xs text-gray-500">Startup Founder, Karachi</div>
@@ -1031,9 +1000,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
 
             {/* Review 3: Ayesha (Overseas Expat) */}
-            <div className="bg-[#FFF9F6] rounded-3xl p-6 border border-[#F4EBE3] flex flex-col justify-between hover:shadow-lg transition">
+            <div className="bg-white/90 backdrop-blur-xs rounded-[32px] p-6 border border-[#EFE7DE] flex flex-col justify-between hover:shadow-lg transition">
               <div className="space-y-4">
-                {/* Video Thumbnail */}
                 <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
                   <div className="absolute inset-0 bg-gradient-to-tr from-rose-950 to-slate-900" />
                   
@@ -1069,13 +1037,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          10. "GET THE APP NOW" CTA BANNER WITH WATERMARK PATTERN & QR CODE
+          10. "GET THE APP NOW" CTA BANNER
          ========================================================================= */}
-      <section className="py-12 md:py-20 bg-[#FCF9F6]">
+      <section className="py-16 md:py-24 relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-[36px] bg-gradient-to-r from-[#FF6651] to-[#FF553C] text-white p-8 sm:p-12 lg:p-16 overflow-hidden shadow-2xl shadow-[#FF6651]/25">
+          <div className="relative rounded-[40px] bg-gradient-to-r from-[#FF6651] to-[#FF553C] text-white p-8 sm:p-12 lg:p-16 overflow-hidden shadow-2xl shadow-[#FF6651]/25">
             
-            {/* Watermark Repeating Typography Background Pattern */}
+            {/* Watermark Repeating Typography Pattern */}
             <div className="absolute inset-0 select-none pointer-events-none opacity-10 flex flex-col justify-around text-4xl sm:text-6xl font-black uppercase whitespace-nowrap -rotate-2">
               <div>Get the app now • Get the app now • Get the app now</div>
               <div>Get the app now • Get the app now • Get the app now</div>
@@ -1084,7 +1052,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
               
-              {/* Left Copy */}
               <div className="lg:col-span-8 space-y-4">
                 <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
                   Get the app now.
@@ -1111,17 +1078,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
               </div>
 
-              {/* Right QR Code Scanner Card */}
+              {/* QR Code Scanner Card */}
               <div className="lg:col-span-4 flex justify-center lg:justify-end">
                 <div className="bg-white text-[#1A1D20] p-6 rounded-3xl shadow-2xl flex flex-col items-center text-center max-w-[220px]">
-                  {/* Clean SVG QR Code */}
                   <div className="w-36 h-36 bg-gray-50 border border-gray-200 rounded-2xl p-2.5 flex items-center justify-center">
                     <svg className="w-full h-full text-[#1A1D20]" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v2h-4v-2zm-4 0h2v4h-2v-4zm2 4h4v4h-4v-4zm2-2h2v2h-2v-2zM5 5h2v2H5V5zm12 0h2v2h-2V5zM5 17h2v2H5v-2z"/>
                     </svg>
                   </div>
                   <span className="text-xs font-black mt-3">Scan to download</span>
-                  <span className="text-[10px] text-gray-400 mt-0.5">iOS & Android</span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">iOS &amp; Android</span>
                 </div>
               </div>
 
@@ -1132,13 +1098,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       </section>
 
       {/* =========================================================================
-          11. MASTER FINTECH FOOTER (SadaPay Style Multi-Column)
+          11. MASTER FINTECH FOOTER
          ========================================================================= */}
-      <footer className="bg-white border-t border-[#F0EAE1] pt-16 pb-12 text-[#5F6773] text-xs">
+      <footer className="pt-16 pb-12 text-[#5F6773] text-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-            {/* Col 1: Brand Info */}
             <div className="col-span-2 space-y-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-2xl bg-[#00A389] p-2 flex items-center justify-center">
@@ -1155,7 +1120,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
             </div>
 
-            {/* Col 2: Products */}
             <div className="space-y-3">
               <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
                 Products
@@ -1169,7 +1133,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </ul>
             </div>
 
-            {/* Col 3: Company */}
             <div className="space-y-3">
               <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
                 Company
@@ -1182,7 +1145,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </ul>
             </div>
 
-            {/* Col 4: Legal & Security */}
             <div className="space-y-3">
               <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
                 Legal &amp; Trust
@@ -1196,8 +1158,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </div>
           </div>
 
-          {/* Bottom Copyright Row */}
-          <div className="pt-8 border-t border-[#F0EAE1] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#9CA3AF]">
+          <div className="pt-8 border-t border-[#EFE7DE] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#9CA3AF]">
             <div>
               © 2026 TransMoney Technologies Inc. All rights reserved.
             </div>
@@ -1217,7 +1178,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl relative">
             <button
               onClick={() => setShowQrModal(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold p-1"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold p-1 cursor-pointer"
             >
               ✕
             </button>
@@ -1240,7 +1201,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 setShowQrModal(false);
                 onOpenAuth('signup');
               }}
-              className="w-full bg-[#FF6651] text-white font-bold py-3 rounded-full text-sm shadow-md"
+              className="w-full bg-[#FF6651] text-white font-bold py-3 rounded-full text-sm shadow-md cursor-pointer"
             >
               Sign Up Online
             </button>
