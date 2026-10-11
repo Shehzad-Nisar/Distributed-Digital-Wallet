@@ -7,6 +7,7 @@ import { MerchantPortal } from './components/MerchantPortal';
 import { AuditorDashboard } from './components/AuditorDashboard';
 import { CurrencyExchange } from './components/CurrencyExchange';
 import { CoreBankingConsole } from './components/CoreBankingConsole';
+import { LandingPage } from './components/LandingPage';
 import { AuthModal } from './components/AuthModal';
 import { CreateAccountModal } from './components/CreateAccountModal';
 import { DepositWithdrawModal } from './components/DepositWithdrawModal';
@@ -18,15 +19,15 @@ import { RefreshCw, X } from 'lucide-react';
 export function App() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
-  const [, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
   const [refreshTrigger, setRefreshTrigger] = useState<number>(0);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [liveToast, setLiveToast] = useState<{ message: string; type: string } | null>(null);
 
-  // Active view: console (Wallet Home), transfer (Send Money), merchant, ledger, exchange, core
-  const [activeTab, setActiveTab] = useState<AppTab>('console');
+  // Active view: landing (SadaPay Clone), console (Wallet Home), transfer, merchant, ledger, exchange, core
+  const [activeTab, setActiveTab] = useState<AppTab>('landing');
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -162,22 +163,24 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
-      {/* Universal Clean FinTech Header */}
-      <Header
-        health={health}
-        currentUser={currentUser}
-        userAccounts={currentUserAccounts}
-        activeAccountId={selectedAccountId}
-        onSelectAccount={(id) => setSelectedAccountId(id)}
-        onOpenAuth={(mode) => {
-          setAuthModalMode(mode);
-          setAuthModalOpen(true);
-        }}
-        onOpenCreateAccount={() => setCreateAccountModalOpen(true)}
-        onLogout={handleLogout}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-      />
+      {/* Universal Clean FinTech Header (only shown in app dashboard views) */}
+      {activeTab !== 'landing' && (
+        <Header
+          health={health}
+          currentUser={currentUser}
+          userAccounts={currentUserAccounts}
+          activeAccountId={selectedAccountId}
+          onSelectAccount={(id) => setSelectedAccountId(id)}
+          onOpenAuth={(mode) => {
+            setAuthModalMode(mode);
+            setAuthModalOpen(true);
+          }}
+          onOpenCreateAccount={() => setCreateAccountModalOpen(true)}
+          onLogout={handleLogout}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+        />
+      )}
 
       {/* Real-Time WebSocket Toast Notification */}
       {liveToast && (
@@ -200,18 +203,35 @@ export function App() {
         </div>
       )}
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
-        {initialLoading ? (
-          <div className="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3 font-mono">
-            <RefreshCw className="w-7 h-7 animate-spin text-emerald-600" />
-            <span className="text-xs tracking-wider text-slate-500 font-medium">
-              Loading your account balances...
-            </span>
-          </div>
-        ) : (
-          <>
-            {/* View 1: Main Wallet Home (SadaPay & Wise Model) */}
-            {activeTab === 'console' && (
+      {activeTab === 'landing' ? (
+        <LandingPage
+          health={health}
+          accounts={accounts}
+          users={users}
+          currentUser={currentUser}
+          onEnterConsole={() => setActiveTab('console')}
+          onOpenAuth={(mode) => {
+            setAuthModalMode(mode);
+            setAuthModalOpen(true);
+          }}
+          onNavigateTab={(tab) => {
+            setActiveTab(tab);
+          }}
+          onSelectAccount={(id) => setSelectedAccountId(id)}
+        />
+      ) : (
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
+          {initialLoading ? (
+            <div className="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3 font-mono">
+              <RefreshCw className="w-7 h-7 animate-spin text-emerald-600" />
+              <span className="text-xs tracking-wider text-slate-500 font-medium">
+                Loading your account balances...
+              </span>
+            </div>
+          ) : (
+            <>
+              {/* View 1: Main Wallet Home (SadaPay & Wise Model) */}
+              {activeTab === 'console' && (
               <WalletHome
                 accounts={accounts}
                 currentUser={currentUser}
@@ -311,54 +331,63 @@ export function App() {
                 onRefreshData={fetchData}
               />
             )}
-          </>
-        )}
-      </main>
+            </>
+          )}
+        </main>
+      )}
 
-      {/* Global Clean FinTech Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-sans">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-black font-mono">TransMoney</span>
-            <span>•</span>
-            <span>Next-Generation Multi-Currency Digital Wallet</span>
+      {/* Global Clean FinTech Footer (shown when inside dashboard tabs) */}
+      {activeTab !== 'landing' && (
+        <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-sans">
+          <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-black font-mono">TransMoney</span>
+              <span>•</span>
+              <span>Next-Generation Multi-Currency Digital Wallet</span>
+            </div>
+            <div className="flex items-center gap-4 text-slate-600">
+              <button
+                onClick={() => setActiveTab('landing')}
+                className="hover:text-black cursor-pointer text-[#FF6651] font-semibold"
+              >
+                Landing UI
+              </button>
+              <button
+                onClick={() => setActiveTab('console')}
+                className="hover:text-black cursor-pointer"
+              >
+                Wallet Home
+              </button>
+              <button
+                onClick={() => setActiveTab('transfer')}
+                className="hover:text-black cursor-pointer"
+              >
+                Send Money
+              </button>
+              <button
+                onClick={() => setActiveTab('merchant')}
+                className="hover:text-black cursor-pointer"
+              >
+                Merchants
+              </button>
+              <button
+                onClick={() => setActiveTab('core')}
+                className="hover:text-black cursor-pointer font-mono text-[11px]"
+              >
+                Core Banking
+              </button>
+              <a
+                href="http://localhost:8080/swagger-ui.html"
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-black font-mono text-[11px]"
+              >
+                API Docs
+              </a>
+            </div>
           </div>
-          <div className="flex items-center gap-4 text-slate-600">
-            <button
-              onClick={() => setActiveTab('console')}
-              className="hover:text-black cursor-pointer"
-            >
-              Wallet Home
-            </button>
-            <button
-              onClick={() => setActiveTab('transfer')}
-              className="hover:text-black cursor-pointer"
-            >
-              Send Money
-            </button>
-            <button
-              onClick={() => setActiveTab('merchant')}
-              className="hover:text-black cursor-pointer"
-            >
-              Merchants
-            </button>
-            <button
-              onClick={() => setActiveTab('core')}
-              className="hover:text-black cursor-pointer font-mono text-[11px]"
-            >
-              Core Banking
-            </button>
-            <a
-              href="http://localhost:8080/swagger-ui.html"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-black font-mono text-[11px]"
-            >
-              API Docs
-            </a>
-          </div>
-        </div>
-      </footer>
+        </footer>
+      )}
 
       {/* Modals */}
       <AuthModal

@@ -2,1040 +2,1251 @@ import React, { useState } from 'react';
 import {
   ArrowRight,
   ArrowUpRight,
-  Check,
   CheckCircle2,
-  ChevronRight,
-  Clock,
-  CreditCard,
   Globe,
-  Layers,
-  RefreshCw,
-  Send,
-  ShieldCheck,
+  Lock,
+  MessageCircle,
+  Play,
+  QrCode,
+  Shield,
+  Star,
   Sparkles,
-  Users,
   Wallet,
-  Zap,
+  Check,
+  Building2,
+  TrendingUp,
 } from 'lucide-react';
-import fintechClusterImg from '../assets/fintech_cluster.jpg';
 import logoImg from '../assets/logo.png';
 import type { Account, SystemHealth, User } from '../types';
 
 interface LandingPageProps {
-  health: SystemHealth | null;
-  accounts: Account[];
-  users: User[];
-  currentUser: User | null;
+  health?: SystemHealth | null;
+  accounts?: Account[];
+  users?: User[];
+  currentUser?: User | null;
   onEnterConsole: () => void;
   onOpenAuth: (mode: 'signin' | 'signup') => void;
-  onNavigateTab?: (tab: 'console' | 'transfer' | 'ledger' | 'architecture') => void;
+  onNavigateTab?: (tab: 'console' | 'transfer' | 'ledger' | 'architecture' | 'exchange' | 'merchant') => void;
   onSelectAccount?: (id: number) => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  health,
-  accounts,
-  users,
-  currentUser,
   onEnterConsole,
   onOpenAuth,
   onNavigateTab,
-  onSelectAccount,
 }) => {
-  const isHealthy = health?.database?.includes('Connected');
-  const totalLiquidity = accounts.reduce((acc, a) => acc + Number(a.balance || 0), 0);
-
-  const navigate = (tab: 'console' | 'transfer' | 'ledger' | 'architecture') => {
+  const handleGoToConsole = () => {
     if (onNavigateTab) {
-      onNavigateTab(tab);
+      onNavigateTab('console');
     } else {
       onEnterConsole();
     }
   };
 
-  // Interactive Transfer Calculator State (Wise style for real users)
-  const [sourceAccId, setSourceAccId] = useState<number>(() => accounts[0]?.id || 1);
-  const [destAccId, setDestAccId] = useState<number>(() => accounts[1]?.id || (accounts[0]?.id ? accounts[0].id : 2));
-  const [transferAmount, setTransferAmount] = useState<string>('5000');
-  const [transferStatus, setTransferStatus] = useState<'idle' | 'processing' | 'success'>('idle');
-
-  // Interactive 4-Step Guide
-  const [activeStepIndex, setActiveStepIndex] = useState<number>(1);
-
-  // FAQ Accordion State
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  const sourceAcc = accounts.find((a) => a.id === sourceAccId) || accounts[0] || {
-    id: 1,
-    accountNumber: 'ACC-1001-NTH',
-    balance: 50000,
-    currency: 'PKR',
-    status: 'ACTIVE',
-    user: { fullName: 'Alice Johnson', username: 'alice' },
-  };
-
-  const destAcc = accounts.find((a) => a.id === destAccId) || accounts[1] || {
-    id: 2,
-    accountNumber: 'ACC-2002-CEN',
-    balance: 75000,
-    currency: 'PKR',
-    status: 'ACTIVE',
-    user: { fullName: 'Bob Smith', username: 'bob' },
-  };
-
-  const handleSimulateTransfer = () => {
-    if (transferStatus !== 'idle') return;
-    setTransferStatus('processing');
-    setTimeout(() => {
-      setTransferStatus('success');
-      setTimeout(() => {
-        setTransferStatus('idle');
-      }, 4000);
-    }, 1200);
-  };
-
-  const userSteps = [
-    {
-      step: 1,
-      title: 'Sign Up in 60 Seconds',
-      summary: 'Quick & Effortless',
-      desc: 'Create your digital wallet account instantly with zero paperwork. Choose your preferred currency and start managing money immediately.',
-      actionText: 'Register Free Account',
-    },
-    {
-      step: 2,
-      title: 'Select Sender & Recipient',
-      summary: 'Pick Any Contact',
-      desc: 'Choose which account to send from and select your recipient by account number or name across our entire regional network.',
-      actionText: 'Explore Contacts',
-    },
-    {
-      step: 3,
-      title: 'Review Amount & Free Rate',
-      summary: 'Zero Hidden Fees',
-      desc: 'Enter the amount you wish to transfer. What you see is exactly what they get — zero transfer charges, zero surprises.',
-      actionText: 'Check Rates',
-    },
-    {
-      step: 4,
-      title: 'Instant Delivery',
-      summary: 'Under 1 Second',
-      desc: 'Funds arrive in your recipient’s balance in milliseconds with immediate digital receipts and verified account protection.',
-      actionText: 'Send Money Now',
-    },
-  ];
+  // Interactive UI states for micro-interactions
+  const [activeNumberTab, setActiveNumberTab] = useState<'pakistan' | 'international'>('pakistan');
+  const [cardFrozen, setCardFrozen] = useState<boolean>(false);
+  const [activeCurrency, setActiveCurrency] = useState<'PKR' | 'USD' | 'EUR' | 'GBP'>('PKR');
+  const [showQrModal, setShowQrModal] = useState<boolean>(false);
 
   return (
-    <div className="space-y-24 pb-20 font-sans text-slate-900 bg-white">
-      {/* =====================================================================
-          1. HERO SECTION (Wise + Revolut Style for Real Users)
-          ===================================================================== */}
-      <section className="relative pt-6 sm:pt-14 pb-12 overflow-hidden bg-grid-tech border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+    <div className="min-h-screen bg-[#FCF9F6] text-[#1A1D20] font-sans antialiased selection:bg-[#FF6651] selection:text-white relative overflow-x-hidden">
+      {/* =========================================================================
+          1. NAVIGATION BAR (SadaPay Authentic Layout)
+         ========================================================================= */}
+      <header className="sticky top-0 z-50 bg-[#FCF9F6]/90 backdrop-blur-md border-b border-[#F0EAE1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          {/* Left: Brand Identity */}
+          <div className="flex items-center gap-8">
+            <a href="#top" className="flex items-center gap-2.5 group cursor-pointer">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center shadow-sm shadow-[#00A389]/20 group-hover:scale-105 transition-transform">
+                <img
+                  src={logoImg}
+                  alt="TransMoney"
+                  className="w-full h-full object-contain filter invert"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-xl tracking-tight text-[#1A1D20] leading-none">
+                  TransMoney
+                </span>
+                <span className="text-[10px] font-semibold text-[#00A389] tracking-wider uppercase mt-0.5">
+                  Digital Wallet
+                </span>
+              </div>
+            </a>
+
+            {/* Middle: SadaPay Navigation Links */}
+            <nav className="hidden lg:flex items-center gap-1 text-sm font-medium text-[#4B5563]">
+              <a
+                href="#features"
+                className="px-4 py-2 rounded-full bg-white shadow-xs text-[#1A1D20] font-semibold transition"
+              >
+                Personal
+              </a>
+              <a
+                href="#international"
+                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition flex items-center gap-1.5"
+              >
+                <span>Business</span>
+                <span className="text-[10px] uppercase font-bold bg-[#FFECE7] text-[#FF6651] px-2 py-0.5 rounded-full">
+                  Biz
+                </span>
+              </a>
+              <a
+                href="#security"
+                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+              >
+                Security
+              </a>
+              <a
+                href="#reviews"
+                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+              >
+                Reviews
+              </a>
+              <a
+                href="#regulation"
+                className="px-4 py-2 rounded-full hover:text-[#1A1D20] hover:bg-black/5 transition"
+              >
+                Regulations
+              </a>
+            </nav>
+          </div>
+
+          {/* Right: Quick Console Link + Auth CTAs */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleGoToConsole}
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-[#00A389] hover:bg-[#E6F7F3] rounded-full border border-[#00A389]/30 transition cursor-pointer"
+            >
+              <Wallet className="w-3.5 h-3.5" />
+              <span>Launch Wallet Console</span>
+            </button>
+
+            <button
+              onClick={() => onOpenAuth('signin')}
+              className="text-sm font-semibold text-[#1A1D20] hover:text-[#FF6651] px-3 py-2 rounded-full transition cursor-pointer"
+            >
+              Log In
+            </button>
+
+            <button
+              onClick={() => onOpenAuth('signup')}
+              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-sm font-bold px-5 py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer flex items-center gap-1.5"
+            >
+              <span>Open an account</span>
+              <ArrowUpRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* =========================================================================
+          2. HERO SECTION ("Break Free From Banking Hassles")
+         ========================================================================= */}
+      <section id="top" className="relative pt-12 pb-20 md:pt-20 md:pb-28 overflow-hidden">
+        {/* Soft background glow orbs */}
+        <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#FFE7DF]/60 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-40 right-10 w-[420px] h-[420px] bg-[#E1F7F1]/60 rounded-full blur-3xl pointer-events-none -z-10" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
             
-            {/* Left Column: Consumer Value Proposition */}
-            <div className="lg:col-span-7 space-y-6 text-left">
-              {/* Product Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white shadow-2xs font-mono text-xs">
-                <span className={`w-2.5 h-2.5 rounded-full ${isHealthy ? 'bg-emerald-500 animate-pulse' : 'bg-emerald-500'}`} />
-                <span className="font-semibold text-slate-800 tracking-tight">FAST &amp; SECURE</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-emerald-700 font-bold">ZERO HIDDEN FEES</span>
-                <span className="text-slate-300">|</span>
-                <span className="text-slate-600">INSTANT TRANSFERS</span>
+            {/* Left Column: Heading, Subtitle & Primary CTA */}
+            <div className="lg:col-span-6 space-y-6 text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E8F8F5] border border-[#00A389]/20 text-[#00A389] text-xs font-bold tracking-wide">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Next-Gen Multi-Currency Digital Banking</span>
               </div>
 
-              {/* Main Headline */}
-              <div className="space-y-4">
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-slate-950 leading-[1.08] uppercase">
-                  Move Money Anywhere. <br />
-                  <span className="bg-gradient-to-r from-slate-900 via-slate-700 to-slate-500 bg-clip-text text-transparent">
-                    Instantly.
-                  </span>
-                </h1>
-                <p className="text-base sm:text-lg text-slate-600 font-normal max-w-2xl leading-relaxed font-sans">
-                  Send payments across personal and business accounts in seconds. Enjoy instant transfers,
-                  zero hidden charges, and bank-grade protection on every transaction.
-                </p>
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-[#1A1D20] tracking-tight leading-[1.08]">
+                Break Free From <br />
+                <span className="text-[#1A1D20]">Banking Hassles</span>
+              </h1>
+
+              <p className="text-base sm:text-lg text-[#5F6773] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                Say goodbye to paperwork, long bank queues, and hidden branch fees.
+                Experience lightning-fast zero-fee money transfers, a gorgeous numberless card,
+                and seamless global payments.
+              </p>
+
+              {/* 5-Star Social Proof */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
+                <div className="flex items-center gap-1 text-[#FFB800]">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-5 h-5 fill-current" />
+                  ))}
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-[#374151]">
+                  Rated <span className="font-extrabold text-[#1A1D20]">4.8 / 5</span> by 2M+ happy users
+                </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-3">
                 <button
                   onClick={() => onOpenAuth('signup')}
-                  className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-slate-950 text-white font-semibold text-sm hover:bg-slate-800 transition active:scale-[0.98] cursor-pointer shadow-md group"
+                  className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
                 >
-                  <Sparkles className="w-4 h-4 text-emerald-400" />
-                  <span>Open Free Account</span>
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                  <span>Get the app</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
 
                 <button
-                  onClick={() => navigate('transfer')}
-                  className="flex items-center gap-2 px-5 py-3.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-900 text-sm font-semibold transition active:scale-[0.98] cursor-pointer shadow-2xs"
+                  onClick={() => setShowQrModal(true)}
+                  className="w-full sm:w-auto bg-white hover:bg-[#F7F3EE] border border-[#E3DBD2] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
-                  <Send className="w-4 h-4 text-slate-700" />
-                  <span>Send Money Now</span>
+                  <QrCode className="w-5 h-5 text-[#FF6651]" />
+                  <span>Scan QR Code</span>
                 </button>
-
-                <button
-                  onClick={onEnterConsole}
-                  className="flex items-center gap-2 px-4 py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-mono transition cursor-pointer"
-                >
-                  <Layers className="w-4 h-4" />
-                  <span>Explore App</span>
-                </button>
-
-                {currentUser ? (
-                  <button
-                    onClick={onEnterConsole}
-                    className="flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-mono transition cursor-pointer"
-                    title={`Signed in as ${currentUser.fullName}`}
-                  >
-                    <Wallet className="w-3.5 h-3.5 text-slate-700" />
-                    <span>{currentUser.fullName}</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onOpenAuth('signin')}
-                    className="flex items-center gap-1.5 px-3.5 py-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs font-mono transition cursor-pointer"
-                  >
-                    <Users className="w-3.5 h-3.5 text-slate-700" />
-                    <span>Sign In</span>
-                  </button>
-                )}
               </div>
 
-              {/* Consumer Trust Badges */}
-              <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-slate-600 font-mono">
+              {/* Mini trust checklist */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-6 pt-4 text-xs font-semibold text-[#6B7280]">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-emerald-600" />
-                  <span>Under 1 Second Delivery</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#00A389]" />
+                  <span>Zero account opening fees</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-slate-800" />
-                  <span>100% Protected Balance</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#00A389]" />
+                  <span>Regulated by State Bank</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <Check className="w-4 h-4 text-slate-800" />
-                  <span>Zero Transfer Fees</span>
+                  <CheckCircle2 className="w-4 h-4 text-[#00A389]" />
+                  <span>Mastercard Worldwide</span>
                 </div>
               </div>
             </div>
 
-            {/* Right Column: Wise-Style Instant Money Transfer Widget */}
-            <div className="lg:col-span-5">
-              <div className="rounded-2xl border border-slate-200/90 bg-white p-6 shadow-xl glow-card space-y-5 relative">
-                {/* Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-mono text-xs font-bold text-slate-900 uppercase tracking-wider">
-                      Instant Money Transfer
+            {/* Right Column: High-Fidelity 3D Mockup Stage */}
+            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[440px] sm:min-h-[520px]">
+              {/* Atmospheric Backing Radial Glow */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-72 sm:w-96 h-72 sm:h-96 rounded-full bg-gradient-to-tr from-[#00A389]/15 via-[#FF6651]/15 to-transparent blur-2xl" />
+              </div>
+
+              {/* 3D Floating Ecosystem Icons */}
+              {/* Spotify Icon */}
+              <div className="absolute top-2 left-6 sm:left-10 z-20 animate-bounce duration-1000 bg-[#191414] text-white p-3 rounded-2xl shadow-xl flex items-center justify-center border border-white/20">
+                <svg className="w-6 h-6 fill-[#1DB954]" viewBox="0 0 24 24">
+                  <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.435-5.308-1.76-8.792-.963-.335.077-.67-.133-.746-.468-.077-.334.132-.67.467-.746 3.808-.87 7.076-.502 9.721 1.113.294.18.387.563.207.857zm1.224-2.719c-.226.368-.707.483-1.075.257-2.69-1.654-6.79-2.133-9.972-1.167-.413.125-.85-.108-.975-.521-.125-.413.108-.85.521-.975 3.633-1.102 8.167-.568 11.244 1.33.368.227.483.708.257 1.076zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.018-.13-1.168-.624-.15-.494.13-1.018.624-1.168 3.532-1.072 9.404-.868 13.153 1.357.444.263.59.84.327 1.284-.264.444-.84.59-1.284.327z"/>
+                </svg>
+              </div>
+
+              {/* Netflix Icon */}
+              <div className="absolute bottom-12 left-2 sm:left-4 z-20 bg-black text-[#E50914] font-black text-xl px-3 py-2 rounded-2xl shadow-xl border border-white/20">
+                N
+              </div>
+
+              {/* Foodpanda Icon */}
+              <div className="absolute top-10 right-4 sm:right-8 z-20 bg-[#D70F64] text-white p-2.5 rounded-2xl shadow-xl border border-white/20">
+                <span className="text-xs font-black tracking-tight">🐼 Panda</span>
+              </div>
+
+              {/* Amazon / Careem Icon */}
+              <div className="absolute bottom-20 right-2 sm:right-6 z-20 bg-white text-[#FF9900] p-2.5 rounded-2xl shadow-xl border border-[#F0EAE1]">
+                <span className="text-xs font-extrabold text-black">amazon</span>
+              </div>
+
+              {/* The Central Smartphone Mockup (Tilted Perspective) */}
+              <div className="relative z-10 w-[240px] sm:w-[270px] h-[480px] sm:h-[530px] bg-gradient-to-b from-[#2B2D31] to-[#121316] rounded-[44px] p-2.5 shadow-2xl shadow-black/35 ring-1 ring-white/20 transform rotate-1 sm:rotate-2 hover:rotate-0 transition-transform duration-500">
+                {/* Phone Notch / Island */}
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 w-24 h-4 bg-black rounded-full z-30 flex items-center justify-end px-2">
+                  <div className="w-2 h-2 rounded-full bg-[#00A389]" />
+                </div>
+
+                {/* Inner Screen Canvas */}
+                <div className="w-full h-full bg-[#FBF9F6] rounded-[36px] overflow-hidden flex flex-col pt-8 px-4 pb-4 select-none">
+                  {/* App Header */}
+                  <div className="flex items-center justify-between py-1">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-[#00A389] text-white font-extrabold text-xs flex items-center justify-center">
+                        T
+                      </div>
+                      <span className="text-xs font-bold text-[#1A1D20]">TransMoney</span>
+                    </div>
+                    <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  </div>
+
+                  {/* Main Wallet Balance Card inside App */}
+                  <div className="mt-3 bg-white rounded-2xl p-3.5 shadow-xs border border-[#F0EAE1]">
+                    <span className="text-[10px] uppercase font-bold text-[#8C939E] tracking-wider block">
+                      Current Balance
                     </span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded bg-emerald-50 text-[10px] font-mono text-emerald-800 font-bold border border-emerald-200">
-                    LIVE CALCULATOR
-                  </span>
-                </div>
-
-                {/* Sender Account */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-500 font-mono uppercase">
-                    You Send From
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={sourceAccId}
-                      onChange={(e) => setSourceAccId(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm font-sans font-medium focus:outline-none focus:ring-2 focus:ring-slate-950 shadow-2xs"
-                    >
-                      {accounts.length > 0 ? (
-                        accounts.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.user?.fullName || 'User'} ({a.accountNumber}) — {Number(a.balance).toLocaleString()} PKR
-                          </option>
-                        ))
-                      ) : (
-                        <>
-                          <option value={1}>Alice Johnson (ACC-1001-NTH) — 50,000 PKR</option>
-                          <option value={2}>Bob Smith (ACC-2002-CEN) — 75,000 PKR</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Recipient Account */}
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-medium text-slate-500 font-mono uppercase">
-                    Recipient Receives At
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={destAccId}
-                      onChange={(e) => setDestAccId(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm font-sans font-medium focus:outline-none focus:ring-2 focus:ring-slate-950 shadow-2xs"
-                    >
-                      {accounts.length > 0 ? (
-                        accounts.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.user?.fullName || 'User'} ({a.accountNumber}) — {Number(a.balance).toLocaleString()} PKR
-                          </option>
-                        ))
-                      ) : (
-                        <>
-                          <option value={2}>Bob Smith (ACC-2002-CEN) — 75,000 PKR</option>
-                          <option value={3}>Charlie Brown (ACC-3003-STH) — 30,000 PKR</option>
-                        </>
-                      )}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Amount with Presets */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-slate-500 font-mono uppercase">
-                      Amount to Send
-                    </label>
-                    <span className="text-[11px] text-emerald-700 font-mono font-bold">Transfer Fee: 0.00 PKR (Free)</span>
-                  </div>
-                  <div className="relative flex items-center">
-                    <input
-                      type="number"
-                      value={transferAmount}
-                      onChange={(e) => setTransferAmount(e.target.value)}
-                      placeholder="e.g. 5000"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono text-base font-bold focus:outline-none focus:ring-2 focus:ring-slate-950 shadow-2xs"
-                    />
-                    <span className="absolute right-3.5 font-mono text-xs font-bold text-slate-400">PKR</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 pt-1">
-                    {['1000', '5000', '15000', '50000'].map((preset) => (
-                      <button
-                        key={preset}
-                        onClick={() => setTransferAmount(preset)}
-                        type="button"
-                        className={`px-2.5 py-1 rounded text-[11px] font-mono border cursor-pointer transition ${
-                          transferAmount === preset
-                            ? 'bg-slate-900 text-white border-slate-900 font-bold'
-                            : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                        }`}
-                      >
-                        +{Number(preset).toLocaleString()}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Transparent Guarantee Summary */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 font-sans text-xs space-y-2">
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Transfer Speed:</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1">
-                      <Zap className="w-3.5 h-3.5" /> Instant (&lt; 1 sec)
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Transfer Charges:</span>
-                    <span className="text-slate-900 font-semibold">0.00 PKR (Completely Free)</span>
-                  </div>
-                  <div className="flex justify-between items-center text-slate-600">
-                    <span>Recipient Gets Exactly:</span>
-                    <span className="text-slate-950 font-bold text-sm">
-                      {Number(transferAmount || 0).toLocaleString()} PKR
-                    </span>
-                  </div>
-                </div>
-
-                {/* Transfer Animation */}
-                {transferStatus !== 'idle' && (
-                  <div className="p-3 rounded-xl border border-emerald-200 bg-emerald-50/70 font-mono text-xs space-y-2 animate-fadeIn">
-                    <div className="flex items-center justify-between font-bold text-emerald-950">
-                      <span className="flex items-center gap-1.5">
-                        {transferStatus === 'processing' ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600" />
-                            Sending to {destAcc.user?.fullName || 'recipient'}...
-                          </>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            Transfer Delivered Successfully!
-                          </>
-                        )}
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-900 font-bold">
-                        {transferStatus === 'success' ? 'COMPLETED' : 'SENDING'}
-                      </span>
+                    <div className="text-xl font-black text-[#1A1D20] mt-0.5">
+                      ₨ 142,500<span className="text-xs text-[#8C939E]">.00</span>
+                    </div>
+                    <div className="text-[10px] text-[#00A389] font-bold mt-1 flex items-center gap-1">
+                      <TrendingUp className="w-3 h-3" />
+                      <span>Zero monthly fees</span>
                     </div>
                   </div>
-                )}
 
-                {/* Actions */}
-                <div className="flex items-center gap-2 pt-1">
-                  <button
-                    onClick={handleSimulateTransfer}
-                    disabled={transferStatus !== 'idle'}
-                    className="flex-1 py-3 px-4 rounded-xl bg-slate-950 hover:bg-slate-800 disabled:opacity-50 text-white font-semibold text-xs font-mono uppercase tracking-wider transition active:scale-[0.99] cursor-pointer flex items-center justify-center gap-2 shadow-sm"
-                  >
-                    <Send className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>
-                      {transferStatus === 'idle' ? 'Send Money Instantly' : 'Delivering Payment...'}
+                  {/* Quick Action Grid */}
+                  <div className="grid grid-cols-3 gap-2 mt-3">
+                    <div className="bg-[#E8F8F5] p-2 rounded-xl text-center flex flex-col items-center">
+                      <div className="w-6 h-6 rounded-full bg-[#00A389] text-white flex items-center justify-center text-[10px] mb-1">
+                        +
+                      </div>
+                      <span className="text-[9px] font-bold text-[#00A389]">Load</span>
+                    </div>
+                    <div className="bg-[#FFF0ED] p-2 rounded-xl text-center flex flex-col items-center">
+                      <div className="w-6 h-6 rounded-full bg-[#FF6651] text-white flex items-center justify-center text-[10px] mb-1">
+                        ↗
+                      </div>
+                      <span className="text-[9px] font-bold text-[#FF6651]">Send</span>
+                    </div>
+                    <div className="bg-white p-2 rounded-xl text-center flex flex-col items-center border border-[#F0EAE1]">
+                      <div className="w-6 h-6 rounded-full bg-[#1A1D20] text-white flex items-center justify-center text-[10px] mb-1">
+                        ▦
+                      </div>
+                      <span className="text-[9px] font-bold text-[#1A1D20]">Pay</span>
+                    </div>
+                  </div>
+
+                  {/* Recent Activity List inside App */}
+                  <div className="mt-3 flex-1 overflow-hidden space-y-1.5">
+                    <span className="text-[10px] font-bold text-[#8C939E] uppercase tracking-wider block">
+                      Recent Activity
                     </span>
-                  </button>
+                    
+                    <div className="bg-white p-2 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#E50914] text-white text-[10px] font-bold flex items-center justify-center">
+                          N
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Netflix</span>
+                          <span className="text-[8px] text-[#8C939E]">Subscription</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#1A1D20]">-₨ 1,100</span>
+                    </div>
 
-                  <button
-                    onClick={() => {
-                      if (onSelectAccount) {
-                        onSelectAccount(sourceAcc.id);
-                      }
-                      navigate('transfer');
-                    }}
-                    title="Open Full Console"
-                    className="py-3 px-4 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-800 font-semibold text-xs font-mono transition cursor-pointer flex items-center gap-1"
-                  >
-                    <span>Full App</span>
-                    <ArrowUpRight className="w-3.5 h-3.5" />
-                  </button>
+                    <div className="bg-white p-2 rounded-xl flex items-center justify-between border border-[#F0EAE1]">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-[#00A389] text-white text-[10px] font-bold flex items-center justify-center">
+                          $
+                        </div>
+                        <div className="text-left">
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Upwork Global</span>
+                          <span className="text-[8px] text-[#00A389]">Received</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] font-bold text-[#00A389]">+₨ 126,000</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
 
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          2. LIVE NETWORK STATS & TRUST STRIP
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="p-4 sm:p-6 rounded-2xl border border-slate-200 bg-slate-50/70 font-sans shadow-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-            <div className="flex items-center gap-3">
-              <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse" />
-              <div>
-                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-widest font-mono">
-                  TransMoney Live Network Health
-                </h3>
-                <p className="text-[11px] text-slate-500">
-                  Real-time network availability, instant payment routing, and customer fund protection.
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono">
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 shadow-2xs">
-                Network Status: <strong className="text-emerald-700">100% Operational</strong>
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-white border border-slate-200 text-slate-700 shadow-2xs">
-                Average Speed: <strong className="text-slate-950">&lt; 1 Second</strong>
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Regional Hubs
-              </span>
-              <span className="text-lg font-black text-slate-950 mt-1 block">4 Active Regions</span>
-              <span className="text-[11px] text-slate-500">North, Central, South, Enterprise</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Transfer Success Rate
-              </span>
-              <span className="text-lg font-black text-emerald-700 mt-1 block">100% Guaranteed</span>
-              <span className="text-[11px] text-slate-500">Zero Lost or Failed Wires</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Hidden Fees
-              </span>
-              <span className="text-lg font-black text-slate-950 mt-1 block">0.00 PKR (Free)</span>
-              <span className="text-[11px] text-slate-500">Free Peer-to-Peer Transfers</span>
-            </div>
-
-            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-2xs">
-              <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block font-mono">
-                Total Customer Funds
-              </span>
-              <span className="text-lg font-black text-slate-950 mt-1 block">
-                {totalLiquidity.toLocaleString('en-US', { minimumFractionDigits: 0 })} PKR
-              </span>
-              <span className="text-[11px] text-slate-500">
-                {accounts.length} Accounts • {users.length} Active Users
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          3. VISUAL PRODUCT SHOWCASE (3D Fintech Cards Banner)
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="rounded-3xl border border-slate-200 overflow-hidden bg-white shadow-xl glow-card">
-          <div className="grid grid-cols-1 lg:grid-cols-12 items-center">
-            <div className="lg:col-span-5 p-8 sm:p-12 space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-mono text-slate-700">
-                <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
-                <span>ALL-IN-ONE DIGITAL WALLET</span>
-              </div>
-              <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">
-                One Wallet. <br />
-                Instant Access.
-              </h2>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Manage your money with complete peace of mind. Check your real-time balance, transfer
-                funds to friends and family in seconds, and track every transaction with instant digital receipts.
-              </p>
-              <div className="pt-2 flex items-center gap-3">
-                <button
-                  onClick={onEnterConsole}
-                  className="px-5 py-2.5 rounded-xl bg-slate-950 text-white font-semibold text-xs font-mono uppercase tracking-wider hover:bg-slate-800 transition cursor-pointer"
-                >
-                  View Accounts
-                </button>
-                <button
-                  onClick={() => navigate('ledger')}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-800 font-semibold text-xs font-mono hover:bg-slate-50 transition cursor-pointer"
-                >
-                  Transaction Activity
-                </button>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7 bg-slate-50 border-t lg:border-t-0 lg:border-l border-slate-200 p-4 sm:p-8 flex items-center justify-center">
-              <img
-                src={fintechClusterImg}
-                alt="TransMoney Digital Wallet Ecosystem"
-                className="w-full h-auto rounded-2xl shadow-lg border border-slate-200 object-cover max-h-[380px]"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          4. CUSTOMER BENEFITS BENTO GRID (Revolut / PayPal Style)
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">
-            Why You’ll Love It
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-950 uppercase tracking-tight">
-            Built for Everyday Financial Freedom
-          </h2>
-          <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            Everything you need to send, receive, and grow your money with zero hassle.
-          </p>
-        </div>
-
-        {/* Bento Grid Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
-          {/* Card 1: Instant Peer-to-Peer Transfers (Spans 2 cols) */}
-          <div className="md:col-span-2 p-7 rounded-2xl border border-slate-200 bg-white glow-card-hover space-y-6 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <Send className="w-5 h-5 text-emerald-400" />
-                </div>
-                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">
-                  INSTANT PAYMENTS
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-slate-950 uppercase tracking-tight">
-                Send Money in Seconds
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Transfer money directly to any friend, family member, or merchant in real-time.
-                Say goodbye to waiting days for inter-bank clearing — your payment lands in their wallet instantly.
-              </p>
-            </div>
-
-            {/* Visual Receipt Card */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 font-sans text-xs space-y-3">
-              <div className="flex items-center justify-between text-[11px] text-slate-500 pb-2 border-b border-slate-200">
-                <span className="font-semibold text-slate-700">Recent Payment Proof</span>
-                <span className="text-emerald-700 font-bold">Delivered Instantly</span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-white border border-slate-200 shadow-2xs">
+              {/* The Iconic Floating Vertical TransMoney Debit Card (SadaPay Style) */}
+              <div className="absolute -bottom-6 -right-2 sm:right-2 z-30 w-[170px] sm:w-[190px] h-[260px] sm:h-[290px] rounded-2xl bg-gradient-to-br from-[#00A389] via-[#00947C] to-[#006F5D] text-white p-4 shadow-2xl shadow-[#00A389]/40 transform rotate-6 hover:rotate-3 hover:scale-105 transition-all duration-300 flex flex-col justify-between border border-white/30 backdrop-blur-xs select-none">
+                {/* Card Top: TransMoney Brand + EMV Chip */}
                 <div>
-                  <span className="font-bold text-slate-900 block text-sm">Bob Smith</span>
-                  <span className="text-[11px] text-slate-500">ACC-2002-CEN • Today at 10:45 AM</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-black tracking-wider uppercase text-white/95">
+                      TransMoney
+                    </span>
+                    <span className="text-[10px] font-bold bg-white/20 px-1.5 py-0.5 rounded-sm">
+                      DEBIT
+                    </span>
+                  </div>
+
+                  {/* 3D Chip & Contactless Wave */}
+                  <div className="flex items-center justify-between mt-6">
+                    <div className="w-8 h-6 rounded-md bg-gradient-to-br from-[#F5D061] to-[#D4A325] border border-[#FFE885] shadow-xs flex items-center justify-center">
+                      <div className="w-5 h-4 border border-black/20 rounded-xs" />
+                    </div>
+                    {/* Contactless waves SVG */}
+                    <svg className="w-4 h-4 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M8.5 16.5a5 5 0 0 1 0-7" />
+                      <path d="M12 19a8.5 8.5 0 0 0 0-14" />
+                      <path d="M15.5 21.5a12 12 0 0 0 0-21" />
+                    </svg>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="font-bold text-emerald-600 text-sm block">+5,000 PKR</span>
-                  <span className="text-[10px] text-slate-400">Zero Fee</span>
+
+                {/* Card Middle: Minimal Numberless Design */}
+                <div className="space-y-1">
+                  <div className="text-[9px] uppercase tracking-widest text-white/60 font-mono">
+                    NUMBERLESS CARD
+                  </div>
+                  <div className="text-xs font-bold tracking-wide text-white drop-shadow-xs">
+                    AHMED KHAN
+                  </div>
+                </div>
+
+                {/* Card Bottom: Mastercard Interlocking Circles */}
+                <div className="flex items-end justify-between">
+                  <div className="text-[8px] font-semibold text-white/70">
+                    WORLD
+                  </div>
+                  <div className="flex items-center -space-x-2">
+                    <div className="w-6 h-6 rounded-full bg-[#EB001B] shadow-xs" />
+                    <div className="w-6 h-6 rounded-full bg-[#F79E1B]/90 shadow-xs" />
+                  </div>
                 </div>
               </div>
+
             </div>
           </div>
-
-          {/* Card 2: Bank-Grade Protection */}
-          <div className="p-7 rounded-2xl border border-slate-200 bg-white glow-card-hover space-y-6 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <ShieldCheck className="w-5 h-5 text-emerald-400" />
-                </div>
-                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">
-                  PROTECTION
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-slate-950 uppercase tracking-tight">
-                Bank-Grade Security
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Your money and personal details are protected by advanced multi-layer encryption
-                and automated fraud defense around the clock.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-2">
-              <div className="flex items-center gap-2 text-slate-800 font-semibold">
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span>End-to-End Encryption</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-800 font-semibold">
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span>Zero Unauthorized Transfers</span>
-              </div>
-              <div className="flex items-center gap-2 text-slate-800 font-semibold">
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span>Guaranteed Account Protection</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Real-Time Balance Tracking */}
-          <div className="p-7 rounded-2xl border border-slate-200 bg-white glow-card-hover space-y-6 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <Wallet className="w-5 h-5 text-emerald-400" />
-                </div>
-                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">
-                  TRANSPARENCY
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-slate-950 uppercase tracking-tight">
-                Real-Time Balance Updates
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Never wonder where your money went. Every deposit, payment, and transfer is updated
-                to the exact second with complete digital statements.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1.5">
-              <div className="text-[11px] text-slate-500 font-mono">Instant Notifications:</div>
-              <div className="p-2 rounded bg-white border border-slate-200 font-sans text-[11px]">
-                <strong className="text-slate-900">Payment Confirmed:</strong> You received 5,000 PKR from Alice.
-              </div>
-              <span className="text-[10px] text-emerald-700 font-bold block pt-1">
-                ✓ 100% Accurate Balance Guarantee
-              </span>
-            </div>
-          </div>
-
-          {/* Card 4: High-Speed Regional Network (Spans 2 cols) */}
-          <div className="md:col-span-2 p-7 rounded-2xl border border-slate-200 bg-white glow-card-hover space-y-6 flex flex-col justify-between">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
-                  <Globe className="w-5 h-5 text-emerald-400" />
-                </div>
-                <span className="text-[11px] font-mono font-bold px-2.5 py-1 rounded bg-slate-100 border border-slate-200 text-slate-700">
-                  NETWORK RELIABILITY
-                </span>
-              </div>
-              <h3 className="text-xl font-black text-slate-950 uppercase tracking-tight">
-                Always Online Across All Regions
-              </h3>
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
-                Powered by a high-availability multi-hub network, TransMoney guarantees 99.99% uptime.
-                Even during peak traffic hours, payments process smoothly without delays or server crashes.
-              </p>
-            </div>
-
-            {/* 4 Regional Hubs Preview */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-xs">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mb-1" />
-                <span className="font-bold text-slate-900 block text-xs">North Region</span>
-                <span className="text-[10px] text-slate-500">Online • Active</span>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mb-1" />
-                <span className="font-bold text-slate-900 block text-xs">Central Region</span>
-                <span className="text-[10px] text-slate-500">Online • Active</span>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mb-1" />
-                <span className="font-bold text-slate-900 block text-xs">South Region</span>
-                <span className="text-[10px] text-slate-500">Online • Active</span>
-              </div>
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block mb-1" />
-                <span className="font-bold text-slate-900 block text-xs">Enterprise Hub</span>
-                <span className="text-[10px] text-slate-500">Online • Active</span>
-              </div>
-            </div>
-          </div>
-
         </div>
       </section>
 
-      {/* =====================================================================
-          5. HOW IT WORKS (Simple 4-Step User Journey)
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="rounded-3xl border border-slate-200 bg-slate-50/60 p-8 sm:p-12 space-y-8">
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">
-              Simple &amp; Seamless
-            </span>
-            <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">
-              How TransMoney Works in 4 Steps
+      {/* =========================================================================
+          3. FEATURE CAROUSEL / TRIO CARDS (Free transfers, Global card, Bills)
+         ========================================================================= */}
+      <section id="features" className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
+              Designed For The Modern World
             </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-sans">
-              Sending money has never been this simple. Here is how easy it is to move funds.
+            <p className="mt-3 text-base text-[#5F6773]">
+              Every feature crafted with care to give you total control over your money without hidden charges.
             </p>
           </div>
 
-          {/* Stepper Tabs */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 font-sans text-xs">
-            {userSteps.map((step) => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Card 1: Free money transfers (Origami Paper Airplane + Gold Coins) */}
+            <div className="group bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  Free money transfers
+                </h3>
+                <p className="mt-3 text-sm text-[#5F6773] leading-relaxed">
+                  Send and receive money instantly to any bank account or mobile wallet across the nation with zero fees. Instant Raast settlement.
+                </p>
+              </div>
+
+              {/* 3D Visual: Soaring Paper Airplane with Golden Coins */}
+              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-radial from-[#FFE6DF]/60 to-transparent rounded-2xl" />
+                
+                {/* 3D Paper Airplane SVG Illustration */}
+                <div className="relative z-10 transform -rotate-12 group-hover:translate-x-2 group-hover:-translate-y-2 transition-transform duration-500">
+                  <svg className="w-32 h-32 drop-shadow-2xl" viewBox="0 0 120 120" fill="none">
+                    <polygon points="10,60 110,15 70,105 55,68" fill="#FF806E" />
+                    <polygon points="55,68 110,15 70,105" fill="#FF6651" />
+                    <polygon points="10,60 110,15 55,68" fill="#FFA596" />
+                    <polygon points="55,68 70,105 60,78" fill="#E54D34" />
+                  </svg>
+                </div>
+
+                {/* Floating 3D Gold Coins */}
+                <div className="absolute top-4 left-6 z-20 w-8 h-8 rounded-full bg-gradient-to-tr from-[#E6B800] to-[#FFE680] shadow-md flex items-center justify-center font-bold text-xs text-[#8A6D00] border border-white">
+                  ₨
+                </div>
+                <div className="absolute bottom-6 right-8 z-20 w-10 h-10 rounded-full bg-gradient-to-tr from-[#E6B800] to-[#FFE680] shadow-md flex items-center justify-center font-bold text-sm text-[#8A6D00] border border-white">
+                  ₨
+                </div>
+              </div>
+            </div>
+
+            {/* Card 2: Cards with global acceptance (Vertical Debit Card + Millimeter Ruler) */}
+            <div className="group bg-[#F4FAF8] rounded-3xl p-8 border border-[#E0EFEA] hover:border-[#00A389]/40 transition-all hover:shadow-xl hover:shadow-[#00A389]/5 flex flex-col justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  Cards with global acceptance
+                </h3>
+                <p className="mt-3 text-sm text-[#5F6773] leading-relaxed">
+                  Your physical and virtual Mastercard works internationally with the interbank exchange rate and zero markup fees on foreign transactions.
+                </p>
+              </div>
+
+              {/* 3D Visual: Vertical Teal Card + Architectural Scale */}
+              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center">
+                <div className="absolute inset-0 bg-radial from-[#DCF4EE]/60 to-transparent rounded-2xl" />
+
+                {/* Precision Ruler Mockup */}
+                <div className="absolute left-8 top-6 bottom-6 w-8 bg-white/80 rounded-lg border border-[#00A389]/20 flex flex-col justify-between py-2 px-1 text-[8px] font-mono text-[#00A389]">
+                  <span>— 0</span>
+                  <span>— 2</span>
+                  <span>— 4</span>
+                  <span>— 6</span>
+                  <span>— 8cm</span>
+                </div>
+
+                {/* Mini Vertical Card */}
+                <div className="relative z-10 w-24 h-36 rounded-xl bg-gradient-to-br from-[#00A389] to-[#00705E] p-2.5 text-white shadow-xl flex flex-col justify-between transform rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[7px] font-bold">TM</span>
+                    <div className="w-3 h-2 rounded-xs bg-[#F5D061]" />
+                  </div>
+                  <div className="text-[7px] font-mono tracking-widest text-white/70">
+                    NUMBERLESS
+                  </div>
+                  <div className="flex justify-end">
+                    <div className="flex -space-x-1">
+                      <div className="w-3 h-3 rounded-full bg-red-500" />
+                      <div className="w-3 h-3 rounded-full bg-amber-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 3: Pay your bills (Pink Receipt Register + Floating Coins) */}
+            <div className="group bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] hover:border-[#FF6651]/40 transition-all hover:shadow-xl hover:shadow-[#FF6651]/5 flex flex-col justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  Pay your bills
+                </h3>
+                <p className="mt-3 text-sm text-[#5F6773] leading-relaxed">
+                  Clear electricity, gas, water, internet, and government dues in under 5 seconds. Get instant digital receipts and bill split reminders.
+                </p>
+              </div>
+
+              {/* 3D Visual: Receipt Printer Roll & Golden Tokens */}
+              <div className="mt-8 pt-6 relative h-48 flex items-center justify-center">
+                <div className="absolute inset-0 bg-radial from-[#FFE6DF]/60 to-transparent rounded-2xl" />
+
+                {/* Receipt Card Mockup */}
+                <div className="relative z-10 w-36 bg-white rounded-xl shadow-xl p-3 border border-[#F0EAE1] transform -rotate-3 group-hover:rotate-0 transition-transform duration-500">
+                  <div className="flex items-center justify-between pb-2 border-b border-dashed border-gray-200">
+                    <span className="text-[9px] font-bold text-gray-500">K-ELECTRIC</span>
+                    <span className="text-[9px] font-extrabold text-[#00A389]">PAID ✓</span>
+                  </div>
+                  <div className="py-2 text-center">
+                    <div className="text-xs font-black text-[#1A1D20]">₨ 14,850.00</div>
+                    <div className="text-[8px] text-gray-400">Ref: 04000129841</div>
+                  </div>
+                  <div className="pt-2 border-t border-dashed border-gray-200 flex justify-between text-[8px] text-gray-500 font-mono">
+                    <span>FEE: ₨ 0</span>
+                    <span>100% FREE</span>
+                  </div>
+                </div>
+
+                <div className="absolute -bottom-1 left-12 z-20 w-8 h-8 rounded-full bg-gradient-to-tr from-[#E6B800] to-[#FFE680] shadow-md flex items-center justify-center font-bold text-xs text-[#8A6D00] border border-white">
+                  ₨
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          4. "SIGN UP FROM ANYWHERE" SECTION (Pakistan +92 & Overseas Support)
+         ========================================================================= */}
+      <section className="py-16 md:py-24 bg-[#FCF9F6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-14">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
+              Sign up from anywhere
+            </h2>
+            <p className="mt-3 text-base text-[#5F6773]">
+              Whether you are relaxing in Pakistan or living across London, New York, or Dubai — open an account in minutes.
+            </p>
+
+            {/* Interactive Toggle Pill */}
+            <div className="inline-flex p-1.5 bg-[#EFE9DF] rounded-full mt-6">
               <button
-                key={step.step}
-                onClick={() => setActiveStepIndex(step.step)}
-                className={`p-4 rounded-xl text-left border transition cursor-pointer ${
-                  activeStepIndex === step.step
-                    ? 'bg-white border-slate-900 shadow-md ring-2 ring-slate-900/10'
-                    : 'bg-white/60 border-slate-200 hover:bg-white text-slate-600'
+                onClick={() => setActiveNumberTab('pakistan')}
+                className={`px-5 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
+                  activeNumberTab === 'pakistan'
+                    ? 'bg-white text-[#1A1D20] shadow-xs'
+                    : 'text-[#5F6773] hover:text-[#1A1D20]'
                 }`}
               >
-                <span className="text-[10px] font-mono font-bold text-slate-400 block mb-1">
-                  STEP 0{step.step}
-                </span>
-                <span className="font-bold text-slate-900 block text-sm">
-                  {step.title}
-                </span>
+                🇵🇰 From Pakistan
+              </button>
+              <button
+                onClick={() => setActiveNumberTab('international')}
+                className={`px-5 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
+                  activeNumberTab === 'international'
+                    ? 'bg-white text-[#1A1D20] shadow-xs'
+                    : 'text-[#5F6773] hover:text-[#1A1D20]'
+                }`}
+              >
+                🌍 From Overseas & Global
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+            
+            {/* Card A: From Pakistan (+92 3D Phone Code Box) */}
+            <div className={`bg-white rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between ${
+              activeNumberTab === 'pakistan'
+                ? 'border-[#FF6651] shadow-xl shadow-[#FF6651]/10 ring-2 ring-[#FF6651]/20'
+                : 'border-[#F0EAE1]'
+            }`}>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FFEAE5] text-[#FF6651] text-xs font-bold mb-4">
+                  <span>🇵🇰 Local Registration</span>
+                </div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  From Pakistan
+                </h3>
+                <p className="mt-2 text-sm text-[#5F6773] leading-relaxed">
+                  All you need is your valid CNIC and any Pakistani telecom number (Jazz, Zong, Telenor, Ufone). Verified in under 2 minutes with NADRA.
+                </p>
+              </div>
+
+              {/* 3D Extruded +92 Phone Code Sculpture */}
+              <div className="mt-8 pt-4 relative h-44 bg-[#FFF8F5] rounded-2xl border border-[#F4EBE3] flex items-center justify-center overflow-hidden">
+                <div className="flex items-center gap-3">
+                  {/* Volumetric +92 3D Block */}
+                  <div className="px-6 py-4 bg-gradient-to-r from-[#FF6651] to-[#E54D34] rounded-2xl text-white font-mono font-black text-3xl shadow-xl shadow-[#FF6651]/30 tracking-tight transform -rotate-2">
+                    +92 - 3...
+                  </div>
+
+                  {/* 3D WhatsApp badge */}
+                  <div className="w-12 h-12 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-lg shadow-[#25D366]/30 transform rotate-6">
+                    <MessageCircle className="w-7 h-7 fill-current" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card B: From Overseas & Global (+1, +44, Passport, Globe) */}
+            <div className={`bg-white rounded-3xl p-8 border transition-all duration-300 flex flex-col justify-between ${
+              activeNumberTab === 'international'
+                ? 'border-[#00A389] shadow-xl shadow-[#00A389]/10 ring-2 ring-[#00A389]/20'
+                : 'border-[#F0EAE1]'
+            }`}>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F7F3] text-[#00A389] text-xs font-bold mb-4">
+                  <span>🌍 Overseas Expats & Nomads</span>
+                </div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  From Overseas
+                </h3>
+                <p className="mt-2 text-sm text-[#5F6773] leading-relaxed">
+                  Sign up with international mobile numbers (+1, +44, +971, +966) using your NICOP or foreign passport. Zero branch visits required.
+                </p>
+              </div>
+
+              {/* 3D Globe with TransMoney Card */}
+              <div className="mt-8 pt-4 relative h-44 bg-[#F2FAF7] rounded-2xl border border-[#DEF1EB] flex items-center justify-center overflow-hidden">
+                <div className="flex items-center gap-4">
+                  {/* 3D Globe Ring */}
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-tr from-[#00A389] to-[#20D2B4] shadow-xl flex items-center justify-center text-white">
+                    <Globe className="w-14 h-14 animate-spin-slow opacity-90" />
+                    <div className="absolute inset-0 rounded-full border-2 border-white/40" />
+                  </div>
+
+                  {/* International Flight Country Code Badges */}
+                  <div className="space-y-1.5 font-mono text-xs font-bold">
+                    <div className="px-3 py-1 rounded-lg bg-white shadow-xs border border-[#DEF1EB] text-[#1A1D20] flex items-center gap-2">
+                      <span>🇬🇧 +44</span>
+                      <span className="text-[10px] text-gray-400">UK</span>
+                    </div>
+                    <div className="px-3 py-1 rounded-lg bg-white shadow-xs border border-[#DEF1EB] text-[#1A1D20] flex items-center gap-2">
+                      <span>🇺🇸 +1</span>
+                      <span className="text-[10px] text-gray-400">USA</span>
+                    </div>
+                    <div className="px-3 py-1 rounded-lg bg-white shadow-xs border border-[#DEF1EB] text-[#1A1D20] flex items-center gap-2">
+                      <span>🇦🇪 +971</span>
+                      <span className="text-[10px] text-gray-400">UAE</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          5. "YOUR MONEY STAYS SAFE" SECTION (Bento Security Grid)
+         ========================================================================= */}
+      <section id="security" className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
+              Your money stays safe
+            </h2>
+            <p className="mt-3 text-base text-[#5F6773]">
+              State-of-the-art encryption, biometric protection, and instant card toggles engineered into every tap.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Bento Block 1: Biometric & Instant Authentication (Left Tall Card) */}
+            <div className="lg:col-span-5 bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] flex flex-col justify-between">
+              <div>
+                <div className="w-12 h-12 rounded-2xl bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mb-6">
+                  <Shield className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-black text-[#1A1D20] tracking-tight">
+                  Biometric authentication
+                </h3>
+                <p className="mt-3 text-sm text-[#5F6773] leading-relaxed">
+                  Only your FaceID or fingerprint can approve transfers and unlock your cards. Advanced hardware enclave security keeps imposters out.
+                </p>
+              </div>
+
+              {/* 3D Visual: Coral Biometric Shield with Fingerprint Sensor */}
+              <div className="mt-10 relative h-56 flex items-center justify-center">
+                <div className="w-36 h-44 rounded-3xl bg-gradient-to-b from-[#FF6651] to-[#E54D34] shadow-2xl shadow-[#FF6651]/30 flex flex-col items-center justify-center text-white relative">
+                  {/* Fingerprint Icon */}
+                  <svg className="w-16 h-16 text-white/90 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <path d="M12 11c0 1.66-1.34 3-3 3s-3-1.34-3-3 1.34-3 3-3 3 1.34 3 3z" />
+                    <path d="M12 2a10 10 0 0 0-7.07 17.07" />
+                    <path d="M12 6a6 6 0 0 0-4.24 10.24" />
+                    <path d="M16.24 7.76A6 6 0 0 1 18 12c0 2.22-.9 4.23-2.36 5.67" />
+                    <path d="M19.07 4.93A10 10 0 0 1 22 12c0 3.87-1.57 7.37-4.1 9.9" />
+                  </svg>
+                  
+                  {/* Teal Verified Badge */}
+                  <div className="absolute -bottom-3 -right-3 w-10 h-10 rounded-full bg-[#00A389] text-white flex items-center justify-center shadow-lg border-2 border-white">
+                    <Check className="w-5 h-5 stroke-[3]" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Block 2 & 3: Right Stacked Cards */}
+            <div className="lg:col-span-7 flex flex-col gap-8">
+              
+              {/* Card 2: Freeze card in a tap */}
+              <div className="bg-[#F4FAF8] rounded-3xl p-8 border border-[#E0EFEA] flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="max-w-md">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#1A1D20] tracking-tight">
+                    Freeze card in a tap
+                  </h3>
+                  <p className="mt-2 text-sm text-[#5F6773] leading-relaxed">
+                    Misplaced your card at a café? Freeze it instantly from the app with zero phone calls. Found it in your pocket? Unfreeze with a tap.
+                  </p>
+                  
+                  {/* Interactive toggle switch for live demo */}
+                  <div className="mt-4 flex items-center gap-3">
+                    <button
+                      onClick={() => setCardFrozen(!cardFrozen)}
+                      className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+                        cardFrozen ? 'bg-[#FF6651]' : 'bg-[#00A389]'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                          cardFrozen ? 'translate-x-7' : 'translate-x-0'
+                        }`}
+                      />
+                    </button>
+                    <span className="text-xs font-bold text-[#1A1D20]">
+                      {cardFrozen ? 'Card Frozen (Locked)' : 'Card Active (Unlocked)'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3D Stacking Cards Mockup */}
+                <div className="relative w-36 h-24">
+                  <div className={`absolute top-0 right-4 w-28 h-18 rounded-xl ${cardFrozen ? 'bg-gray-400' : 'bg-[#00A389]'} shadow-lg transform -rotate-6 transition-all`} />
+                  <div className={`absolute top-3 right-0 w-28 h-18 rounded-xl ${cardFrozen ? 'bg-gray-600' : 'bg-[#FF6651]'} shadow-lg transform rotate-3 transition-all flex items-center justify-center text-white text-[9px] font-bold`}>
+                    {cardFrozen ? 'FROZEN ❄️' : 'ACTIVE ⚡'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: Safety first (Numberless Card + Padlock) */}
+              <div className="bg-[#FFF9F6] rounded-3xl p-8 border border-[#F4EBE3] flex flex-col sm:flex-row items-center justify-between gap-6">
+                <div className="max-w-md">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#1A1D20] tracking-tight">
+                    Safety first: 100% Numberless
+                  </h3>
+                  <p className="mt-2 text-sm text-[#5F6773] leading-relaxed">
+                    No 16-digit card number, CVV or expiry date printed on the card body. If anyone glances at your card, there is nothing for them to steal.
+                  </p>
+                </div>
+
+                {/* 3D Padlock Illustration */}
+                <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#FFE7DF] to-[#FFD5C9] flex items-center justify-center shadow-lg border border-[#FF6651]/20">
+                  <Lock className="w-12 h-12 text-[#FF6651]" />
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          6. "ACCEPT INTERNATIONAL TRANSFERS FROM ANYWHERE IN THE WORLD"
+         ========================================================================= */}
+      <section id="international" className="py-20 md:py-28 bg-[#FCF9F6] overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          
+          <div className="max-w-2xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#E5F7F3] text-[#00A389] text-xs font-bold mb-3">
+              <Globe className="w-3.5 h-3.5" />
+              <span>Direct Global Remittance & Freelancer Hub</span>
+            </div>
+            
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1D20] tracking-tight">
+              Accept international transfers <br />
+              from anywhere in the world
+            </h2>
+            <p className="mt-4 text-base text-[#5F6773]">
+              Receive money from international clients, remote companies, and loved ones directly into TransMoney. Zero hidden deductions.
+            </p>
+          </div>
+
+          {/* Interactive Satellite Orbit of Global Platforms */}
+          <div className="relative max-w-3xl mx-auto py-12 flex items-center justify-center">
+            {/* Outer dotted orbit ring */}
+            <div className="absolute w-[340px] sm:w-[480px] h-[340px] sm:h-[480px] rounded-full border-2 border-dashed border-[#E3DBD2] pointer-events-none" />
+            
+            {/* Center Core Hub (TransMoney) */}
+            <div className="relative z-10 w-24 h-24 rounded-3xl bg-gradient-to-br from-[#00A389] to-[#00705E] p-4 text-white shadow-2xl shadow-[#00A389]/40 flex flex-col items-center justify-center">
+              <img src={logoImg} alt="TransMoney" className="w-8 h-8 object-contain filter invert" />
+              <span className="text-[10px] font-extrabold uppercase mt-1">TransMoney</span>
+            </div>
+
+            {/* Orbiting Satellite Badges */}
+            {/* 1. PayPal */}
+            <div className="absolute top-2 left-1/4 -translate-x-1/2 bg-white px-4 py-2 rounded-2xl shadow-lg border border-[#F0EAE1] flex items-center gap-2 hover:scale-110 transition-transform cursor-default">
+              <span className="font-black text-[#003087] text-sm">PayPal</span>
+            </div>
+
+            {/* 2. Wise */}
+            <div className="absolute top-8 right-16 bg-[#2ED06E] text-[#163300] px-4 py-2 rounded-2xl shadow-lg font-black text-sm hover:scale-110 transition-transform cursor-default">
+              Wise
+            </div>
+
+            {/* 3. Payoneer */}
+            <div className="absolute bottom-6 left-12 bg-white px-4 py-2 rounded-2xl shadow-lg border border-[#F0EAE1] flex items-center gap-1.5 hover:scale-110 transition-transform cursor-default">
+              <div className="w-3 h-3 rounded-full bg-[#FF4800]" />
+              <span className="font-extrabold text-[#1A1D20] text-sm">payoneer</span>
+            </div>
+
+            {/* 4. Upwork */}
+            <div className="absolute bottom-4 right-1/4 bg-[#14A800] text-white px-4 py-2 rounded-2xl shadow-lg font-bold text-sm hover:scale-110 transition-transform cursor-default">
+              Upwork
+            </div>
+
+            {/* 5. Fiverr */}
+            <div className="absolute top-1/2 -left-2 -translate-y-1/2 bg-[#1DBF73] text-white px-3 py-1.5 rounded-2xl shadow-lg font-black text-xs hover:scale-110 transition-transform cursor-default">
+              fiverr.
+            </div>
+
+            {/* 6. Stripe */}
+            <div className="absolute top-1/2 -right-2 -translate-y-1/2 bg-[#635BFF] text-white px-4 py-2 rounded-2xl shadow-lg font-black text-xs hover:scale-110 transition-transform cursor-default">
+              stripe
+            </div>
+          </div>
+
+          {/* Supported Global Currencies Strip */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            {(['PKR', 'USD', 'EUR', 'GBP'] as const).map((curr) => (
+              <button
+                key={curr}
+                onClick={() => setActiveCurrency(curr)}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition cursor-pointer ${
+                  activeCurrency === curr
+                    ? 'bg-[#1A1D20] text-white shadow-md'
+                    : 'bg-white text-[#5F6773] border border-[#F0EAE1] hover:bg-gray-50'
+                }`}
+              >
+                {curr === 'PKR' && '🇵🇰 PKR (Rupee)'}
+                {curr === 'USD' && '🇺🇸 USD (Dollar)'}
+                {curr === 'EUR' && '🇪🇺 EUR (Euro)'}
+                {curr === 'GBP' && '🇬🇧 GBP (Pound)'}
               </button>
             ))}
           </div>
 
-          {/* Step Detail Drawer */}
-          {(() => {
-            const current = userSteps.find((s) => s.step === activeStepIndex)!;
-            return (
-              <div className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
-                  <div>
-                    <span className="text-xs font-mono font-bold text-emerald-700 uppercase tracking-wider block">
-                      {current.summary}
-                    </span>
-                    <h3 className="text-xl font-black text-slate-950 tracking-tight">
-                      {current.title}
-                    </h3>
-                  </div>
-                  <button
-                    onClick={() => {
-                      if (current.step === 1) onOpenAuth('signup');
-                      else navigate('transfer');
-                    }}
-                    className="px-4 py-2 rounded-xl bg-slate-950 text-white font-semibold text-xs font-mono hover:bg-slate-800 transition cursor-pointer self-start sm:self-auto"
-                  >
-                    {current.actionText} →
-                  </button>
-                </div>
-
-                <p className="text-sm text-slate-700 leading-relaxed font-sans">
-                  {current.desc}
-                </p>
-              </div>
-            );
-          })()}
         </div>
       </section>
 
-      {/* =====================================================================
-          6. COMPARISON TABLE: TRADITIONAL VS TRANSMONEY
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">
-            Transparent Comparison
-          </span>
-          <h2 className="text-3xl font-black text-slate-950 uppercase tracking-tight">
-            Why Choose TransMoney?
-          </h2>
-          <p className="text-sm text-slate-600 leading-relaxed font-sans">
-            See how our modern digital wallet compares to traditional banking and other payment apps.
-          </p>
-        </div>
-
-        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-xs font-sans text-xs">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 uppercase font-mono text-[11px]">
-                <th className="p-4">Feature</th>
-                <th className="p-4 text-slate-600">Traditional Banks</th>
-                <th className="p-4 text-slate-600">Other E-Wallets</th>
-                <th className="p-4 bg-slate-950 text-white font-bold">TransMoney Digital Wallet</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-700">
-              <tr>
-                <td className="p-4 font-bold text-slate-900">Transfer Speed</td>
-                <td className="p-4 text-slate-500">1 to 3 Business Days</td>
-                <td className="p-4 text-slate-600">5 to 30 Minutes</td>
-                <td className="p-4 bg-slate-50/50 font-bold text-emerald-700">
-                  Instant (&lt; 1 Second)
-                </td>
-              </tr>
-              <tr>
-                <td className="p-4 font-bold text-slate-900">Transfer Fees</td>
-                <td className="p-4 text-rose-600">High Wire Charges ($$$)</td>
-                <td className="p-4 text-amber-600">1.5% to 3.0% Hidden Cuts</td>
-                <td className="p-4 bg-slate-50/50 font-bold text-emerald-700">
-                  0.00 PKR (Completely Free)
-                </td>
-              </tr>
-              <tr>
-                <td className="p-4 font-bold text-slate-900">Network Availability</td>
-                <td className="p-4 text-slate-500">Weekend &amp; Holiday Outages</td>
-                <td className="p-4 text-amber-600">Frequent Maintenance Lags</td>
-                <td className="p-4 bg-slate-50/50 font-bold text-emerald-700">
-                  99.99% Always Online (24/7/365)
-                </td>
-              </tr>
-              <tr>
-                <td className="p-4 font-bold text-slate-900">Account Setup</td>
-                <td className="p-4 text-rose-600">Branch visit &amp; days of review</td>
-                <td className="p-4 text-slate-500">Complex identity forms</td>
-                <td className="p-4 bg-slate-50/50 font-bold text-emerald-700">
-                  Instant Digital Activation in 60s
-                </td>
-              </tr>
-              <tr>
-                <td className="p-4 font-bold text-slate-900">Security Guarantee</td>
-                <td className="p-4 text-slate-500">Traditional Insurance</td>
-                <td className="p-4 text-slate-600">Basic App Protection</td>
-                <td className="p-4 bg-slate-50/50 font-bold text-emerald-700">
-                  Bank-Grade Encryption &amp; Fraud Defense
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* =====================================================================
-          7. PROJECT LEADERSHIP & ENGINEERING TEAM (Prestigious Context)
-          ===================================================================== */}
-      <section className="max-w-5xl mx-auto px-4 sm:px-6">
-        <div className="rounded-3xl border border-slate-900 bg-slate-950 text-white p-8 sm:p-10 shadow-2xl relative overflow-hidden">
-          <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="space-y-6 relative z-10">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-6">
-              <div>
-                <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest block">
-                  Project Leadership &amp; Engineering Team
-                </span>
-                <h3 className="text-2xl font-black text-white uppercase tracking-tight mt-1">
-                  Distributed Digital Wallet Platform
-                </h3>
-                <p className="text-xs text-slate-400 font-mono mt-1">
-                  Evaluated By: <strong className="text-white">Sir Umair</strong> • Course: Distributed Systems (2026)
-                </p>
+      {/* =========================================================================
+          7. "24/7 IN-APP SUPPORT" SECTION
+         ========================================================================= */}
+      <section className="py-16 md:py-24 bg-white border-y border-[#F0EAE1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-[#FFF9F6] rounded-3xl p-8 sm:p-12 lg:p-16 border border-[#F4EBE3] grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            {/* 3D Volumetric 24/7 Block with Speech Bubbles */}
+            <div className="lg:col-span-6 relative flex items-center justify-center min-h-[220px]">
+              {/* Volumetric 3D "24/7" Text */}
+              <div className="relative text-7xl sm:text-8xl md:text-9xl font-black text-[#FF6651] tracking-tighter drop-shadow-xl select-none">
+                24/7
               </div>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs font-mono text-emerald-400">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>Verified System Architecture</span>
+              {/* Floating 3D Support Speech Bubbles */}
+              <div className="absolute top-0 right-10 w-12 h-12 rounded-2xl bg-[#FF6651] text-white flex items-center justify-center font-black text-xl shadow-lg shadow-[#FF6651]/30 transform rotate-12">
+                ?
+              </div>
+              <div className="absolute bottom-2 left-8 w-12 h-12 rounded-2xl bg-[#00A389] text-white flex items-center justify-center font-black text-lg shadow-lg shadow-[#00A389]/30 transform -rotate-12">
+                👍
               </div>
             </div>
 
-            {/* Core Engineers */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase block">Systems Engineer</span>
-                <span className="text-base font-bold text-white block">Shehzad Nisar</span>
-                <span className="text-xs text-emerald-400 font-bold block">B22110006147</span>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase block">Systems Engineer</span>
-                <span className="text-base font-bold text-white block">Muhammad Ashraf</span>
-                <span className="text-xs text-emerald-400 font-bold block">B22110006090</span>
-              </div>
-
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                <span className="text-[11px] text-slate-400 uppercase block">Systems Engineer</span>
-                <span className="text-base font-bold text-white block">Daniyal Ahmed</span>
-                <span className="text-xs text-emerald-400 font-bold block">B21110006024</span>
+            {/* Right: Copy & Talk to us button */}
+            <div className="lg:col-span-6 space-y-5 text-center lg:text-left">
+              <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
+                24/7 in-app support
+              </h2>
+              <p className="text-base text-[#5F6773] leading-relaxed">
+                Tired of waiting on hold or navigating confusing robotic automated phone menus?
+                Our friendly human support champions are available around the clock. Average response time under 60 seconds.
+              </p>
+              
+              <div className="pt-2">
+                <button
+                  onClick={() => onOpenAuth('signup')}
+                  className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-sm px-7 py-3.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer"
+                >
+                  Talk to us
+                </button>
               </div>
             </div>
 
-            <div className="pt-2 text-xs text-slate-400 font-mono flex flex-wrap items-center justify-between gap-2 border-t border-slate-800">
-              <span>TransMoney Digital Wallet Core Platform</span>
-              <span>Open Source Repository: Shehzad-Nisar / Distributed-Digital-Wallet</span>
-            </div>
           </div>
         </div>
       </section>
 
-      {/* =====================================================================
-          8. EVERYDAY CUSTOMER FAQS (Accordion)
-          ===================================================================== */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 space-y-6">
-        <div className="text-center space-y-2">
-          <span className="text-xs font-mono uppercase tracking-widest text-slate-500 font-bold">
-            Got Questions?
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-black text-slate-950 uppercase tracking-tight">
-            Frequently Asked Questions
-          </h2>
-        </div>
-
-        <div className="space-y-3 font-sans">
-          {[
-            {
-              q: 'How fast do my money transfers arrive?',
-              a: 'Transfers sent on TransMoney arrive in less than a second. Because our platform uses direct real-time network routing, the recipient receives funds into their balance immediately.',
-            },
-            {
-              q: 'Are there any fees to send money to other accounts?',
-              a: 'No! All peer-to-peer transfers within the TransMoney network are 100% free with zero hidden commissions or surcharges.',
-            },
-            {
-              q: 'How safe is my money in TransMoney?',
-              a: 'Your funds are safeguarded by enterprise-grade encryption and automated balance verification. Money can never be lost or duplicated, and you receive an immediate digital confirmation for every payment.',
-            },
-            {
-              q: 'Can I open multiple accounts under one login?',
-              a: 'Yes! You can open separate accounts for personal spending, business transactions, or savings goals in just a few clicks from your dashboard.',
-            },
-          ].map((item, idx) => {
-            const isOpen = openFaqIndex === idx;
-            return (
-              <div
-                key={idx}
-                className="rounded-xl border border-slate-200 bg-white overflow-hidden transition shadow-2xs"
-              >
-                <button
-                  onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                  className="w-full px-5 py-4 text-left font-bold text-slate-900 text-sm flex items-center justify-between gap-4 cursor-pointer hover:bg-slate-50 transition"
-                >
-                  <span className="font-mono text-xs text-slate-500 font-normal mr-2">0{idx + 1} //</span>
-                  <span className="flex-1">{item.q}</span>
-                  <ChevronRight
-                    className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-90 text-slate-900' : ''}`}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="px-5 pb-5 pt-1 text-xs text-slate-600 leading-relaxed font-sans border-t border-slate-100 bg-slate-50/50">
-                    {item.a}
-                  </div>
-                )}
+      {/* =========================================================================
+          8. "REGULATED BY STATE BANK" SECTION
+         ========================================================================= */}
+      <section id="regulation" className="py-16 md:py-24 bg-[#FCF9F6]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          {/* Dual 3D Embossed Seals */}
+          <div className="flex items-center justify-center gap-6">
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#F0EAE1] p-3 flex items-center justify-center">
+              <div className="w-full h-full rounded-2xl border-2 border-[#00A389] flex flex-col items-center justify-center text-[#00A389]">
+                <Building2 className="w-6 h-6" />
+                <span className="text-[8px] font-black mt-0.5">SBP</span>
               </div>
-            );
-          })}
+            </div>
+
+            <div className="w-20 h-20 rounded-3xl bg-white shadow-xl border border-[#F0EAE1] p-3 flex items-center justify-center">
+              <div className="w-full h-full rounded-2xl bg-gradient-to-br from-[#00A389] to-[#00816C] p-2 flex items-center justify-center">
+                <img src={logoImg} alt="TM" className="w-full h-full object-contain filter invert" />
+              </div>
+            </div>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-black text-[#1A1D20] tracking-tight">
+            Regulated by State Bank
+          </h2>
+
+          <p className="text-base text-[#5F6773] leading-relaxed max-w-2xl mx-auto">
+            TransMoney is licensed as an Electronic Money Institution (EMI) under the State Bank of Pakistan regulations.
+            All user funds are deposited 1:1 in ring-fenced, segregated accounts with top-tier AA-rated trustee banks.
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 pt-2 text-xs font-bold text-[#8C939E]">
+            <span>✓ EMI License No. SBP/EMI/2026</span>
+            <span>•</span>
+            <span>✓ 100% Segregated Reserves</span>
+            <span>•</span>
+            <span>✓ Bank-Grade PCI-DSS Level 1 Certified</span>
+          </div>
         </div>
       </section>
 
-      {/* =====================================================================
-          9. FINAL CALL-TO-ACTION BANNER
-          ===================================================================== */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="rounded-3xl bg-slate-950 text-white p-8 sm:p-12 text-center space-y-6 relative overflow-hidden shadow-2xl">
-          <div className="max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
-              Ready to Get Started?
-            </span>
-            <h2 className="text-3xl sm:text-4xl font-black uppercase tracking-tight text-white">
-              Experience the Future of Digital Money Movement
+      {/* =========================================================================
+          9. "OVER 2 MILLION+ HAPPY USERS!" (Testimonial Video Reviews)
+         ========================================================================= */}
+      <section id="reviews" className="py-20 md:py-28 bg-white border-t border-[#F0EAE1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-[#1A1D20] tracking-tight">
+              Over 2 million+ <br />
+              happy users!
             </h2>
-            <p className="text-xs sm:text-sm text-slate-400 font-sans leading-relaxed">
-              Join thousands of users moving money faster, safer, and completely fee-free.
+            <p className="mt-3 text-base text-[#5F6773]">
+              From freelancers receiving overseas wires to families paying monthly groceries.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-            <button
-              onClick={() => onOpenAuth('signup')}
-              className="flex items-center gap-2 px-6 py-3.5 rounded-xl bg-white text-slate-950 font-bold text-sm hover:bg-slate-100 transition active:scale-[0.98] cursor-pointer shadow-lg"
-            >
-              <Sparkles className="w-4 h-4 text-slate-950" />
-              <span>Open Free Account</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            {/* Review 1: Bilal (Freelancer) */}
+            <div className="bg-[#FFF9F6] rounded-3xl p-6 border border-[#F4EBE3] flex flex-col justify-between hover:shadow-lg transition">
+              <div className="space-y-4">
+                {/* Video Avatar Thumbnail with Play Button */}
+                <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
+                  {/* Subtle portrait gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-slate-800 to-slate-900" />
+                  
+                  {/* Play Overlay */}
+                  <div className="relative z-10 w-14 h-14 rounded-full bg-white/90 text-[#FF6651] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                    <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                  </div>
 
-            <button
-              onClick={() => navigate('transfer')}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-xl border border-slate-700 bg-slate-900 hover:bg-slate-800 text-white text-sm font-semibold transition active:scale-[0.98] cursor-pointer"
-            >
-              <Send className="w-4 h-4 text-emerald-400" />
-              <span>Send Money Now</span>
-            </button>
+                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-bold z-10">
+                    "Got my Upwork payout in 10 seconds!"
+                  </div>
+                </div>
 
-            <button
-              onClick={onEnterConsole}
-              className="flex items-center gap-2 px-5 py-3.5 rounded-xl border border-slate-800 text-slate-300 hover:text-white text-sm font-mono transition cursor-pointer"
-            >
-              <span>Explore Dashboard</span>
-            </button>
+                <p className="text-sm text-[#4B5563] italic">
+                  "TransMoney eliminated the 4% exchange losses I was suffering on traditional bank transfers. The app is shockingly fast."
+                </p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-[#F0EAE1] flex items-center justify-between">
+                <div>
+                  <div className="font-extrabold text-sm text-[#1A1D20]">Bilal Tariq</div>
+                  <div className="text-xs text-gray-500">Full-Stack Engineer, Lahore</div>
+                </div>
+                <div className="flex text-[#FFB800]">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Review 2: Hamza (Founder / Commuter) */}
+            <div className="bg-[#F4FAF8] rounded-3xl p-6 border border-[#E0EFEA] flex flex-col justify-between hover:shadow-lg transition">
+              <div className="space-y-4">
+                {/* Video Thumbnail */}
+                <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-emerald-950 to-slate-900" />
+                  
+                  <div className="relative z-10 w-14 h-14 rounded-full bg-white/90 text-[#00A389] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                    <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                  </div>
+
+                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-bold z-10">
+                    "The numberless card turns heads everywhere"
+                  </div>
+                </div>
+
+                <p className="text-sm text-[#4B5563] italic">
+                  "I love hand-delivering zero-stress payments. If I ever lose my wallet, I tap freeze on my phone. Absolute peace of mind."
+                </p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-[#E0EFEA] flex items-center justify-between">
+                <div>
+                  <div className="font-extrabold text-sm text-[#1A1D20]">Hamza Munir</div>
+                  <div className="text-xs text-gray-500">Startup Founder, Karachi</div>
+                </div>
+                <div className="flex text-[#FFB800]">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Review 3: Ayesha (Overseas Expat) */}
+            <div className="bg-[#FFF9F6] rounded-3xl p-6 border border-[#F4EBE3] flex flex-col justify-between hover:shadow-lg transition">
+              <div className="space-y-4">
+                {/* Video Thumbnail */}
+                <div className="relative h-60 rounded-2xl bg-gradient-to-t from-black/80 via-black/20 to-black/30 overflow-hidden flex items-center justify-center group cursor-pointer">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-rose-950 to-slate-900" />
+                  
+                  <div className="relative z-10 w-14 h-14 rounded-full bg-white/90 text-[#FF6651] flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                    <Play className="w-6 h-6 fill-current translate-x-0.5" />
+                  </div>
+
+                  <div className="absolute bottom-3 left-3 right-3 text-white text-xs font-bold z-10">
+                    "Remitting home from London in 5 seconds"
+                  </div>
+                </div>
+
+                <p className="text-sm text-[#4B5563] italic">
+                  "Registered from the UK with my NICOP in under three minutes. Sending pocket money to my parents has never been this seamless."
+                </p>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-[#F0EAE1] flex items-center justify-between">
+                <div>
+                  <div className="font-extrabold text-sm text-[#1A1D20]">Dr. Ayesha Malik</div>
+                  <div className="text-xs text-gray-500">NHS Resident, London</div>
+                </div>
+                <div className="flex text-[#FFB800]">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
 
-      {/* =====================================================================
-          10. USER-FACING PRODUCT FOOTER
-          ===================================================================== */}
-      <footer className="max-w-7xl mx-auto px-4 sm:px-6 pt-12 border-t border-slate-200 text-xs font-mono text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <img src={logoImg} alt="TransMoney" className="w-6 h-6 rounded object-cover" />
-          <span className="font-bold text-slate-900 uppercase">TransMoney Digital Wallet</span>
-          <span>© 2026 TransMoney Inc. All rights reserved.</span>
-        </div>
+      {/* =========================================================================
+          10. "GET THE APP NOW" CTA BANNER WITH WATERMARK PATTERN & QR CODE
+         ========================================================================= */}
+      <section className="py-12 md:py-20 bg-[#FCF9F6]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-[36px] bg-gradient-to-r from-[#FF6651] to-[#FF553C] text-white p-8 sm:p-12 lg:p-16 overflow-hidden shadow-2xl shadow-[#FF6651]/25">
+            
+            {/* Watermark Repeating Typography Background Pattern */}
+            <div className="absolute inset-0 select-none pointer-events-none opacity-10 flex flex-col justify-around text-4xl sm:text-6xl font-black uppercase whitespace-nowrap -rotate-2">
+              <div>Get the app now • Get the app now • Get the app now</div>
+              <div>Get the app now • Get the app now • Get the app now</div>
+              <div>Get the app now • Get the app now • Get the app now</div>
+            </div>
 
-        <div className="flex items-center gap-4 text-[11px]">
-          <button
-            onClick={() => navigate('transfer')}
-            className="hover:text-slate-900 transition cursor-pointer"
-          >
-            Send Money
-          </button>
-          <button
-            onClick={() => navigate('ledger')}
-            className="hover:text-slate-900 transition cursor-pointer"
-          >
-            Activity
-          </button>
-          <button
-            onClick={onEnterConsole}
-            className="hover:text-slate-900 transition cursor-pointer"
-          >
-            Accounts
-          </button>
-          <button
-            onClick={() => onOpenAuth('signup')}
-            className="hover:text-slate-900 transition cursor-pointer font-bold text-slate-900"
-          >
-            Get Started
-          </button>
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+              
+              {/* Left Copy */}
+              <div className="lg:col-span-8 space-y-4">
+                <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight">
+                  Get the app now.
+                </h2>
+                <p className="text-white/90 text-base sm:text-lg max-w-xl leading-relaxed">
+                  Join over 2 million people who have already broken free from traditional banking hassles.
+                  Sign up takes less than 2 minutes right from your phone.
+                </p>
+
+                <div className="pt-2 flex flex-wrap gap-4">
+                  <button
+                    onClick={() => onOpenAuth('signup')}
+                    className="bg-white text-[#FF6651] hover:bg-gray-100 font-black text-sm px-7 py-3.5 rounded-full shadow-lg transition cursor-pointer"
+                  >
+                    Open Account Now
+                  </button>
+
+                  <button
+                    onClick={handleGoToConsole}
+                    className="bg-black/20 hover:bg-black/30 border border-white/40 text-white font-bold text-sm px-6 py-3.5 rounded-full transition cursor-pointer"
+                  >
+                    Test Web Demo Console
+                  </button>
+                </div>
+              </div>
+
+              {/* Right QR Code Scanner Card */}
+              <div className="lg:col-span-4 flex justify-center lg:justify-end">
+                <div className="bg-white text-[#1A1D20] p-6 rounded-3xl shadow-2xl flex flex-col items-center text-center max-w-[220px]">
+                  {/* Clean SVG QR Code */}
+                  <div className="w-36 h-36 bg-gray-50 border border-gray-200 rounded-2xl p-2.5 flex items-center justify-center">
+                    <svg className="w-full h-full text-[#1A1D20]" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v2h-4v-2zm-4 0h2v4h-2v-4zm2 4h4v4h-4v-4zm2-2h2v2h-2v-2zM5 5h2v2H5V5zm12 0h2v2h-2V5zM5 17h2v2H5v-2z"/>
+                    </svg>
+                  </div>
+                  <span className="text-xs font-black mt-3">Scan to download</span>
+                  <span className="text-[10px] text-gray-400 mt-0.5">iOS & Android</span>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* =========================================================================
+          11. MASTER FINTECH FOOTER (SadaPay Style Multi-Column)
+         ========================================================================= */}
+      <footer className="bg-white border-t border-[#F0EAE1] pt-16 pb-12 text-[#5F6773] text-xs">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+            {/* Col 1: Brand Info */}
+            <div className="col-span-2 space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-2xl bg-[#00A389] p-2 flex items-center justify-center">
+                  <img src={logoImg} alt="TransMoney" className="w-full h-full object-contain filter invert" />
+                </div>
+                <span className="font-extrabold text-lg text-[#1A1D20]">TransMoney</span>
+              </div>
+              <p className="text-xs leading-relaxed max-w-sm text-[#737C8A]">
+                TransMoney Technologies is an Electronic Money Institution (EMI) regulated by the State Bank of Pakistan.
+                Modern money transfers, international remittances, and numberless cards.
+              </p>
+              <div className="text-[11px] text-[#9CA3AF]">
+                Licensed by SBP • Powered by Mastercard
+              </div>
+            </div>
+
+            {/* Col 2: Products */}
+            <div className="space-y-3">
+              <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
+                Products
+              </span>
+              <ul className="space-y-2">
+                <li><a href="#features" className="hover:text-[#FF6651]">Personal Account</a></li>
+                <li><a href="#international" className="hover:text-[#FF6651]">Business Account</a></li>
+                <li><a href="#features" className="hover:text-[#FF6651]">Numberless Card</a></li>
+                <li><a href="#international" className="hover:text-[#FF6651]">International Remittance</a></li>
+                <li><a href="#features" className="hover:text-[#FF6651]">Bill Payments</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Company */}
+            <div className="space-y-3">
+              <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
+                Company
+              </span>
+              <ul className="space-y-2">
+                <li><a href="#reviews" className="hover:text-[#FF6651]">About Us</a></li>
+                <li><a href="#reviews" className="hover:text-[#FF6651]">Careers</a></li>
+                <li><a href="#regulation" className="hover:text-[#FF6651]">Press &amp; Media</a></li>
+                <li><a href="#reviews" className="hover:text-[#FF6651]">Community</a></li>
+              </ul>
+            </div>
+
+            {/* Col 4: Legal & Security */}
+            <div className="space-y-3">
+              <span className="font-bold text-xs uppercase tracking-wider text-[#1A1D20] block">
+                Legal &amp; Trust
+              </span>
+              <ul className="space-y-2">
+                <li><a href="#regulation" className="hover:text-[#FF6651]">SBP Regulations</a></li>
+                <li><a href="#security" className="hover:text-[#FF6651]">Security Policy</a></li>
+                <li><a href="#security" className="hover:text-[#FF6651]">Privacy Notice</a></li>
+                <li><a href="#security" className="hover:text-[#FF6651]">Schedule of Charges</a></li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Bottom Copyright Row */}
+          <div className="pt-8 border-t border-[#F0EAE1] flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-[#9CA3AF]">
+            <div>
+              © 2026 TransMoney Technologies Inc. All rights reserved.
+            </div>
+            <div className="flex items-center gap-6">
+              <button onClick={handleGoToConsole} className="hover:text-[#1A1D20] cursor-pointer font-bold text-[#00A389]">
+                Switch to Wallet Console →
+              </button>
+            </div>
+          </div>
+
         </div>
       </footer>
+
+      {/* QR Code Modal */}
+      {showQrModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full text-center space-y-4 shadow-2xl relative">
+            <button
+              onClick={() => setShowQrModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 font-bold p-1"
+            >
+              ✕
+            </button>
+            <div className="w-12 h-12 rounded-2xl bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mx-auto">
+              <QrCode className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-black text-[#1A1D20]">
+              Scan to Download TransMoney
+            </h3>
+            <p className="text-xs text-[#5F6773]">
+              Point your phone's camera at the QR code below to download from the App Store or Google Play Store.
+            </p>
+            <div className="w-48 h-48 bg-gray-50 border border-gray-200 rounded-2xl p-4 mx-auto flex items-center justify-center">
+              <svg className="w-full h-full text-[#1A1D20]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M2 2h8v8H2V2zm2 2v4h4V4H4zm10-2h8v8h-8V2zm2 2v4h4V4h-4zM2 14h8v8H2v-8zm2 2v4h4v-4H4zm14-2h4v2h-4v-2zm-4 0h2v4h-2v-4zm2 4h4v4h-4v-4zm2-2h2v2h-2v-2zM5 5h2v2H5V5zm12 0h2v2h-2V5zM5 17h2v2H5v-2z"/>
+              </svg>
+            </div>
+            <button
+              onClick={() => {
+                setShowQrModal(false);
+                onOpenAuth('signup');
+              }}
+              className="w-full bg-[#FF6651] text-white font-bold py-3 rounded-full text-sm shadow-md"
+            >
+              Sign Up Online
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
