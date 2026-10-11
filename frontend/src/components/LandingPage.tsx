@@ -30,13 +30,53 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
+  health,
+  accounts = [],
+  users = [],
+  currentUser,
+  onEnterConsole,
   onOpenAuth,
+  onNavigateTab,
+  onSelectAccount,
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
   const [activeNumberTab, setActiveNumberTab] = useState<'pakistan' | 'international'>('pakistan');
   const [cardFrozen, setCardFrozen] = useState<boolean>(false);
   const [activeCurrency, setActiveCurrency] = useState<'PKR' | 'USD' | 'EUR' | 'GBP'>('PKR');
   const [showQrModal, setShowQrModal] = useState<boolean>(false);
+
+  // Clean raw database hashes
+  const cleanUserName = (name: string | undefined) => {
+    if (!name) return 'Valued Member';
+    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
+  };
+
+  const activeUserAccount =
+    accounts.find((a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id) ||
+    accounts[0];
+
+  const formatMoney = (val: number | string | undefined) => {
+    const num = Number(val || 0);
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(num);
+  };
+
+  const heroBalance = activeUserAccount ? formatMoney(activeUserAccount.balance) : '15,000.00';
+  const heroCurrency = activeUserAccount?.currency || 'PKR';
+  const heroCardholder = cleanUserName(currentUser?.fullName || activeUserAccount?.user?.fullName);
+
+  const handleQuickNav = (tab: 'console' | 'transfer' | 'merchant' | 'exchange') => {
+    if (activeUserAccount && onSelectAccount) {
+      onSelectAccount(activeUserAccount.id);
+    }
+    if (onNavigateTab) {
+      onNavigateTab(tab);
+    } else if (onEnterConsole) {
+      onEnterConsole();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FAF7F4] text-[#1E2024] font-sans antialiased selection:bg-[#FF6651] selection:text-white relative overflow-x-hidden">
@@ -47,8 +87,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <div className="bg-[#FF6651] text-white text-[11px] sm:text-xs py-2 px-4 text-center font-medium tracking-wide relative z-50">
         <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
           <span>
-            Beware of phishing websites. The only official TransMoney website is{' '}
-            <span className="font-bold underline decoration-white/60">transmoney.pk</span>. We will never ask for your sensitive information.
+            {health?.database ? '🟢 Live Banking Rail Active' : 'Official TransMoney Portal'}. Beware of phishing websites. Only trust{' '}
+            <span className="font-bold underline decoration-white/60">transmoney.pk</span>. We will never ask for your sensitive credentials.
           </span>
         </div>
       </div>
@@ -76,8 +116,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </span>
           </a>
 
-          {/* Center: Exact SadaPay Navigation Links */}
-          {/* Center: Exact SadaPay Navigation Links (Desktop) */}
+          {/* Center: SadaPay Navigation Links (Desktop) */}
           <nav className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-[#4B5563]">
             <a
               href="#top"
@@ -86,6 +125,15 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               Personal
               <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#00A389] rounded-full" />
             </a>
+            {onEnterConsole && (
+              <button
+                type="button"
+                onClick={onEnterConsole}
+                className="hover:text-[#1A1D20] transition font-bold text-[#00A389] cursor-pointer"
+              >
+                Dashboard
+              </button>
+            )}
             <a
               href="#international"
               className="hover:text-[#1A1D20] transition"
@@ -96,30 +144,49 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               href="#features"
               className="hover:text-[#1A1D20] transition"
             >
-              Blog
+              Features
             </a>
             <a
               href="#reviews"
               className="hover:text-[#1A1D20] transition"
             >
-              Careers
+              Reviews
             </a>
             <a
               href="#regulation"
               className="hover:text-[#1A1D20] transition"
             >
-              Help Center
+              Security
             </a>
           </nav>
 
-          {/* Right: Exact Coral Pill "Download now" Button + Mobile/Tablet Hamburger */}
+          {/* Right: Dynamic User Status + Action Buttons */}
           <div className="flex items-center gap-3">
-            <button
-              onClick={() => onOpenAuth('signup')}
-              className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-xs sm:text-[15px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer"
-            >
-              Download now
-            </button>
+            {currentUser && onEnterConsole ? (
+              <button
+                onClick={onEnterConsole}
+                className="bg-[#00A389] hover:bg-[#008c75] active:scale-95 text-white text-xs sm:text-[14px] font-bold px-4 sm:px-5 py-2 sm:py-2.5 rounded-full shadow-md shadow-[#00A389]/25 transition cursor-pointer flex items-center gap-2"
+              >
+                <span>{cleanUserName(currentUser.fullName)}</span>
+                <span className="opacity-75 text-xs font-mono">→ Wallet</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => onOpenAuth('signup')}
+                className="bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-xs sm:text-[15px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-md shadow-[#FF6651]/25 transition cursor-pointer"
+              >
+                Download now
+              </button>
+            )}
+
+            {onEnterConsole && !currentUser && (
+              <button
+                onClick={onEnterConsole}
+                className="hidden sm:flex text-xs font-bold px-3.5 py-2 rounded-full border border-[#E6DDD3] text-[#1A1D20] hover:bg-[#F2ECE5] transition cursor-pointer"
+              >
+                Open Dashboard
+              </button>
+            )}
 
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -210,9 +277,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </h1>
 
               <p className="text-base sm:text-lg text-[#5F6773] max-w-xl mx-auto lg:mx-0 leading-relaxed font-normal">
-                Join 3 million users and get your free virtual card to shop online.
-                Enjoy free money transfers, receive remittances, pay bills, and top up your mobile balance.
-                Finally, experience banking that's simple, fast, and transparent.
+                Join {users.length > 0 ? `${users.length} active registered member accounts` : 'thousands of active members'} and get your free virtual card to shop online.
+                Enjoy free money transfers, receive remittances, pay bills, and manage multi-currency balances with instant direct settlement.
               </p>
 
               {/* 5-Star Social Proof */}
@@ -229,20 +295,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
               {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-                <button
-                  onClick={() => onOpenAuth('signup')}
-                  className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
-                >
-                  <span>Download now</span>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </button>
+                {onEnterConsole ? (
+                  <button
+                    onClick={onEnterConsole}
+                    className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
+                  >
+                    <span>{currentUser ? 'Go to My Wallet' : 'Open Web App'}</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onOpenAuth('signup')}
+                    className="w-full sm:w-auto bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-extrabold text-base px-8 py-4 rounded-full shadow-lg shadow-[#FF6651]/30 transition cursor-pointer flex items-center justify-center gap-2 group"
+                  >
+                    <span>Download now</span>
+                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
 
                 <button
-                  onClick={() => setShowQrModal(true)}
+                  onClick={() => onOpenAuth('signin')}
                   className="w-full sm:w-auto bg-white hover:bg-[#F9F5F0] border border-[#E6DDD3] text-[#1A1D20] font-bold text-base px-6 py-4 rounded-full transition cursor-pointer flex items-center justify-center gap-2 shadow-xs"
                 >
                   <QrCode className="w-5 h-5 text-[#FF6651]" />
-                  <span>Scan to get the app</span>
+                  <span>{currentUser ? 'Switch User' : 'Sign In / Register'}</span>
                 </button>
               </div>
 
@@ -319,34 +395,46 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                       Current Balance
                     </span>
                     <div className="text-xl font-black text-[#1A1D20] mt-0.5">
-                      ₨ 142,500<span className="text-xs text-[#8C939E]">.00</span>
+                      {heroCurrency === 'PKR' ? '₨' : heroCurrency === 'USD' ? '$' : heroCurrency === 'GBP' ? '£' : '€'} {heroBalance}
                     </div>
                     <div className="text-[10px] text-[#00A389] font-bold mt-1 flex items-center gap-1">
                       <TrendingUp className="w-3 h-3" />
-                      <span>Zero monthly fees</span>
+                      <span>{activeUserAccount?.accountNumber || 'Zero monthly fees'}</span>
                     </div>
                   </div>
 
                   {/* Quick Action Grid */}
                   <div className="grid grid-cols-3 gap-2 mt-3">
-                    <div className="bg-[#E8F8F5] p-2 rounded-xl text-center flex flex-col items-center">
+                    <button
+                      type="button"
+                      onClick={() => handleQuickNav('console')}
+                      className="bg-[#E8F8F5] hover:bg-[#d5f3ec] p-2 rounded-xl text-center flex flex-col items-center transition cursor-pointer"
+                    >
                       <div className="w-6 h-6 rounded-full bg-[#00A389] text-white flex items-center justify-center text-[10px] mb-1">
                         +
                       </div>
                       <span className="text-[9px] font-bold text-[#00A389]">Load</span>
-                    </div>
-                    <div className="bg-[#FFF0ED] p-2 rounded-xl text-center flex flex-col items-center">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickNav('transfer')}
+                      className="bg-[#FFF0ED] hover:bg-[#fde2dc] p-2 rounded-xl text-center flex flex-col items-center transition cursor-pointer"
+                    >
                       <div className="w-6 h-6 rounded-full bg-[#FF6651] text-white flex items-center justify-center text-[10px] mb-1">
                         ↗
                       </div>
                       <span className="text-[9px] font-bold text-[#FF6651]">Send</span>
-                    </div>
-                    <div className="bg-white p-2 rounded-xl text-center flex flex-col items-center border border-[#F0EAE1]">
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleQuickNav('merchant')}
+                      className="bg-white hover:bg-slate-50 p-2 rounded-xl text-center flex flex-col items-center border border-[#F0EAE1] transition cursor-pointer"
+                    >
                       <div className="w-6 h-6 rounded-full bg-[#1A1D20] text-white flex items-center justify-center text-[10px] mb-1">
                         ▦
                       </div>
                       <span className="text-[9px] font-bold text-[#1A1D20]">Pay</span>
-                    </div>
+                    </button>
                   </div>
 
                   {/* Recent Activity List */}
@@ -361,7 +449,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           N
                         </div>
                         <div className="text-left">
-                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Netflix</span>
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Digital Service</span>
                           <span className="text-[8px] text-[#8C939E]">Subscription</span>
                         </div>
                       </div>
@@ -374,11 +462,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                           $
                         </div>
                         <div className="text-left">
-                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Upwork Global</span>
+                          <span className="text-[10px] font-bold text-[#1A1D20] block leading-tight">Direct Deposit</span>
                           <span className="text-[8px] text-[#00A389]">Received</span>
                         </div>
                       </div>
-                      <span className="text-[10px] font-bold text-[#00A389]">+₨ 126,000</span>
+                      <span className="text-[10px] font-bold text-[#00A389]">+₨ 25,000</span>
                     </div>
                   </div>
                 </div>
@@ -414,7 +502,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     NUMBERLESS CARD
                   </div>
                   <div className="text-xs font-bold tracking-wide text-white drop-shadow-xs">
-                    AHMED KHAN
+                    {heroCardholder.toUpperCase()}
                   </div>
                 </div>
 

@@ -23,24 +23,44 @@ const REGION_OPTIONS: { value: ShardType; label: string; flag: string }[] = [
   { value: 'SHARD_4_UAE', label: 'UAE & Middle East', flag: '🇦🇪' },
 ];
 
-const DEMO_ACCOUNTS = [
-  { name: 'Alice Khan', email: 'alice@transmoney.com', city: 'Karachi', flag: '🇵🇰' },
-  { name: 'Bob Malik', email: 'bob@transmoney.com', city: 'Lahore', flag: '🇵🇰' },
-  { name: 'Charlie Tariq', email: 'charlie@transmoney.com', city: 'Islamabad', flag: '🇵🇰' },
-  { name: 'Daraz Merchant', email: 'daraz@merchants.transmoney.com', city: 'Business Account', flag: '🏢' },
-];
-
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
+  users = [],
+  accounts = [],
+  currentUser,
   onSelectUser,
   onUserCreated,
   initialMode = 'signin',
 }) => {
   const [tab, setTab] = useState<'signin' | 'signup'>(initialMode);
 
-  // Sign In state
-  const [signInEmail, setSignInEmail] = useState('alice@transmoney.com');
+  // Clean raw database test hashes like 'Alice Khan 979fab2f' into clean 'Alice Khan'
+  const cleanUserName = (name: string | undefined) => {
+    if (!name) return 'User';
+    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
+  };
+
+  const getUserAccountMeta = (userId: number) => {
+    const acc = accounts.find((a) => a.user?.id === userId || (a as any).userId === userId);
+    if (!acc) return { curr: 'PKR', flag: '🇵🇰', label: 'Primary Account' };
+    let flag = '🇵🇰';
+    if (acc.currency === 'USD') flag = '🇺🇸';
+    else if (acc.currency === 'GBP') flag = '🇬🇧';
+    else if (acc.currency === 'EUR') flag = '🇪🇺';
+    else if (acc.currency === 'AED') flag = '🇦🇪';
+    else if (acc.currency === 'SGD') flag = '🇸🇬';
+    return {
+      curr: acc.currency,
+      flag,
+      label: `${acc.accountNumber} • ${Number(acc.balance).toLocaleString('en-US', { minimumFractionDigits: 2 })} ${acc.currency}`,
+    };
+  };
+
+  // Sign In state (Dynamic default)
+  const [signInEmail, setSignInEmail] = useState(() => {
+    return currentUser?.email || (users.length > 0 ? users[0].email : '');
+  });
   const [signInPassword, setSignInPassword] = useState('password123');
 
   // Sign Up state
@@ -48,6 +68,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [signUpEmail, setSignUpEmail] = useState('');
   const [signUpPassword, setSignUpPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [initialBalance, setInitialBalance] = useState('5000');
   const [shard, setShard] = useState<ShardType>('SHARD_3_SOUTH');
   const [currency, setCurrency] = useState('PKR');
 
@@ -80,8 +101,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  const handleQuickDemoFill = (email: string) => {
-    setSignInEmail(email);
+  const handleQuickUserSelect = (user: User) => {
+    setSignInEmail(user.email);
     setSignInPassword('password123');
     setErrorMsg(null);
   };
@@ -92,13 +113,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     setLoading(true);
 
     try {
+      const startingAmount = Math.max(0, Number(initialBalance) || 5000);
       const authRes = await register({
         fullName: fullName.trim(),
         email: signUpEmail.trim().toLowerCase(),
         password: signUpPassword,
         phoneNumber: phoneNumber.trim() || undefined,
         shard,
-        initialBalance: 5000,
+        initialBalance: startingAmount,
         currency,
       });
 
@@ -107,7 +129,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         : {
             id: 0,
             accountNumber: 'ACC-NEW',
-            balance: 5000,
+            balance: startingAmount,
             currency,
             shard,
             status: 'ACTIVE',
@@ -254,36 +276,53 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </button>
               </form>
 
-              {/* Quick Sample Accounts (Clean, zero tech jargon) */}
-              <div className="pt-3 border-t border-[#F2ECE5]">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-bold text-[#5F6773]">
-                    Quick Test Sign In
-                  </span>
-                  <span className="text-[10px] text-[#8C939E]">1-Click select</span>
-                </div>
+              {/* Dynamic Database Accounts */}
+              {users.length > 0 && (
+                <div className="pt-3 border-t border-[#F2ECE5]">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[11px] font-bold text-[#5F6773]">
+                      Available Accounts ({users.length})
+                    </span>
+                    <span className="text-[10px] text-[#8C939E]">1-Click select</span>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  {DEMO_ACCOUNTS.map((d) => (
-                    <button
-                      key={d.email}
-                      type="button"
-                      onClick={() => handleQuickDemoFill(d.email)}
-                      className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
-                        signInEmail === d.email
-                          ? 'border-[#00A389] bg-[#E8F8F5]'
-                          : 'border-[#EFE7DE] bg-[#FAF7F4] hover:bg-[#F2ECE5]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-xs">{d.flag}</span>
-                        <span className="font-bold text-xs text-[#1A1D20] truncate">{d.name}</span>
-                      </div>
-                      <span className="text-[10px] text-[#5F6773] block truncate mt-0.5">{d.city}</span>
-                    </button>
-                  ))}
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-0.5">
+                    {users.map((u) => {
+                      const meta = getUserAccountMeta(u.id);
+                      const isCurrent = currentUser?.id === u.id;
+                      const isSelected = signInEmail.toLowerCase() === u.email.toLowerCase();
+
+                      return (
+                        <button
+                          key={u.id}
+                          type="button"
+                          onClick={() => handleQuickUserSelect(u)}
+                          className={`p-2.5 rounded-2xl border text-left transition cursor-pointer ${
+                            isSelected
+                              ? 'border-[#00A389] bg-[#E8F8F5]'
+                              : isCurrent
+                              ? 'border-[#FF6651]/50 bg-[#FFF5F2]'
+                              : 'border-[#EFE7DE] bg-[#FAF7F4] hover:bg-[#F2ECE5]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs">{meta.flag}</span>
+                            <span className="font-bold text-xs text-[#1A1D20] truncate">
+                              {cleanUserName(u.fullName)}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-[#5F6773] block truncate mt-0.5 font-mono">
+                            {u.email}
+                          </span>
+                          <span className="text-[9px] text-[#00A389] block truncate font-medium mt-0.5">
+                            {meta.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSignUp} className="space-y-3.5">
@@ -351,6 +390,27 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                     value={phoneNumber}
                     onChange={(e) => setPhoneNumber(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[#1A1D20] block mb-1">
+                  Starting Balance Deposit
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-2.5 text-xs font-bold text-[#8C939E]">
+                    {currency}
+                  </span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="100"
+                    required
+                    value={initialBalance}
+                    onChange={(e) => setInitialBalance(e.target.value)}
+                    placeholder="5000"
+                    className="w-full pl-14 pr-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE4DC] text-[#1A1D20] text-xs font-mono placeholder:text-[#8C939E] focus:outline-none focus:border-[#00A389] focus:bg-white transition"
                   />
                 </div>
               </div>

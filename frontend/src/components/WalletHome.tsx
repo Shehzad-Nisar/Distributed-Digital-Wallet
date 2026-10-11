@@ -537,18 +537,29 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
               )}
             </div>
 
-            {/* Monthly Card Spending Limit Bar */}
-            <div className="space-y-1.5 pt-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-slate-500">Monthly Card Spend</span>
-                <span className="font-mono font-bold text-slate-800">
-                  {activeMeta.symbol} 2,500 / {activeMeta.symbol} 50,000 (5%)
-                </span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
-                <div className="h-full bg-emerald-600 rounded-full w-[5%]" />
-              </div>
-            </div>
+            {/* Monthly Card Spending Limit Bar (Dynamic) */}
+            {(() => {
+              const currentBalance = Number(activeAccount?.balance || 0);
+              const limit = Math.max(25000, currentBalance * 2);
+              const spend = totalOutflow;
+              const percent = Math.min(100, Math.round((spend / limit) * 100));
+              return (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-slate-500">Monthly Card Spend</span>
+                    <span className="font-mono font-bold text-slate-800">
+                      {activeMeta.symbol} {formatMoney(spend)} / {activeMeta.symbol} {formatMoney(limit)} ({percent}%)
+                    </span>
+                  </div>
+                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Direct Deposit & Wire Details Vault */}
@@ -562,7 +573,13 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 <p className="text-xs text-slate-500">Use these details to receive domestic and international transfers</p>
               </div>
               <button
-                onClick={() => copyToClipboard(`IBAN: PK64TRNS${String(activeAccount?.accountNumber || '').replace(/[^0-9]/g, '').padEnd(16, '0')}\nBIC: TRNSMYSG`)}
+                onClick={() => {
+                  const curr = activeAccount?.currency || 'PKR';
+                  const rawNum = String(activeAccount?.accountNumber || '').replace(/[^0-9]/g, '').padEnd(16, '0');
+                  const iban = curr === 'USD' ? `US12TRNS${rawNum}` : curr === 'GBP' ? `GB82TRNS${rawNum}` : curr === 'EUR' ? `DE33TRNS${rawNum}` : `PK64TRNS${rawNum}`;
+                  const bic = curr === 'USD' ? 'TRNSUS33' : curr === 'GBP' ? 'TRNSGB2L' : curr === 'EUR' ? 'TRNSEU88' : 'TRNSPKKA';
+                  copyToClipboard(`IBAN: ${iban}\nBIC: ${bic}\nBank Hub: ${getHumanRegion(activeAccount?.shard)}`);
+                }}
                 className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" />
@@ -588,7 +605,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
               <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
                 <span className="text-slate-400 block mb-0.5">SWIFT / BIC</span>
                 <span className="font-mono font-bold text-slate-900">
-                  TRNSMYSG
+                  {activeAccount?.currency === 'USD' ? 'TRNSUS33' : activeAccount?.currency === 'GBP' ? 'TRNSGB2L' : activeAccount?.currency === 'EUR' ? 'TRNSEU88' : 'TRNSPKKA'}
                 </span>
               </div>
 
@@ -596,7 +613,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 <span className="text-slate-400 block mb-0.5">Clearing Network</span>
                 <span className="font-semibold text-emerald-700 flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
-                  <span>Instant Atomic 2PC</span>
+                  <span>Instant Verified Clearing</span>
                 </span>
               </div>
             </div>
@@ -682,7 +699,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                   <span>Money In</span>
                 </span>
                 <span className="text-base font-extrabold font-mono text-emerald-900 block">
-                  +{formatMoney(totalInflow || 10000)}
+                  +{formatMoney(totalInflow)}
                 </span>
               </div>
 
@@ -692,7 +709,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                   <span>Money Out</span>
                 </span>
                 <span className="text-base font-extrabold font-mono text-slate-900 block">
-                  -{formatMoney(totalOutflow || 2500)}
+                  -{formatMoney(totalOutflow)}
                 </span>
               </div>
             </div>
@@ -835,7 +852,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 Payment Receipt
               </h3>
               <p className="text-xs text-slate-500">
-                Atomic Consensus Certified • Guaranteed Settlement
+                Verified Payment • Guaranteed Immediate Settlement
               </p>
             </div>
 
@@ -849,7 +866,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
               <div className="flex justify-between py-1">
                 <span className="text-slate-500">Status</span>
                 <span className="font-semibold text-emerald-700">
-                  {selectedTxDetail.status || 'COMMITTED'}
+                  {selectedTxDetail.status === 'COMMITTED' ? 'Completed' : (selectedTxDetail.status || 'Completed')}
                 </span>
               </div>
               <div className="flex justify-between py-1">
