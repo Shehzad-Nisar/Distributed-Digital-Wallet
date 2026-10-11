@@ -10,13 +10,11 @@ import {
   ArrowRightLeft,
   Wallet,
   Terminal,
-  Sparkles,
 } from 'lucide-react';
 import type { Account, SystemHealth, User } from '../types';
 import logoImg from '../assets/logo.png';
 
 export type AppTab =
-  | 'landing'
   | 'console'
   | 'transfer'
   | 'merchant'
@@ -87,18 +85,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Clean Top-Tier Navigation Tabs (Wise & Stripe minimal style) */}
           <nav className="hidden md:flex items-center gap-1 text-xs">
-            <button
-              onClick={() => setActiveTab('landing')}
-              className={`px-3.5 py-2 rounded-xl transition cursor-pointer font-semibold flex items-center gap-2 ${
-                activeTab === 'landing'
-                  ? 'bg-[#FFEAE5] text-[#FF6651]'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-              }`}
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${activeTab === 'landing' ? 'text-[#FF6651]' : 'text-slate-400'}`} />
-              <span>Landing UI</span>
-            </button>
-
             <button
               onClick={() => setActiveTab('console')}
               className={`px-3.5 py-2 rounded-xl transition cursor-pointer font-semibold flex items-center gap-2 ${
