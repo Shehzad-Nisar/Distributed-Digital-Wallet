@@ -143,48 +143,48 @@ export const ArchitectureView: React.FC = () => {
       <div className="space-y-4">
         <h3 className="text-sm font-bold text-black uppercase tracking-wider font-mono flex items-center gap-2">
           <Globe className="w-4 h-4 text-black" />
-          <span>Regional Coverage & Pre-Loaded Accounts</span>
+          <span>Regional Shard Topology & Partition Routing</span>
         </h3>
 
         <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white font-mono text-xs shadow-xs">
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase text-[10px]">
               <tr>
-                <th className="py-2.5 px-3">Region</th>
-                <th className="py-2.5 px-3">Coverage Area</th>
-                <th className="py-2.5 px-3">Account</th>
-                <th className="py-2.5 px-3">Account Holder</th>
-                <th className="py-2.5 px-3 text-right">Starting Balance</th>
+                <th className="py-2.5 px-3">Shard Partition</th>
+                <th className="py-2.5 px-3">Regional Hub</th>
+                <th className="py-2.5 px-3">Database Target</th>
+                <th className="py-2.5 px-3">2PC Coordinator</th>
+                <th className="py-2.5 px-3 text-right">Consensus SLA</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">North Hub</td>
-                <td className="py-2.5 px-3 text-slate-600">Islamabad / KPK</td>
-                <td className="py-2.5 px-3 text-black">ACC-CHARLIE-003</td>
-                <td className="py-2.5 px-3 text-black">Charlie Tariq</td>
-                <td className="py-2.5 px-3 text-right font-bold text-black">5,000.00 PKR</td>
+                <td className="py-2.5 px-3 font-bold text-black">SHARD_1_NORTH</td>
+                <td className="py-2.5 px-3 text-slate-600">North Hub (Islamabad / KPK)</td>
+                <td className="py-2.5 px-3 text-black">Partition Cluster Alpha</td>
+                <td className="py-2.5 px-3 text-emerald-700 font-semibold">Active Leader</td>
+                <td className="py-2.5 px-3 text-right font-bold text-black">&lt; 12ms</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">Central Hub</td>
-                <td className="py-2.5 px-3 text-slate-600">Lahore / Punjab</td>
-                <td className="py-2.5 px-3 text-black">ACC-BOB-002</td>
-                <td className="py-2.5 px-3 text-black">Bob Malik</td>
-                <td className="py-2.5 px-3 text-right font-bold text-black">1,000.00 PKR</td>
+                <td className="py-2.5 px-3 font-bold text-black">SHARD_2_CENTRAL</td>
+                <td className="py-2.5 px-3 text-slate-600">Central Hub (Lahore / Punjab)</td>
+                <td className="py-2.5 px-3 text-black">Partition Cluster Beta</td>
+                <td className="py-2.5 px-3 text-emerald-700 font-semibold">Active Leader</td>
+                <td className="py-2.5 px-3 text-right font-bold text-black">&lt; 10ms</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">South Hub</td>
-                <td className="py-2.5 px-3 text-slate-600">Karachi / Sindh</td>
-                <td className="py-2.5 px-3 text-black">ACC-ALICE-001</td>
-                <td className="py-2.5 px-3 text-black">Alice Khan</td>
-                <td className="py-2.5 px-3 text-right font-bold text-black">10,000.00 PKR</td>
+                <td className="py-2.5 px-3 font-bold text-black">SHARD_3_SOUTH</td>
+                <td className="py-2.5 px-3 text-slate-600">South Hub (Karachi / Sindh)</td>
+                <td className="py-2.5 px-3 text-black">Partition Cluster Gamma</td>
+                <td className="py-2.5 px-3 text-emerald-700 font-semibold">Active Leader</td>
+                <td className="py-2.5 px-3 text-right font-bold text-black">&lt; 14ms</td>
               </tr>
               <tr>
-                <td className="py-2.5 px-3 font-bold text-black">Business Hub</td>
-                <td className="py-2.5 px-3 text-slate-600">Corporate & Merchant</td>
-                <td className="py-2.5 px-3 text-black">ACC-DARAZ-004</td>
-                <td className="py-2.5 px-3 text-black">Daraz Merchant</td>
-                <td className="py-2.5 px-3 text-right font-bold text-black">100,000.00 PKR</td>
+                <td className="py-2.5 px-3 font-bold text-black">SHARD_4_ENTERPRISE</td>
+                <td className="py-2.5 px-3 text-slate-600">Enterprise & Global Clearing</td>
+                <td className="py-2.5 px-3 text-black">Partition Cluster Delta</td>
+                <td className="py-2.5 px-3 text-emerald-700 font-semibold">Active Leader</td>
+                <td className="py-2.5 px-3 text-right font-bold text-black">&lt; 8ms</td>
               </tr>
             </tbody>
           </table>

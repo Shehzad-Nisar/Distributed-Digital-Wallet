@@ -54,14 +54,10 @@ export function App() {
         if (found) {
           setCurrentUser(found);
           const userAcc = accs.find((a) => a.user?.id === found.id);
-          if (userAcc && !selectedAccountId) {
+          if (userAcc) {
             setSelectedAccountId(userAcc.id);
           }
         }
-      }
-
-      if (!selectedAccountId && accs.length > 0) {
-        setSelectedAccountId(accs[0].id);
       }
     } catch (err) {
       console.error('Error fetching cluster data', err);
@@ -259,6 +255,10 @@ export function App() {
                   currentUser={currentUser}
                   activeAccountId={selectedAccountId}
                   onTransferComplete={handleTransferComplete}
+                  onOpenAuth={(mode) => {
+                    setAuthModalMode(mode);
+                    setAuthModalOpen(true);
+                  }}
                 />
               </div>
             )}

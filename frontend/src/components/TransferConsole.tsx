@@ -7,12 +7,13 @@ import {
   XCircle,
   Copy,
   Check,
-  Cpu,
-  Repeat,
   Layers,
   ChevronDown,
-  ChevronUp,
   Download,
+  Search,
+  UserCheck,
+  AlertCircle,
+  Wallet,
 } from 'lucide-react';
 import { executeTransfer, trigger2pcRecovery } from '../api/client';
 import type { Account, TransferResponse, User } from '../types';
@@ -22,19 +23,30 @@ interface TransferConsoleProps {
   currentUser?: User | null;
   activeAccountId: number | null;
   onTransferComplete: () => void;
+  onOpenAuth?: (mode: 'signin' | 'signup') => void;
 }
 
 export const TransferConsole: React.FC<TransferConsoleProps> = ({
   accounts,
+  currentUser,
   activeAccountId,
   onTransferComplete,
+  onOpenAuth,
 }) => {
-  const [senderId, setSenderId] = useState<number>(
-    activeAccountId || accounts[0]?.id || 1
+  // Only accounts belonging to the current user can be paid from
+  const userAccounts = accounts.filter(
+    (a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id
   );
-  const [receiverId, setReceiverId] = useState<number>(
-    accounts[1]?.id || (accounts[0]?.id === 1 ? 2 : 1)
-  );
+
+  const [senderId, setSenderId] = useState<number>(() => {
+    if (activeAccountId && userAccounts.some((a) => a.id === activeAccountId)) {
+      return activeAccountId;
+    }
+    return userAccounts[0]?.id || accounts[0]?.id || 0;
+  });
+
+  const [recipientQuery, setRecipientQuery] = useState<string>('');
+  const [receiverId, setReceiverId] = useState<number | null>(null);
   const [amount, setAmount] = useState<string>('500');
   const [description, setDescription] = useState<string>('');
   const [idempotencyKey, setIdempotencyKey] = useState<string>(
@@ -51,19 +63,41 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
   const [showDiagnostics, setShowDiagnostics] = useState<boolean>(false);
   const [showReceipt, setShowReceipt] = useState<boolean>(false);
 
+  // Keep senderId in sync with activeAccountId when user switches account
   useEffect(() => {
-    if (activeAccountId && activeAccountId !== senderId) {
+    if (activeAccountId && userAccounts.some((a) => a.id === activeAccountId)) {
       setSenderId(activeAccountId);
-      if (receiverId === activeAccountId) {
-        const other = accounts.find((a) => a.id !== activeAccountId);
-        if (other) setReceiverId(other.id);
-      }
+    } else if (userAccounts.length > 0 && !userAccounts.some((a) => a.id === senderId)) {
+      setSenderId(userAccounts[0].id);
     }
-  }, [activeAccountId, accounts]);
+  }, [activeAccountId, userAccounts]);
 
   const sender = accounts.find((a) => a.id === Number(senderId));
-  const receiver = accounts.find((a) => a.id === Number(receiverId));
+
+  // Resolved receiver from query or selection
+  const matchedReceiver = React.useMemo(() => {
+    if (receiverId) {
+      const found = accounts.find((a) => a.id === receiverId && a.id !== senderId);
+      if (found) return found;
+    }
+    const clean = recipientQuery.trim().toUpperCase();
+    if (!clean) return null;
+    return (
+      accounts.find(
+        (a) =>
+          a.id !== senderId &&
+          (a.accountNumber?.toUpperCase() === clean ||
+            a.user?.email?.toUpperCase() === clean ||
+            a.user?.phoneNumber?.replace(/\s+/g, '') === clean)
+      ) || null
+    );
+  }, [receiverId, recipientQuery, accounts, senderId]);
+
+  const receiver = matchedReceiver;
   const isDifferentRegion = sender && receiver && sender.shard !== receiver.shard;
+
+  // Other accounts owned by the current user (e.g. transfer between user's own PKR and USD wallets)
+  const myOtherAccounts = userAccounts.filter((a) => a.id !== senderId);
 
   const generateNewKey = () => {
     setIdempotencyKey('idemp-' + Math.random().toString(36).substring(2, 10));
@@ -91,7 +125,17 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
   };
 
   const performTransfer = async (useExistingKey: boolean = false) => {
-    if (Number(senderId) === Number(receiverId)) {
+    if (!sender) {
+      setErrorMsg('Please select a valid source wallet.');
+      return;
+    }
+
+    if (!receiver) {
+      setErrorMsg('Please enter a valid recipient account number.');
+      return;
+    }
+
+    if (Number(sender.id) === Number(receiver.id)) {
       setErrorMsg('Sender and receiver accounts must be different.');
       return;
     }
@@ -101,7 +145,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
       return;
     }
 
-    if (sender && Number(sender.balance) < Number(amount) && !useExistingKey) {
+    if (Number(sender.balance) < Number(amount) && !useExistingKey) {
       setErrorMsg(
         `Insufficient balance. Available: ${Number(sender.balance).toLocaleString()} ${sender.currency}, requested: ${amount} ${sender.currency}.`
       );
@@ -125,10 +169,10 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
     try {
       const res = await executeTransfer(
         {
-          senderAccountId: Number(senderId),
-          receiverAccountId: Number(receiverId),
+          senderAccountId: Number(sender.id),
+          receiverAccountId: Number(receiver.id),
           amount: Number(amount),
-          currency: sender?.currency || 'PKR',
+          currency: sender.currency || 'PKR',
           description: description.trim() || 'Instant P2P Transfer',
           idempotencyKey: keyToUse,
         },
@@ -163,7 +207,6 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
     performTransfer(false);
   };
 
-  // Preset amount helper
   const handlePresetAmount = (val: number) => {
     setAmount(String(val));
   };
@@ -174,18 +217,9 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
     }
   };
 
-  // Other accounts for quick recipient picker
-  const eligibleReceivers = accounts.filter((a) => a.id !== sender?.id);
-
-  // Clean raw database test hashes like 'Bob Ahmed 979fab2f' into clean 'Bob Ahmed'
-  const cleanUserName = (name: string | undefined) => {
-    if (!name) return 'Personal Account';
-    return name.replace(/\s+[a-f0-9]{8}$/i, '').trim();
-  };
-
   return (
     <div className="max-w-4xl mx-auto space-y-6 font-sans">
-      {/* Main Send Money Card (SadaPay / NayaPay / Wise UX) */}
+      {/* Main Send Money Card */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
         <div className="flex items-center justify-between pb-6 border-b border-slate-100">
           <div>
@@ -194,7 +228,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               <span>Send Money</span>
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Instant P2P and international transfers with zero fees and bank-grade security
+              Instant P2P and cross-border transfers with zero fees and bank-grade security
             </p>
           </div>
 
@@ -228,274 +262,355 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-          {/* Step 1: Choose From Account */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">
-              Pay From
-            </label>
-            <div className="relative">
-              <select
-                value={senderId}
-                onChange={(e) => setSenderId(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-black text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition cursor-pointer appearance-none"
-              >
-                {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.accountNumber} — {cleanUserName(acc.user?.fullName) || `Account #${acc.id}`} ({Number(acc.balance).toLocaleString()} {acc.currency})
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <ChevronDown className="w-4 h-4" />
-              </div>
+        {/* Unauthenticated / No account prompt */}
+        {userAccounts.length === 0 && (
+          <div className="mt-6 p-6 rounded-2xl bg-[#FFF8F6] border border-[#FFD9D3] text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mx-auto">
+              <Wallet className="w-6 h-6" />
             </div>
-            {sender && (
-              <div className="flex items-center justify-between px-1 text-xs text-slate-500">
-                <span>Available Balance: <strong className="text-slate-900">{Number(sender.balance).toLocaleString()} {sender.currency}</strong></span>
-                <span className="text-[11px] font-mono text-slate-400">{sender.shard}</span>
+            <h3 className="text-sm font-bold text-slate-900">Sign in to Send Money</h3>
+            <p className="text-xs text-slate-600 max-w-md mx-auto">
+              You need an active wallet to send money. Create an account in seconds or sign in to your existing wallet.
+            </p>
+            {onOpenAuth && (
+              <div className="flex justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('signup')}
+                  className="px-4 py-2 rounded-xl bg-[#FF6651] text-white text-xs font-bold hover:bg-[#e0533f] transition cursor-pointer shadow-xs"
+                >
+                  Create Account
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth('signin')}
+                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-white transition cursor-pointer"
+                >
+                  Sign In
+                </button>
               </div>
             )}
           </div>
+        )}
 
-          {/* Step 2: Choose Recipient */}
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-slate-700 block">
-              Send To (Recipient)
-            </label>
+        {userAccounts.length > 0 && (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+            {/* Step 1: Pay From (Current User's Accounts Only) */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Pay From
+              </label>
 
-            {/* Quick Contact Chips (SadaPay / NayaPay style) */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1">
-              {eligibleReceivers.slice(0, 5).map((acc) => {
-                const isSelected = acc.id === Number(receiverId);
-                const name = cleanUserName(acc.user?.fullName) || `Acc #${acc.id}`;
-                return (
-                  <button
-                    key={acc.id}
-                    type="button"
-                    onClick={() => setReceiverId(acc.id)}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-medium border transition cursor-pointer shrink-0 ${
-                      isSelected
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    }`}
+              {userAccounts.length === 1 ? (
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 block">
+                      {userAccounts[0].accountNumber} ({userAccounts[0].currency} Wallet)
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-mono">
+                      {userAccounts[0].shard}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs text-slate-400 block">Available</span>
+                    <span className="text-sm font-bold text-slate-900 font-mono">
+                      {Number(userAccounts[0].balance).toLocaleString()} {userAccounts[0].currency}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <select
+                    value={senderId}
+                    onChange={(e) => setSenderId(Number(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-black text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition cursor-pointer appearance-none"
                   >
-                    <div
-                      className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                        isSelected ? 'bg-white text-slate-900' : 'bg-slate-100 text-slate-700'
+                    {userAccounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.accountNumber} — {acc.currency} Wallet ({Number(acc.balance).toLocaleString()} {acc.currency})
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                    <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              )}
+
+              {sender && userAccounts.length > 1 && (
+                <div className="flex items-center justify-between px-1 text-xs text-slate-500">
+                  <span>
+                    Available Balance: <strong className="text-slate-900">{Number(sender.balance).toLocaleString()} {sender.currency}</strong>
+                  </span>
+                  <span className="text-[11px] font-mono text-slate-400">{sender.shard}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Step 2: Send To (Recipient Account Number Input & Real-Time Verification) */}
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Send To (Recipient)
+              </label>
+
+              {/* Quick toggle to transfer between own wallets if multiple exist */}
+              {myOtherAccounts.length > 0 && (
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  <span className="text-[11px] text-slate-400 shrink-0">My Wallets:</span>
+                  {myOtherAccounts.map((acc) => (
+                    <button
+                      key={acc.id}
+                      type="button"
+                      onClick={() => {
+                        setReceiverId(acc.id);
+                        setRecipientQuery(acc.accountNumber);
+                      }}
+                      className={`px-3 py-1 rounded-full text-xs font-medium border transition cursor-pointer shrink-0 ${
+                        receiver?.id === acc.id
+                          ? 'bg-slate-900 text-white border-slate-900'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
                     >
-                      {name.charAt(0)}
+                      {acc.currency} ({acc.accountNumber})
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Account Number / Mobile / Email Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={recipientQuery}
+                  onChange={(e) => {
+                    setRecipientQuery(e.target.value);
+                    setReceiverId(null);
+                  }}
+                  placeholder="Enter recipient account number (e.g. ACC-PKR-001) or email"
+                  className="w-full px-4 py-3 pl-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition"
+                />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <Search className="w-4 h-4" />
+                </div>
+              </div>
+
+              {/* Verified Recipient Card */}
+              {receiver && (
+                <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/60 flex items-center justify-between text-xs animate-in fade-in">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                      <UserCheck className="w-4 h-4" />
                     </div>
-                    <span>{name.split(' ')[0]}</span>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-slate-900">
+                          {receiver.user?.fullName || 'TransMoney User'}
+                        </span>
+                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                          Verified
+                        </span>
+                      </div>
+                      <span className="text-[11px] text-slate-500 font-mono">
+                        {receiver.accountNumber} • {receiver.currency} • {receiver.shard}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {recipientQuery.trim() !== '' && !receiver && (
+                <div className="p-3 rounded-xl border border-amber-200 bg-amber-50/70 text-xs text-amber-800 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
+                  <span>Account not found. Please double-check the recipient's account number or email.</span>
+                </div>
+              )}
+            </div>
+
+            {/* Step 3: Enter Amount */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-700 block">
+                  Amount
+                </label>
+                <span className="text-xs text-slate-500">
+                  Currency: <strong className="text-black">{sender?.currency || 'PKR'}</strong>
+                </span>
+              </div>
+
+              <div className="relative">
+                <input
+                  type="number"
+                  min="1"
+                  step="any"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="0.00"
+                  className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-300 text-black text-xl font-bold font-mono focus:outline-none focus:border-black transition"
+                />
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-sm text-slate-400">
+                  {sender?.currency || 'PKR'}
+                </div>
+              </div>
+
+              {/* Preset Amount Chips */}
+              <div className="flex items-center gap-2 pt-1">
+                {[500, 1000, 2500, 5000].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => handlePresetAmount(val)}
+                    className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                  >
+                    +{val.toLocaleString()}
                   </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleMaxAmount}
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-200 hover:bg-slate-300 text-black transition cursor-pointer"
+                >
+                  Max
+                </button>
+              </div>
+            </div>
+
+            {/* Step 4: Reference Note (Optional) */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-700 block">
+                Reference Note <span className="font-normal text-slate-400">(Optional)</span>
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="e.g. Dinner bill split, Freelance payment, Rent"
+                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-black focus:bg-white transition"
+              />
+            </div>
+
+            {/* Fee & Security Guarantee */}
+            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Transfer Fee</span>
+                <span className="font-bold text-emerald-600">Rs. 0.00 (100% Free)</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span>Delivery Time</span>
+                <span className="font-medium text-black">Instant (&lt; 200ms)</span>
+              </div>
+              <div className="flex justify-between text-slate-600">
+                <span>Security</span>
+                <span className="font-medium text-emerald-700 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Atomic 2PC Protected
+                </span>
+              </div>
+            </div>
+
+            {/* Submit Action Button */}
+            <button
+              type="submit"
+              disabled={loading || !receiver || !amount || Number(amount) <= 0}
+              className="w-full py-3.5 px-6 rounded-2xl bg-black hover:bg-neutral-800 disabled:bg-slate-300 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer disabled:cursor-not-allowed"
+            >
+              {loading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <span>Processing Transfer...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>Send {amount ? `${amount} ${sender?.currency || 'PKR'}` : 'Money'}</span>
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* 2PC Technical Consensus Progress Visualizer */}
+        {activeStep >= 0 && (
+          <div className="mt-8 pt-6 border-t border-slate-100">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <span>Distributed Consensus Execution</span>
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {[
+                { title: '1. Prepare Phase', desc: 'Acquire distributed lock & balance check' },
+                { title: '2. 2PC Consensus', desc: 'Atomic vote across coordinator nodes' },
+                { title: '3. Commit Phase', desc: 'Immutable ledger entry finalized' },
+              ].map((step, idx) => {
+                const isCurrent = activeStep === idx;
+                const isPassed = activeStep > idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-xl border text-xs transition ${
+                      isPassed
+                        ? 'border-emerald-300 bg-emerald-50 text-emerald-900'
+                        : isCurrent
+                        ? 'border-black bg-slate-900 text-white shadow-xs'
+                        : 'border-slate-200 bg-slate-50 text-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-bold">{step.title}</span>
+                      {isPassed && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
+                      {isCurrent && <RefreshCw className="w-4 h-4 animate-spin text-white" />}
+                    </div>
+                    <p className={`text-[11px] ${isCurrent ? 'text-slate-300' : 'text-slate-500'}`}>
+                      {step.desc}
+                    </p>
+                  </div>
                 );
               })}
             </div>
-
-            {/* Recipient Dropdown / Selector */}
-            <div className="relative">
-              <select
-                value={receiverId}
-                onChange={(e) => setReceiverId(Number(e.target.value))}
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:outline-none focus:border-slate-900 focus:bg-white transition cursor-pointer appearance-none"
-              >
-                {eligibleReceivers.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {cleanUserName(acc.user?.fullName) || `Account #${acc.id}`} — {acc.accountNumber} ({acc.currency})
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <ChevronDown className="w-4 h-4" />
-              </div>
-            </div>
-            {receiver && (
-              <div className="px-1 text-xs text-slate-500">
-                <span>Account Number: <strong className="text-black font-mono">{receiver.accountNumber}</strong></span>
-              </div>
-            )}
           </div>
+        )}
 
-          {/* Step 3: Enter Amount */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-slate-700 block">
-                Amount
-              </label>
-              <span className="text-xs text-slate-500">
-                Currency: <strong className="text-black">{sender?.currency || 'PKR'}</strong>
-              </span>
-            </div>
-
-            <div className="relative">
-              <input
-                type="number"
-                min="1"
-                step="any"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                placeholder="0.00"
-                className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-300 text-black text-xl font-bold font-mono focus:outline-none focus:border-black transition"
-              />
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-sm text-slate-400">
-                {sender?.currency || 'PKR'}
-              </div>
-            </div>
-
-            {/* Preset Amount Chips (SadaPay style) */}
-            <div className="flex items-center gap-2 pt-1">
-              {[500, 1000, 2500, 5000].map((val) => (
-                <button
-                  key={val}
-                  type="button"
-                  onClick={() => handlePresetAmount(val)}
-                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
-                >
-                  +{val.toLocaleString()}
-                </button>
-              ))}
-              <button
-                type="button"
-                onClick={handleMaxAmount}
-                className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-slate-200 hover:bg-slate-300 text-black transition cursor-pointer"
-              >
-                Max
-              </button>
-            </div>
-          </div>
-
-          {/* Step 4: Transfer Note */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-slate-700 block">
-              Reference Note (Optional)
-            </label>
-            <input
-              type="text"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="e.g. Dinner bill split, Freelance payment, Rent"
-              className="w-full px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-black text-xs focus:outline-none focus:border-black transition"
-            />
-          </div>
-
-          {/* Transfer Guarantee & Fee Breakdown (Trust Box) */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2 text-xs">
-            <div className="flex items-center justify-between text-slate-600">
-              <span>Transfer Fee</span>
-              <span className="font-bold text-emerald-600">Rs. 0.00 (100% Free)</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-600">
-              <span>Delivery Time</span>
-              <span className="font-medium text-black">Instant (&lt; 200ms)</span>
-            </div>
-            <div className="flex items-center justify-between text-slate-600">
-              <span>Security</span>
-              <span className="font-medium text-black flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                Atomic 2PC Protected
-              </span>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-3.5 px-6 rounded-xl bg-black hover:bg-neutral-800 disabled:opacity-50 text-white font-bold text-sm tracking-wide transition cursor-pointer shadow-md flex items-center justify-center gap-2 active:scale-98"
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                <span>Processing Atomic Consensus...</span>
-              </>
-            ) : (
-              <>
-                <Send className="w-4 h-4" />
-                <span>
-                  Send {amount ? Number(amount).toLocaleString() : '0'} {sender?.currency || 'PKR'}
-                </span>
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Collapsible Technical Diagnostics (Clean for Evaluators) */}
-        <div className="mt-8 pt-6 border-t border-slate-100">
+        {/* Advanced Diagnostics (Collapsible) */}
+        <div className="mt-6 pt-4 border-t border-slate-100">
           <button
             type="button"
-            onClick={() => setShowDiagnostics(!showDiagnostics)}
-            className="w-full flex items-center justify-between text-xs text-slate-500 hover:text-black font-mono transition cursor-pointer"
+            onClick={() => setShowDiagnostics((prev) => !prev)}
+            className="w-full flex items-center justify-between text-xs text-slate-500 hover:text-black py-1 cursor-pointer transition font-mono"
           >
-            <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-slate-400" />
-              <span>Consensus Engine Diagnostics (2PC Protocol Details)</span>
-            </div>
-            {showDiagnostics ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            <span>Advanced Distributed Engine Diagnostics</span>
+            <span>{showDiagnostics ? '▲ Hide' : '▼ Show'}</span>
           </button>
 
           {showDiagnostics && (
-            <div className="mt-4 p-4 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                <span className="text-slate-400 text-[11px]">Idempotency Key (UUIDv4):</span>
+            <div className="mt-3 p-4 rounded-xl bg-slate-900 text-slate-200 font-mono text-xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400">Idempotency Key:</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-emerald-400 text-[11px]">{idempotencyKey}</span>
+                  <span className="text-emerald-400">{idempotencyKey}</span>
                   <button
                     type="button"
                     onClick={() => copyToClipboard(idempotencyKey)}
-                    className="p-1 hover:text-white"
-                    title="Copy Key"
+                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
                   >
                     {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={generateNewKey}
+                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white"
+                    title="Generate new idempotency key"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
 
-              {/* 2PC Step Indicator */}
-              <div className="space-y-2">
-                <span className="text-[11px] text-slate-400 uppercase tracking-wider block">
-                  Two-Phase Commit State Machine:
-                </span>
-                <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-                  <div
-                    className={`p-2 rounded border ${
-                      activeStep >= 0
-                        ? 'border-emerald-500 bg-emerald-950/50 text-emerald-300'
-                        : 'border-slate-800 bg-slate-950 text-slate-500'
-                    }`}
-                  >
-                    Phase 0: Lock (Order ID)
-                  </div>
-                  <div
-                    className={`p-2 rounded border ${
-                      activeStep >= 1
-                        ? 'border-emerald-500 bg-emerald-950/50 text-emerald-300'
-                        : 'border-slate-800 bg-slate-950 text-slate-500'
-                    }`}
-                  >
-                    Phase 1: Prepare &amp; Vote
-                  </div>
-                  <div
-                    className={`p-2 rounded border ${
-                      activeStep >= 2
-                        ? 'border-emerald-500 bg-emerald-950/50 text-emerald-300'
-                        : 'border-slate-800 bg-slate-950 text-slate-500'
-                    }`}
-                  >
-                    Phase 2: Atomic Commit
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-2 flex items-center justify-between">
+              <div className="flex items-center justify-between pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={handleManualRecovery}
                   disabled={recovering}
-                  className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] flex items-center gap-1.5 transition cursor-pointer"
+                  className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-xs transition cursor-pointer flex items-center gap-1.5"
                 >
-                  <Repeat className="w-3.5 h-3.5" />
-                  <span>{recovering ? 'Scanning...' : 'Trigger 2PC Self-Healing Sweep'}</span>
+                  <RefreshCw className={`w-3.5 h-3.5 ${recovering ? 'animate-spin' : ''}`} />
+                  <span>Run 2PC Recovery Sweep</span>
                 </button>
 
                 <button
@@ -541,12 +656,16 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
               <div className="flex justify-between text-slate-600">
                 <span>To:</span>
-                <span className="font-bold text-slate-900">{cleanUserName(receiver?.user?.fullName) || receiver?.accountNumber}</span>
+                <span className="font-bold text-slate-900">
+                  {receiver?.user?.fullName || receiver?.accountNumber}
+                </span>
               </div>
 
               <div className="flex justify-between text-slate-600">
                 <span>From:</span>
-                <span className="font-bold text-slate-900">{cleanUserName(sender?.user?.fullName) || sender?.accountNumber}</span>
+                <span className="font-bold text-slate-900">
+                  {sender?.user?.fullName || sender?.accountNumber}
+                </span>
               </div>
 
               <div className="flex justify-between text-slate-600">

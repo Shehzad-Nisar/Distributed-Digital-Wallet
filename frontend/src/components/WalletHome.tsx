@@ -61,26 +61,31 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
   const [txFilter, setTxFilter] = useState<'all' | 'in' | 'out'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Active account selection
-  const activeAccount =
-    accounts.find((a) => a.id === selectedAccountId) ||
-    accounts.find((a) => a.user?.id === currentUser?.id) ||
-    accounts[0];
-
+  // User's own accounts
   const userAccounts = accounts.filter(
     (a) => a.user?.id === currentUser?.id || (a as any).userId === currentUser?.id
   );
 
-  // Dynamic currency pots (distinct currencies across accounts)
-  const currencyPots =
-    userAccounts.length > 1
-      ? userAccounts
-      : accounts.filter((a, idx, arr) => arr.findIndex((x) => x.currency === a.currency) === idx).slice(0, 5);
+  // Active account selection (strictly preferring user's accounts)
+  const activeAccount =
+    userAccounts.find((a) => a.id === selectedAccountId) ||
+    userAccounts[0] ||
+    (currentUser ? null : accounts.find((a) => a.id === selectedAccountId) || accounts[0]);
 
-  // Distinct recent counterparties
-  const recentBeneficiaries = accounts
-    .filter((a) => a.user?.id && a.user?.id !== currentUser?.id)
-    .filter((a, idx, arr) => arr.findIndex((x) => x.user?.fullName === a.user?.fullName) === idx)
+  // Dynamic currency pots (strictly user's accounts)
+  const currencyPots = userAccounts.length > 0 ? userAccounts : (activeAccount ? [activeAccount] : []);
+
+  // Distinct recent counterparties from verified transactions
+  const recentBeneficiaries = recentTxs
+    .filter((tx) => tx.type === 'P2P_TRANSFER')
+    .map((tx) => {
+      const counterpartyId = tx.senderAccountId === activeAccount?.id ? tx.receiverAccountId : tx.senderAccountId;
+      const counterpartyAccount = accounts.find((a) => a.id === counterpartyId);
+      const name = counterpartyAccount?.user?.fullName || `Account #${counterpartyId}`;
+      const accNum = counterpartyAccount?.accountNumber || `ACC-${counterpartyId}`;
+      return { name, accountNumber: accNum, id: counterpartyId };
+    })
+    .filter((b, idx, arr) => b.name && arr.findIndex((x) => x.accountNumber === b.accountNumber) === idx)
     .slice(0, 6);
 
   useEffect(() => {
@@ -639,11 +644,11 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
             </div>
 
             <div className="flex items-center gap-3 overflow-x-auto pb-1">
-              {recentBeneficiaries.map((b) => {
-                const name = cleanName(b.user?.fullName);
+              {recentBeneficiaries.map((b, idx) => {
+                const name = cleanName(b.name);
                 return (
                   <button
-                    key={b.id}
+                    key={b.accountNumber || idx}
                     onClick={() => onNavigateTab('transfer')}
                     className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer shrink-0 group"
                   >
