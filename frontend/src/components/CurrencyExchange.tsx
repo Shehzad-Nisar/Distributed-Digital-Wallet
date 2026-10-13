@@ -211,18 +211,18 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
   return (
     <div className="space-y-6 font-sans">
       {/* Live FX Rates Marquee */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs">
-        <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+      <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 sm:p-7 shadow-xs">
+        <div className="flex items-center justify-between mb-4 pb-3 border-b border-[#F7F3EE]">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-slate-900 text-white rounded-xl shadow-2xs">
-              <TrendingUp className="w-5 h-5 text-emerald-400" />
+            <div className="p-2.5 bg-[#E5F7F3] text-[#00A389] rounded-2xl shadow-xs">
+              <TrendingUp className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <h3 className="text-base font-black text-[#1A1D20] tracking-tight flex items-center gap-2">
                 Live Interbank Foreign Exchange Feed
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[#00A389] animate-pulse" />
               </h3>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-[#5F6773] mt-0.5">
                 Real-time mid-market rates &bull; 0% hidden markup &bull; Slippage floor protection
               </p>
             </div>
@@ -232,7 +232,7 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
             <button
               onClick={loadRates}
               disabled={ratesLoading}
-              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition cursor-pointer text-xs flex items-center gap-1.5 shadow-2xs font-semibold"
+              className="px-3.5 py-2 rounded-full border border-[#EBE5DF] bg-[#FAF7F4] hover:bg-[#F2ECE5] text-[#1A1D20] transition cursor-pointer text-xs flex items-center gap-1.5 shadow-2xs font-bold"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${ratesLoading ? 'animate-spin' : ''}`} />
               <span>Sync Rates</span>
@@ -246,13 +246,13 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
             Object.entries(ratesData.directPairs).map(([pair, rate]) => (
               <div
                 key={pair}
-                className="p-3 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col justify-between hover:bg-slate-100/60 transition"
+                className="p-3.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] flex flex-col justify-between hover:bg-[#F2ECE5]/60 transition"
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-bold text-slate-900">{pair}</span>
-                  <span className="text-[10px] text-emerald-700 font-mono font-semibold">+0.35%</span>
+                  <span className="text-xs font-bold text-[#1A1D20]">{pair}</span>
+                  <span className="text-[10px] text-[#00A389] font-mono font-bold">+0.35%</span>
                 </div>
-                <div className="text-sm font-black font-mono text-slate-900">
+                <div className="text-sm font-black font-mono text-[#1A1D20]">
                   {Number(rate).toFixed(rate > 10 ? 2 : 4)}
                 </div>
               </div>
@@ -263,25 +263,25 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
       {/* Main 2PC Currency Converter & Execution Console */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Converter Card */}
-        <div className="lg:col-span-7 bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="lg:col-span-7 bg-white border border-[#EBE5DF] rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
+          <div className="flex items-center justify-between pb-3 border-b border-[#F7F3EE]">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 bg-slate-900 text-white rounded-xl shadow-2xs">
+              <div className="p-2.5 bg-[#FFEAE5] text-[#FF6651] rounded-2xl shadow-xs">
                 <ArrowRightLeft className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                <h3 className="text-base font-black text-[#1A1D20] tracking-tight">
                   Currency Converter
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-[#5F6773] mt-0.5">
                   Instant atomic exchange between your multi-currency accounts
                 </p>
               </div>
             </div>
 
             {quote && (
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">
-                <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF7F4] text-[#1A1D20] border border-[#EBE5DF] text-xs font-bold">
+                <Clock className="w-3.5 h-3.5 text-[#FF6651]" />
                 <span>Rate locked: {quoteCountdown}s</span>
               </div>
             )}
@@ -463,7 +463,7 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
           <button
             onClick={handleExecuteExchange}
             disabled={executing || !quote || quoteLoading}
-            className="w-full py-3.5 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 font-bold text-xs uppercase tracking-wider transition disabled:opacity-50 cursor-pointer shadow-md flex items-center justify-center gap-2 active:scale-98"
+            className="w-full py-4 rounded-full bg-[#FF6651] hover:bg-[#E54D34] text-white font-black text-xs uppercase tracking-wider transition disabled:opacity-50 cursor-pointer shadow-md shadow-[#FF6651]/25 flex items-center justify-center gap-2 active:scale-95"
           >
             {executing ? (
               <>
@@ -472,7 +472,7 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
               </>
             ) : (
               <>
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <ShieldCheck className="w-4 h-4 text-white" />
                 <span>Confirm &amp; Convert Funds</span>
               </>
             )}
@@ -481,16 +481,16 @@ export const CurrencyExchange: React.FC<CurrencyExchangeProps> = ({
 
         {/* Live Quote & Breakdown Card */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-              <div className="p-2 bg-slate-900 text-white rounded-xl shadow-2xs">
-                <Coins className="w-5 h-5 text-amber-400" />
+          <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
+            <div className="flex items-center gap-2.5 pb-3 border-b border-[#F7F3EE]">
+              <div className="p-2.5 bg-[#FFEAE5] text-[#FF6651] rounded-2xl shadow-xs">
+                <Coins className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-base font-extrabold text-slate-900 tracking-tight">
+                <h4 className="text-base font-black text-[#1A1D20] tracking-tight">
                   Guaranteed Quote Summary
                 </h4>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-[#5F6773] mt-0.5">
                   Transparent 0% markup breakdown
                 </p>
               </div>

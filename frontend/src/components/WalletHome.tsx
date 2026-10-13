@@ -214,47 +214,47 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
   return (
     <div className="space-y-8 font-sans max-w-7xl mx-auto pb-12 animate-in fade-in duration-300">
       {/* 1. Neobank Executive Header Banner */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#EBE5DF] shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-800 font-mono">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00A389] animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-[#00A389] font-mono">
               Live Verified Account
             </span>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs font-medium text-slate-500">
+            <span className="text-[#D1C7BD]">•</span>
+            <span className="text-xs font-medium text-[#5F6773]">
               {getHumanRegion(activeAccount?.shard)}
             </span>
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-400 font-sans">
+            <span className="text-2xl sm:text-3xl font-extrabold text-[#9CA3AF] font-sans">
               {activeMeta.symbol}
             </span>
-            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900 font-mono">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-[#1A1D20] font-mono">
               {hideBalance ? '••••••••' : formatMoney(activeAccount?.balance)}
             </h1>
             <button
               onClick={() => setHideBalance(!hideBalance)}
-              className="text-slate-400 hover:text-slate-700 p-1 rounded-md transition cursor-pointer"
+              className="text-[#9CA3AF] hover:text-[#1A1D20] p-1.5 rounded-xl transition cursor-pointer hover:bg-[#FAF7F4]"
               title={hideBalance ? 'Show balance' : 'Hide balance'}
             >
               {hideBalance ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs text-slate-500">
+          <div className="flex flex-wrap items-center gap-2.5 mt-3 text-xs text-[#5F6773]">
             <span>Primary Account:</span>
-            <span className="font-mono font-bold text-slate-800 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-200">
+            <span className="font-mono font-bold text-[#1A1D20] bg-[#FAF7F4] px-2.5 py-0.5 rounded-lg border border-[#EBE5DF]">
               {activeAccount?.accountNumber || 'ACC-0000'}
             </span>
             <button
               onClick={() => copyToClipboard(activeAccount?.accountNumber || '')}
-              className="text-slate-400 hover:text-slate-800 transition cursor-pointer flex items-center gap-1"
+              className="text-[#9CA3AF] hover:text-[#1A1D20] transition cursor-pointer flex items-center gap-1"
               title="Copy Account Number"
             >
               {copiedAcc ? (
-                <span className="text-emerald-700 font-semibold flex items-center gap-0.5">
+                <span className="text-[#00A389] font-semibold flex items-center gap-0.5">
                   <Check className="w-3.5 h-3.5" /> Copied
                 </span>
               ) : (
@@ -263,24 +263,24 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 </span>
               )}
             </button>
-            <span className="text-slate-300">•</span>
-            <span className="text-emerald-700 font-medium">Tier-1 Direct Clearing</span>
+            <span className="text-[#D1C7BD]">•</span>
+            <span className="text-[#00A389] font-semibold">Tier-1 Direct Clearing</span>
           </div>
         </div>
 
-        {/* Action Button Hub (Wise Neobank Style) */}
+        {/* Action Button Hub (SadaPay & Wise Neobank Style) */}
         <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
           <button
             onClick={() => onNavigateTab('transfer')}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition cursor-pointer shadow-xs active:scale-98"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white text-xs font-bold transition cursor-pointer shadow-md shadow-[#FF6651]/25"
           >
-            <Send className="w-3.5 h-3.5 text-emerald-400" />
+            <Send className="w-3.5 h-3.5 text-white" />
             <span>Send Money</span>
           </button>
 
           <button
             onClick={onOpenDeposit}
-            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer shadow-xs active:scale-98"
+            className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#00A389] hover:bg-[#008F78] active:scale-95 text-white text-xs font-bold transition cursor-pointer shadow-md shadow-[#00A389]/25"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Add Money</span>
@@ -288,25 +288,25 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
           <button
             onClick={onOpenWithdraw}
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-[#FAF7F4] text-[#1A1D20] border border-[#E5DFD9] text-xs font-bold transition cursor-pointer shadow-2xs active:scale-95"
           >
-            <ArrowUpRight className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowUpRight className="w-3.5 h-3.5 text-[#5F6773]" />
             <span>Withdraw</span>
           </button>
 
           <button
             onClick={() => onNavigateTab('exchange')}
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-[#FAF7F4] text-[#1A1D20] border border-[#E5DFD9] text-xs font-bold transition cursor-pointer shadow-2xs active:scale-95"
           >
-            <ArrowRightLeft className="w-3.5 h-3.5 text-slate-600" />
+            <ArrowRightLeft className="w-3.5 h-3.5 text-[#5F6773]" />
             <span>Exchange FX</span>
           </button>
 
           <button
             onClick={() => onNavigateTab('merchant')}
-            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 text-xs font-bold transition cursor-pointer shadow-2xs active:scale-98"
+            className="flex items-center gap-2 px-4 py-3 rounded-2xl bg-white hover:bg-[#FAF7F4] text-[#1A1D20] border border-[#E5DFD9] text-xs font-bold transition cursor-pointer shadow-2xs active:scale-95"
           >
-            <Store className="w-3.5 h-3.5 text-slate-600" />
+            <Store className="w-3.5 h-3.5 text-[#5F6773]" />
             <span>Merchants</span>
           </button>
         </div>
@@ -316,18 +316,18 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between px-1">
           <div>
-            <h2 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <Globe2 className="w-4 h-4 text-emerald-700" />
+            <h2 className="text-sm font-bold text-[#1A1D20] tracking-tight flex items-center gap-2">
+              <Globe2 className="w-4 h-4 text-[#FF6651]" />
               <span>Multi-Currency Balances</span>
             </h2>
-            <p className="text-xs text-slate-500">Hold, send, and spend like a local in {currencyPots.length} currencies</p>
+            <p className="text-xs text-[#5F6773]">Hold, send, and spend like a local in {currencyPots.length} currencies</p>
           </div>
 
           <button
             onClick={onOpenCreateAccount}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-800 text-xs font-semibold transition cursor-pointer shadow-2xs"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#EBE5DF] hover:border-[#FF6651]/50 text-[#1A1D20] text-xs font-semibold transition cursor-pointer shadow-2xs hover:bg-[#FAF7F4]"
           >
-            <Plus className="w-3.5 h-3.5 text-emerald-600" />
+            <Plus className="w-3.5 h-3.5 text-[#00A389]" />
             <span>Open Currency</span>
           </button>
         </div>
@@ -343,37 +343,37 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 onClick={() => onSelectAccount(acc.id)}
                 className={`p-4 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
                   isSelected
-                    ? 'bg-white border-slate-900 ring-2 ring-slate-900 shadow-md'
-                    : 'bg-white border-slate-200 hover:border-slate-300 shadow-xs hover:shadow-sm'
+                    ? 'bg-white border-[#FF6651] ring-2 ring-[#FF6651]/20 shadow-md'
+                    : 'bg-white border-[#EBE5DF] hover:border-[#FF6651]/40 shadow-xs hover:shadow-sm'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <span className="text-2xl">{meta.flag}</span>
                     <div>
-                      <span className="text-xs font-bold text-slate-900 block leading-tight">
+                      <span className="text-xs font-bold text-[#1A1D20] block leading-tight">
                         {meta.name}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-400">
+                      <span className="text-[10px] font-mono text-[#9CA3AF]">
                         {acc.accountNumber}
                       </span>
                     </div>
                   </div>
 
                   {isSelected ? (
-                    <span className="px-2 py-0.5 rounded-full bg-slate-900 text-white text-[10px] font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#FFEAE5] text-[#FF6651] text-[10px] font-bold">
                       Active
                     </span>
                   ) : (
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs font-semibold text-[#9CA3AF]">
                       {acc.currency}
                     </span>
                   )}
                 </div>
 
-                <div className="flex items-baseline justify-between pt-2 border-t border-slate-100">
-                  <span className="text-xs font-semibold text-slate-500">Available</span>
-                  <span className="text-base font-extrabold font-mono text-slate-900">
+                <div className="flex items-baseline justify-between pt-2 border-t border-[#F2ECE5]">
+                  <span className="text-xs font-semibold text-[#5F6773]">Available</span>
+                  <span className="text-base font-extrabold font-mono text-[#1A1D20]">
                     {hideBalance ? '••••••' : `${meta.symbol} ${formatMoney(acc.balance)}`}
                   </span>
                 </div>
@@ -388,24 +388,24 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
         {/* Left Column (7 cols): Card Studio + Direct Deposit Vault + Quick Payees */}
         <div className="lg:col-span-7 space-y-6">
           {/* Card Management Studio */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-6">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EBE5DF] shadow-xs space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-slate-700" />
+                <h3 className="text-sm font-bold text-[#1A1D20] tracking-tight flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-[#FF6651]" />
                   <span>Card Studio</span>
                 </h3>
-                <p className="text-xs text-slate-500">Linked to your {activeAccount?.currency || 'PKR'} balance</p>
+                <p className="text-xs text-[#5F6773]">Linked to your {activeAccount?.currency || 'PKR'} balance</p>
               </div>
 
               {/* Card Switcher */}
-              <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs">
+              <div className="flex items-center gap-1 p-1 bg-[#FAF7F4] border border-[#EBE5DF] rounded-xl text-xs">
                 <button
                   onClick={() => setActiveCardType('physical')}
                   className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer ${
                     activeCardType === 'physical'
-                      ? 'bg-white text-slate-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#FF6651] font-bold shadow-2xs'
+                      : 'text-[#5F6773] hover:text-[#1A1D20]'
                   }`}
                 >
                   Physical
@@ -414,94 +414,97 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                   onClick={() => setActiveCardType('virtual')}
                   className={`px-3 py-1 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1 ${
                     activeCardType === 'virtual'
-                      ? 'bg-white text-slate-900 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-[#00A389] font-bold shadow-2xs'
+                      : 'text-[#5F6773] hover:text-[#1A1D20]'
                   }`}
                 >
-                  <Sparkles className="w-3 h-3 text-purple-600" />
+                  <Sparkles className="w-3 h-3 text-[#00A389]" />
                   <span>Virtual</span>
                 </button>
               </div>
             </div>
 
-            {/* Tactile Neobank Card */}
+            {/* Tactile Neobank Card (Exact SadaPay Coral Physical / Teal Virtual Card) */}
             <div
-              className={`w-full h-56 sm:h-60 rounded-3xl p-6 relative shadow-lg overflow-hidden flex flex-col justify-between transition-all duration-300 border ${
+              className={`w-full h-56 sm:h-60 rounded-3xl p-6 relative shadow-xl overflow-hidden flex flex-col justify-between transition-all duration-300 border ${
                 isFrozen
-                  ? 'bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 border-slate-700 text-white'
+                  ? 'bg-gradient-to-br from-[#2D3139] via-[#1E2024] to-[#121417] border-white/20 text-white shadow-slate-900/20'
                   : activeCardType === 'virtual'
-                  ? 'bg-gradient-to-br from-[#1e1b4b] via-[#312e81] to-[#0f172a] border-indigo-700/80 text-white'
-                  : 'bg-gradient-to-br from-[#0c2e1f] via-[#082015] to-[#040e09] border-emerald-900/80 text-white'
+                  ? 'bg-gradient-to-br from-[#00A389] via-[#00947C] to-[#006F5D] border-white/30 text-white shadow-[#00A389]/25'
+                  : 'bg-gradient-to-br from-[#FF6651] via-[#FF745F] to-[#E54834] border-white/30 text-white shadow-[#FF6651]/30'
               }`}
             >
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.18),transparent_70%)] pointer-events-none" />
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(255,255,255,0.32),transparent_70%)] pointer-events-none" />
 
               {/* Frozen Overlay */}
               {isFrozen && (
-                <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center z-20">
-                  <div className="px-4 py-2 rounded-2xl bg-slate-900 border border-amber-400/50 text-amber-300 flex items-center gap-2 text-xs font-bold shadow-md">
+                <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-20">
+                  <div className="px-4 py-2 rounded-2xl bg-[#1A1D20] border border-amber-400/50 text-amber-300 flex items-center gap-2 text-xs font-bold shadow-md">
                     <Lock className="w-4 h-4 text-amber-400" />
-                    <span>Card Locked for Security</span>
+                    <span>Card Frozen for Security</span>
                   </div>
                 </div>
               )}
 
               {/* Top row: Wordmark + Contactless Symbol */}
               <div className="flex items-center justify-between z-10">
-                <span className="font-extrabold text-base tracking-wider uppercase font-mono text-white">
+                <span className="font-black text-lg tracking-wider uppercase font-sans text-white drop-shadow-xs">
                   TransMoney
                 </span>
                 <div className="flex items-center gap-2">
                   <span
                     className={`text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold tracking-wider ${
                       activeCardType === 'virtual'
-                        ? 'bg-purple-500/20 text-purple-200 border border-purple-400/30'
-                        : 'bg-white/10 text-emerald-300 border border-white/15'
+                        ? 'bg-white/25 text-white border border-white/30'
+                        : 'bg-white/20 text-white border border-white/25'
                     }`}
                   >
-                    {activeCardType === 'virtual' ? 'VIRTUAL BURNER' : 'GLOBAL DEBIT'}
+                    {activeCardType === 'virtual' ? 'VIRTUAL DEBIT' : 'SADA DEBIT'}
                   </span>
-                  <svg className="w-5 h-5 text-white/80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M8.5 16.5a5 5 0 0 1 0-9M12 19a8.5 8.5 0 0 0 0-14M15.5 21.5a12 12 0 0 0 0-19" />
+                  <svg className="w-5 h-5 text-white/90" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M8.5 16.5a5 5 0 0 1 0-7" />
+                    <path d="M12 19a8.5 8.5 0 0 0 0-14" />
+                    <path d="M15.5 21.5a12 12 0 0 0 0-21" />
                   </svg>
                 </div>
               </div>
 
-              {/* Center: Gold EMV Chip */}
+              {/* Center: Gold EMV Smart Chip */}
               <div className="z-10 flex items-center gap-3">
-                <div className="w-11 h-8 rounded-lg bg-gradient-to-tr from-amber-400 via-yellow-200 to-amber-500 border border-amber-300/80 shadow-xs flex flex-col justify-around p-1">
-                  <div className="h-0.5 bg-amber-900/30 w-full rounded" />
-                  <div className="h-0.5 bg-amber-900/30 w-full rounded" />
+                <div className="w-11 h-8 rounded-lg bg-gradient-to-tr from-[#F5D061] via-[#FFE885] to-[#D4A325] border border-[#FFE885] shadow-xs flex flex-col justify-around p-1">
+                  <div className="h-0.5 bg-black/25 w-full rounded" />
+                  <div className="h-0.5 bg-black/25 w-full rounded" />
                 </div>
-                <span className="text-[11px] text-white/80 font-mono tracking-wider font-semibold">
-                  {activeAccount?.currency || 'PKR'} • {activeCardType === 'virtual' ? 'Single-Use Online' : 'International ATM'}
+                <span className="text-[11px] text-white/90 font-mono tracking-wider font-semibold">
+                  {activeAccount?.currency || 'PKR'} • {activeCardType === 'virtual' ? 'Online E-Commerce' : 'International ATM'}
                 </span>
               </div>
 
-              {/* Bottom: Number, Expiry, Name, CVV */}
+              {/* Bottom: Number, Expiry, Name, Mastercard circles */}
               <div className="z-10 space-y-1.5">
-                <div className="flex items-center justify-between font-mono text-sm tracking-widest text-white font-bold">
+                <div className="flex items-center justify-between font-mono text-sm tracking-widest text-white font-bold drop-shadow-xs">
                   <span>
                     {showCardDetails
                       ? getDynamicCardNumber(activeAccount, activeCardType === 'virtual')
                       : `•••• •••• •••• ${String((activeAccount?.id || 42) + (activeCardType === 'virtual' ? 7 : 0)).padStart(4, '0')}`}
                   </span>
-                  <span className="text-xs text-white/70 font-normal">
+                  <span className="text-xs text-white/80 font-normal">
                     {getDynamicExpiry(activeAccount, activeCardType === 'virtual')}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between pt-1 text-xs">
-                  <span className="uppercase font-bold tracking-wide text-white/90 truncate max-w-[190px]">
+                  <span className="uppercase font-bold tracking-wide text-white drop-shadow-xs truncate max-w-[190px]">
                     {cardHolderName}
                   </span>
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-white/80 font-semibold">
+                    <span className="font-mono text-white/90 font-semibold">
                       CVV {showCardDetails ? getDynamicCvv(activeAccount, activeCardType === 'virtual') : '•••'}
                     </span>
-                    <div className="flex -space-x-1.5 opacity-90">
-                      <div className="w-4 h-4 rounded-full bg-amber-400" />
-                      <div className="w-4 h-4 rounded-full bg-rose-500" />
+                    {/* SadaPay dual-tone circle badge */}
+                    <div className="flex -space-x-1.5 opacity-95">
+                      <div className="w-5 h-5 rounded-full bg-white/90" />
+                      <div className="w-5 h-5 rounded-full bg-black/30 backdrop-blur-xs" />
                     </div>
                   </div>
                 </div>
@@ -509,22 +512,22 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
             </div>
 
             {/* Card Controls & Details Reveal */}
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+            <div className="flex items-center justify-between pt-2 border-t border-[#F2ECE5]">
               <button
                 onClick={() => setShowCardDetails(!showCardDetails)}
-                className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1.5 cursor-pointer"
+                className="text-xs font-bold text-[#1A1D20] hover:text-[#FF6651] flex items-center gap-1.5 cursor-pointer transition"
               >
-                <CreditCard className="w-3.5 h-3.5 text-slate-500" />
+                <CreditCard className="w-3.5 h-3.5 text-[#5F6773]" />
                 <span>{showCardDetails ? 'Hide card details' : 'Show card details'}</span>
               </button>
 
               {activeAccount && (
                 <button
                   onClick={() => onStatusToggle(activeAccount)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border ${
                     isFrozen
                       ? 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100'
-                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                      : 'bg-white border-[#EBE5DF] text-[#1A1D20] hover:bg-[#FAF7F4] hover:border-[#FF6651]/40'
                   }`}
                 >
                   {isFrozen ? (
@@ -534,7 +537,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                     </>
                   ) : (
                     <>
-                      <Lock className="w-3.5 h-3.5 text-slate-500" />
+                      <Lock className="w-3.5 h-3.5 text-[#5F6773]" />
                       <span>Freeze Card</span>
                     </>
                   )}
@@ -551,14 +554,14 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
               return (
                 <div className="space-y-1.5 pt-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500">Monthly Card Spend</span>
-                    <span className="font-mono font-bold text-slate-800">
+                    <span className="text-[#5F6773]">Monthly Card Spend</span>
+                    <span className="font-mono font-bold text-[#1A1D20]">
                       {activeMeta.symbol} {formatMoney(spend)} / {activeMeta.symbol} {formatMoney(limit)} ({percent}%)
                     </span>
                   </div>
-                  <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                  <div className="w-full h-2 rounded-full bg-[#FAF7F4] border border-[#EBE5DF] overflow-hidden">
                     <div
-                      className="h-full bg-emerald-600 rounded-full transition-all duration-500"
+                      className="h-full bg-gradient-to-r from-[#FF6651] to-[#FF8573] rounded-full transition-all duration-500"
                       style={{ width: `${percent}%` }}
                     />
                   </div>
@@ -568,14 +571,14 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
           </div>
 
           {/* Direct Deposit & Wire Details Vault */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EBE5DF] shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                  <Building className="w-4 h-4 text-slate-700" />
+                <h3 className="text-sm font-bold text-[#1A1D20] tracking-tight flex items-center gap-2">
+                  <Building className="w-4 h-4 text-[#FF6651]" />
                   <span>Account &amp; Direct Deposit Details</span>
                 </h3>
-                <p className="text-xs text-slate-500">Use these details to receive domestic and international transfers</p>
+                <p className="text-xs text-[#5F6773]">Use these details to receive domestic and international transfers</p>
               </div>
               <button
                 onClick={() => {
@@ -585,7 +588,7 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                   const bic = curr === 'USD' ? 'TRNSUS33' : curr === 'GBP' ? 'TRNSGB2L' : curr === 'EUR' ? 'TRNSEU88' : 'TRNSPKKA';
                   copyToClipboard(`IBAN: ${iban}\nBIC: ${bic}\nBank Hub: ${getHumanRegion(activeAccount?.shard)}`);
                 }}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#00A389] hover:text-[#008F78] flex items-center gap-1 cursor-pointer transition"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>Copy Details</span>
@@ -593,30 +596,30 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-slate-400 block mb-0.5">Account Number</span>
-                <span className="font-mono font-bold text-slate-900">
+              <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                <span className="text-[#9CA3AF] block mb-0.5">Account Number</span>
+                <span className="font-mono font-bold text-[#1A1D20]">
                   {activeAccount?.accountNumber || 'ACC-0000'}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-slate-400 block mb-0.5">Bank Routing Hub</span>
-                <span className="font-bold text-slate-900">
+              <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                <span className="text-[#9CA3AF] block mb-0.5">Bank Routing Hub</span>
+                <span className="font-bold text-[#1A1D20]">
                   {getHumanRegion(activeAccount?.shard)}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-slate-400 block mb-0.5">SWIFT / BIC</span>
-                <span className="font-mono font-bold text-slate-900">
+              <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                <span className="text-[#9CA3AF] block mb-0.5">SWIFT / BIC</span>
+                <span className="font-mono font-bold text-[#1A1D20]">
                   {activeAccount?.currency === 'USD' ? 'TRNSUS33' : activeAccount?.currency === 'GBP' ? 'TRNSGB2L' : activeAccount?.currency === 'EUR' ? 'TRNSEU88' : 'TRNSPKKA'}
                 </span>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80">
-                <span className="text-slate-400 block mb-0.5">Clearing Network</span>
-                <span className="font-semibold text-emerald-700 flex items-center gap-1">
+              <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                <span className="text-[#9CA3AF] block mb-0.5">Clearing Network</span>
+                <span className="font-semibold text-[#00A389] flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Instant Verified Clearing</span>
                 </span>
@@ -625,18 +628,18 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
           </div>
 
           {/* Frequent Payees (Send Again) */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EBE5DF] shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 tracking-tight">
+                <h3 className="text-sm font-bold text-[#1A1D20] tracking-tight">
                   Frequent Payees
                 </h3>
-                <p className="text-xs text-slate-500">Instant one-click transfers</p>
+                <p className="text-xs text-[#5F6773]">Instant one-click transfers</p>
               </div>
 
               <button
                 onClick={() => onNavigateTab('transfer')}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#FF6651] hover:text-[#E54D34] flex items-center gap-1 cursor-pointer transition"
               >
                 <span>All Payees</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -646,16 +649,21 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
             <div className="flex items-center gap-3 overflow-x-auto pb-1">
               {recentBeneficiaries.map((b, idx) => {
                 const name = cleanName(b.name);
+                const isEven = idx % 2 === 0;
                 return (
                   <button
                     key={b.accountNumber || idx}
                     onClick={() => onNavigateTab('transfer')}
-                    className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer shrink-0 group"
+                    className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-[#FAF7F4] transition cursor-pointer shrink-0 group"
                   >
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 group-hover:bg-slate-900 group-hover:text-white transition flex items-center justify-center font-bold text-slate-800 text-sm shadow-2xs">
+                    <div className={`w-12 h-12 rounded-2xl text-white transition flex items-center justify-center font-bold text-sm shadow-xs ${
+                      isEven
+                        ? 'bg-gradient-to-tr from-[#FF6651] to-[#FF8573] group-hover:scale-105'
+                        : 'bg-gradient-to-tr from-[#00A389] to-[#00BFA0] group-hover:scale-105'
+                    }`}>
                       {name.charAt(0)}
                     </div>
-                    <span className="text-xs font-medium text-slate-700 max-w-[70px] truncate">
+                    <span className="text-xs font-medium text-[#1A1D20] max-w-[70px] truncate">
                       {name.split(' ')[0]}
                     </span>
                   </button>
@@ -664,12 +672,12 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
               <button
                 onClick={() => onNavigateTab('transfer')}
-                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-slate-50 transition cursor-pointer shrink-0 group"
+                className="flex flex-col items-center gap-1.5 p-2 rounded-2xl hover:bg-[#FAF7F4] transition cursor-pointer shrink-0 group"
               >
-                <div className="w-12 h-12 rounded-2xl border-2 border-dashed border-slate-300 group-hover:border-slate-800 transition flex items-center justify-center text-slate-400 group-hover:text-slate-800">
+                <div className="w-12 h-12 rounded-2xl border-2 border-dashed border-[#EBE5DF] group-hover:border-[#FF6651] transition flex items-center justify-center text-[#9CA3AF] group-hover:text-[#FF6651]">
                   <Plus className="w-5 h-5" />
                 </div>
-                <span className="text-xs font-medium text-slate-500">New</span>
+                <span className="text-xs font-medium text-[#5F6773]">New</span>
               </button>
             </div>
           </div>
@@ -677,19 +685,19 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
         {/* Right Column (5 cols): Authentic Banking Activity Ledger */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-xs space-y-5">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EBE5DF] shadow-xs space-y-5">
             {/* Header + Link to full ledger */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between pb-3 border-b border-[#F2ECE5]">
               <div>
-                <h3 className="text-base font-extrabold text-slate-900 tracking-tight">
+                <h3 className="text-base font-extrabold text-[#1A1D20] tracking-tight">
                   Recent Activity
                 </h3>
-                <p className="text-xs text-slate-500">Live transaction records</p>
+                <p className="text-xs text-[#5F6773]">Live transaction records</p>
               </div>
 
               <button
                 onClick={() => onNavigateTab('ledger')}
-                className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 cursor-pointer"
+                className="text-xs font-semibold text-[#FF6651] hover:text-[#E54D34] flex items-center gap-1 cursor-pointer transition"
               >
                 <span>Full Statement</span>
                 <ChevronRight className="w-3.5 h-3.5" />
@@ -698,22 +706,22 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
             {/* Quick Flow Summary */}
             <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 bg-emerald-50/70 border border-emerald-200/60 rounded-2xl">
-                <span className="text-[11px] font-semibold text-emerald-800 flex items-center gap-1 mb-1">
+              <div className="p-3.5 bg-[#E5F7F3] border border-[#00A389]/20 rounded-2xl">
+                <span className="text-[11px] font-semibold text-[#00A389] flex items-center gap-1 mb-1">
                   <ArrowDownLeft className="w-3.5 h-3.5" />
                   <span>Money In</span>
                 </span>
-                <span className="text-base font-extrabold font-mono text-emerald-900 block">
+                <span className="text-base font-extrabold font-mono text-[#00A389] block">
                   +{formatMoney(totalInflow)}
                 </span>
               </div>
 
-              <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
-                <span className="text-[11px] font-semibold text-slate-600 flex items-center gap-1 mb-1">
+              <div className="p-3.5 bg-[#FFEAE5] border border-[#FF6651]/20 rounded-2xl">
+                <span className="text-[11px] font-semibold text-[#FF6651] flex items-center gap-1 mb-1">
                   <ArrowUpRight className="w-3.5 h-3.5" />
                   <span>Money Out</span>
                 </span>
-                <span className="text-base font-extrabold font-mono text-slate-900 block">
+                <span className="text-base font-extrabold font-mono text-[#FF6651] block">
                   -{formatMoney(totalOutflow)}
                 </span>
               </div>
@@ -721,24 +729,24 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
             {/* Search Input */}
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-[#9CA3AF] absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search transactions by reference or note..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-900 focus:bg-white focus:outline-none focus:border-slate-900 transition"
+                className="w-full pl-9 pr-4 py-2.5 bg-[#FAF7F4] border border-[#EBE5DF] rounded-2xl text-xs text-[#1A1D20] focus:bg-white focus:outline-none focus:border-[#FF6651] focus:ring-1 focus:ring-[#FF6651] transition"
               />
             </div>
 
             {/* In / Out Filters */}
-            <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+            <div className="flex items-center gap-1 p-1 bg-[#FAF7F4] border border-[#EBE5DF] rounded-xl text-xs font-semibold">
               <button
                 onClick={() => setTxFilter('all')}
                 className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'all'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white text-[#FF6651] shadow-2xs font-bold'
+                    : 'text-[#5F6773] hover:text-[#1A1D20]'
                 }`}
               >
                 All
@@ -747,8 +755,8 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 onClick={() => setTxFilter('in')}
                 className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'in'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white text-[#00A389] shadow-2xs font-bold'
+                    : 'text-[#5F6773] hover:text-[#1A1D20]'
                 }`}
               >
                 Inflow (+)
@@ -757,8 +765,8 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                 onClick={() => setTxFilter('out')}
                 className={`flex-1 py-1.5 rounded-lg transition cursor-pointer text-center ${
                   txFilter === 'out'
-                    ? 'bg-white text-slate-900 shadow-2xs'
-                    : 'text-slate-600 hover:text-slate-900'
+                    ? 'bg-white text-[#FF6651] shadow-2xs font-bold'
+                    : 'text-[#5F6773] hover:text-[#1A1D20]'
                 }`}
               >
                 Outflow (-)
@@ -767,23 +775,23 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
             {/* Transactions Feed */}
             {loadingTxs ? (
-              <div className="py-12 flex flex-col items-center justify-center text-slate-400 space-y-2">
-                <RefreshCw className="w-6 h-6 animate-spin text-slate-900" />
+              <div className="py-12 flex flex-col items-center justify-center text-[#9CA3AF] space-y-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-[#FF6651]" />
                 <span className="text-xs">Loading ledger events...</span>
               </div>
             ) : filteredTxs.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 space-y-2">
-                <Receipt className="w-8 h-8 mx-auto text-slate-300" />
+              <div className="py-12 text-center text-[#9CA3AF] space-y-2">
+                <Receipt className="w-8 h-8 mx-auto text-[#D1C7BD]" />
                 <p className="text-xs">No transactions found for this account</p>
                 <button
                   onClick={onOpenDeposit}
-                  className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-semibold"
+                  className="px-4 py-2 rounded-xl bg-[#00A389] text-white text-xs font-semibold hover:bg-[#008F78] transition cursor-pointer shadow-xs"
                 >
                   Make a deposit
                 </button>
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-[#F2ECE5]">
                 {filteredTxs.map((tx) => {
                   const isIncoming = tx.receiverAccountId === activeAccount?.id;
                   const formattedTime = new Date((tx as any).createdAt || tx.timestamp || Date.now()).toLocaleDateString('en-US', {
@@ -797,14 +805,14 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                     <div
                       key={tx.transactionId}
                       onClick={() => setSelectedTxDetail(tx)}
-                      className="py-3 px-2 rounded-2xl flex items-center justify-between hover:bg-slate-50 transition cursor-pointer group"
+                      className="py-3 px-2 rounded-2xl flex items-center justify-between hover:bg-[#FAF7F4] transition cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
                         <div
                           className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-2xs ${
                             isIncoming
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-slate-100 text-slate-700 group-hover:bg-slate-900 group-hover:text-white transition'
+                              ? 'bg-[#E5F7F3] text-[#00A389]'
+                              : 'bg-[#FFEAE5] text-[#FF6651] group-hover:scale-105 transition'
                           }`}
                         >
                           {isIncoming ? (
@@ -815,10 +823,10 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                         </div>
 
                         <div>
-                          <span className="text-xs font-bold text-slate-900 block truncate max-w-[150px]">
+                          <span className="text-xs font-bold text-[#1A1D20] block truncate max-w-[150px]">
                             {tx.description || (isIncoming ? 'Payment Received' : 'Transfer Out')}
                           </span>
-                          <span className="text-[11px] text-slate-400 font-mono">
+                          <span className="text-[11px] text-[#9CA3AF] font-mono">
                             {formattedTime}
                           </span>
                         </div>
@@ -827,12 +835,12 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
                       <div className="text-right">
                         <span
                           className={`text-xs font-extrabold font-mono block ${
-                            isIncoming ? 'text-emerald-700' : 'text-slate-900'
+                            isIncoming ? 'text-[#00A389]' : 'text-[#1A1D20]'
                           }`}
                         >
                           {isIncoming ? '+' : '-'}{formatMoney(tx.amount)} {tx.currency}
                         </span>
-                        <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full inline-block">
+                        <span className="text-[10px] font-semibold text-[#00A389] bg-[#E5F7F3] px-2 py-0.5 rounded-full inline-block">
                           Completed
                         </span>
                       </div>
@@ -847,54 +855,54 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
 
       {/* 4. Official Transaction Receipt Modal */}
       {selectedTxDetail && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-slate-200 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[#EBE5DF] space-y-6">
             <div className="text-center space-y-1">
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
+              <div className="w-12 h-12 bg-[#E5F7F3] text-[#00A389] rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-inner">
                 <CheckCircle2 className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-bold text-slate-900">
+              <h3 className="text-lg font-bold text-[#1A1D20]">
                 Payment Receipt
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#5F6773]">
                 Verified Payment • Guaranteed Immediate Settlement
               </p>
             </div>
 
-            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-2.5 text-xs">
-              <div className="flex justify-between py-1 border-b border-slate-200">
-                <span className="text-slate-500">Amount</span>
-                <span className="font-mono font-black text-slate-900 text-sm">
+            <div className="bg-[#FAF7F4] rounded-2xl p-4 border border-[#EBE5DF] space-y-2.5 text-xs">
+              <div className="flex justify-between py-1 border-b border-[#EBE5DF]">
+                <span className="text-[#5F6773]">Amount</span>
+                <span className="font-mono font-black text-[#1A1D20] text-sm">
                   {formatMoney(selectedTxDetail.amount)} {selectedTxDetail.currency}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Status</span>
-                <span className="font-semibold text-emerald-700">
+                <span className="text-[#5F6773]">Status</span>
+                <span className="font-semibold text-[#00A389]">
                   {selectedTxDetail.status === 'COMMITTED' ? 'Completed' : (selectedTxDetail.status || 'Completed')}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Transaction ID</span>
-                <span className="font-mono font-semibold text-slate-900 truncate max-w-[180px]">
+                <span className="text-[#5F6773]">Transaction ID</span>
+                <span className="font-mono font-semibold text-[#1A1D20] truncate max-w-[180px]">
                   {selectedTxDetail.transactionId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Sender Account</span>
-                <span className="font-mono font-semibold text-slate-900">
+                <span className="text-[#5F6773]">Sender Account</span>
+                <span className="font-mono font-semibold text-[#1A1D20]">
                   {selectedTxDetail.senderAccountId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Recipient Account</span>
-                <span className="font-mono font-semibold text-slate-900">
+                <span className="text-[#5F6773]">Recipient Account</span>
+                <span className="font-mono font-semibold text-[#1A1D20]">
                   {selectedTxDetail.receiverAccountId}
                 </span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-slate-500">Execution Hub</span>
-                <span className="font-semibold text-slate-900">
+                <span className="text-[#5F6773]">Execution Hub</span>
+                <span className="font-semibold text-[#1A1D20]">
                   {getHumanRegion((selectedTxDetail as any).shardId || activeAccount?.shard)}
                 </span>
               </div>
@@ -903,14 +911,14 @@ export const WalletHome: React.FC<WalletHomeProps> = ({
             <div className="flex gap-2.5 pt-1">
               <button
                 onClick={() => copyToClipboard(selectedTxDetail.transactionId || '')}
-                className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
+                className="flex-1 py-2.5 rounded-xl bg-[#FAF7F4] hover:bg-[#F2ECE5] text-[#1A1D20] border border-[#EBE5DF] text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Copy className="w-3.5 h-3.5" />
                 <span>Copy Ref</span>
               </button>
               <button
                 onClick={() => setSelectedTxDetail(null)}
-                className="flex-1 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition cursor-pointer"
+                className="flex-1 py-2.5 rounded-xl bg-[#FF6651] text-white text-xs font-semibold hover:bg-[#E54D34] transition cursor-pointer shadow-sm shadow-[#FF6651]/30"
               >
                 Done
               </button>

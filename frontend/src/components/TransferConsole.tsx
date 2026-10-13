@@ -220,25 +220,25 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
   return (
     <div className="max-w-4xl mx-auto space-y-6 font-sans">
       {/* Main Send Money Card */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="flex items-center justify-between pb-6 border-b border-slate-100">
+      <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 sm:p-8 shadow-xs">
+        <div className="flex items-center justify-between pb-6 border-b border-[#F2ECE5]">
           <div>
-            <h2 className="text-lg font-bold text-black flex items-center gap-2">
-              <Send className="w-5 h-5 text-black" />
+            <h2 className="text-xl font-black text-[#1A1D20] flex items-center gap-2 tracking-tight">
+              <Send className="w-5 h-5 text-[#FF6651]" />
               <span>Send Money</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-[#5F6773] mt-0.5">
               Instant P2P and cross-border transfers with zero fees and bank-grade security
             </p>
           </div>
 
           <div className="flex items-center gap-2">
             {isDifferentRegion ? (
-              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5">
-                <Layers className="w-3.5 h-3.5" /> Cross-Region Transfer
+              <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-[#FAF7F4] text-[#1A1D20] border border-[#EBE5DF] flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-[#FF6651]" /> Cross-Region Transfer
               </span>
             ) : (
-              <span className="text-[11px] font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold px-3 py-1 rounded-full bg-[#E5F7F3] text-[#00A389] border border-[#00A389]/25 flex items-center gap-1.5">
                 <Check className="w-3.5 h-3.5" /> Instant Delivery
               </span>
             )}
@@ -246,7 +246,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
         </div>
 
         {errorMsg && (
-          <div className="mt-4 p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs flex items-start gap-2.5">
+          <div className="mt-4 p-4 rounded-2xl border border-rose-200 bg-rose-50 text-rose-800 text-xs flex items-start gap-2.5">
             <XCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
             <div className="space-y-0.5">
               <span className="font-bold block">Transfer Failed</span>
@@ -256,7 +256,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
         )}
 
         {recoveryMsg && (
-          <div className="mt-4 p-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-800 text-xs flex items-center gap-2.5">
+          <div className="mt-4 p-4 rounded-2xl border border-blue-200 bg-blue-50 text-blue-800 text-xs flex items-center gap-2.5">
             <ShieldCheck className="w-4 h-4 shrink-0 text-blue-600" />
             <span>{recoveryMsg}</span>
           </div>
@@ -264,12 +264,12 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
         {/* Unauthenticated / No account prompt */}
         {userAccounts.length === 0 && (
-          <div className="mt-6 p-6 rounded-2xl bg-[#FFF8F6] border border-[#FFD9D3] text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mx-auto">
+          <div className="mt-6 p-6 rounded-3xl bg-[#FFF8F6] border border-[#FFD9D3] text-center space-y-3">
+            <div className="w-12 h-12 rounded-full bg-[#FFEAE5] text-[#FF6651] flex items-center justify-center mx-auto shadow-xs">
               <Wallet className="w-6 h-6" />
             </div>
-            <h3 className="text-sm font-bold text-slate-900">Sign in to Send Money</h3>
-            <p className="text-xs text-slate-600 max-w-md mx-auto">
+            <h3 className="text-sm font-bold text-[#1A1D20]">Sign in to Send Money</h3>
+            <p className="text-xs text-[#5F6773] max-w-md mx-auto">
               You need an active wallet to send money. Create an account in seconds or sign in to your existing wallet.
             </p>
             {onOpenAuth && (
@@ -277,14 +277,14 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signup')}
-                  className="px-4 py-2 rounded-xl bg-[#FF6651] text-white text-xs font-bold hover:bg-[#e0533f] transition cursor-pointer shadow-xs"
+                  className="px-5 py-2.5 rounded-full bg-[#FF6651] text-white text-xs font-bold hover:bg-[#E54D34] transition cursor-pointer shadow-md shadow-[#FF6651]/25"
                 >
                   Create Account
                 </button>
                 <button
                   type="button"
                   onClick={() => onOpenAuth('signin')}
-                  className="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-white transition cursor-pointer"
+                  className="px-5 py-2.5 rounded-full border border-[#EBE5DF] text-[#1A1D20] text-xs font-semibold hover:bg-white transition cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -297,23 +297,23 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
           <form onSubmit={handleSubmit} className="mt-6 space-y-6">
             {/* Step 1: Pay From (Current User's Accounts Only) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 block">
+              <label className="text-xs font-semibold text-[#1A1D20] block">
                 Pay From
               </label>
 
               {userAccounts.length === 1 ? (
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div className="p-3.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block">
+                    <span className="text-xs font-bold text-[#1A1D20] block">
                       {userAccounts[0].accountNumber} ({userAccounts[0].currency} Wallet)
                     </span>
-                    <span className="text-[11px] text-slate-500 font-mono">
+                    <span className="text-[11px] text-[#5F6773] font-mono">
                       {userAccounts[0].shard}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs text-slate-400 block">Available</span>
-                    <span className="text-sm font-bold text-slate-900 font-mono">
+                    <span className="text-xs text-[#9CA3AF] block">Available</span>
+                    <span className="text-sm font-bold text-[#00A389] font-mono">
                       {Number(userAccounts[0].balance).toLocaleString()} {userAccounts[0].currency}
                     </span>
                   </div>
@@ -323,7 +323,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                   <select
                     value={senderId}
                     onChange={(e) => setSenderId(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-black text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition cursor-pointer appearance-none"
+                    className="w-full px-4 py-3 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] text-[#1A1D20] text-sm font-medium focus:outline-none focus:border-[#FF6651] focus:bg-white transition cursor-pointer appearance-none"
                   >
                     {userAccounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
@@ -331,32 +331,32 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                       </option>
                     ))}
                   </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#9CA3AF]">
                     <ChevronDown className="w-4 h-4" />
                   </div>
                 </div>
               )}
 
               {sender && userAccounts.length > 1 && (
-                <div className="flex items-center justify-between px-1 text-xs text-slate-500">
+                <div className="flex items-center justify-between px-1 text-xs text-[#5F6773]">
                   <span>
-                    Available Balance: <strong className="text-slate-900">{Number(sender.balance).toLocaleString()} {sender.currency}</strong>
+                    Available Balance: <strong className="text-[#00A389]">{Number(sender.balance).toLocaleString()} {sender.currency}</strong>
                   </span>
-                  <span className="text-[11px] font-mono text-slate-400">{sender.shard}</span>
+                  <span className="text-[11px] font-mono text-[#9CA3AF]">{sender.shard}</span>
                 </div>
               )}
             </div>
 
             {/* Step 2: Send To (Recipient Account Number Input & Real-Time Verification) */}
             <div className="space-y-2">
-              <label className="text-xs font-semibold text-slate-700 block">
+              <label className="text-xs font-semibold text-[#1A1D20] block">
                 Send To (Recipient)
               </label>
 
               {/* Quick toggle to transfer between own wallets if multiple exist */}
               {myOtherAccounts.length > 0 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  <span className="text-[11px] text-slate-400 shrink-0">My Wallets:</span>
+                  <span className="text-[11px] text-[#9CA3AF] shrink-0">My Wallets:</span>
                   {myOtherAccounts.map((acc) => (
                     <button
                       key={acc.id}
@@ -365,10 +365,10 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                         setReceiverId(acc.id);
                         setRecipientQuery(acc.accountNumber);
                       }}
-                      className={`px-3 py-1 rounded-full text-xs font-medium border transition cursor-pointer shrink-0 ${
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border transition cursor-pointer shrink-0 ${
                         receiver?.id === acc.id
-                          ? 'bg-slate-900 text-white border-slate-900'
-                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                          ? 'bg-[#FFEAE5] text-[#FF6651] border-[#FF6651]/40'
+                          : 'bg-white text-[#5F6773] border-[#EBE5DF] hover:border-[#FF6651]/40'
                       }`}
                     >
                       {acc.currency} ({acc.accountNumber})
@@ -386,31 +386,31 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                     setRecipientQuery(e.target.value);
                     setReceiverId(null);
                   }}
-                  placeholder="Enter recipient account number (e.g. ACC-PKR-001) or email"
-                  className="w-full px-4 py-3 pl-10 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-medium focus:outline-none focus:border-black focus:bg-white transition"
+                  placeholder="Enter recipient account number (e.g. ACC-PK-S-5471) or email"
+                  className="w-full px-4 py-3 pl-10 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] text-[#1A1D20] text-sm font-medium focus:outline-none focus:border-[#FF6651] focus:ring-1 focus:ring-[#FF6651] focus:bg-white transition"
                 />
-                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#9CA3AF]">
                   <Search className="w-4 h-4" />
                 </div>
               </div>
 
               {/* Verified Recipient Card */}
               {receiver && (
-                <div className="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/60 flex items-center justify-between text-xs animate-in fade-in">
+                <div className="p-3.5 rounded-2xl border border-[#00A389]/25 bg-[#E5F7F3] flex items-center justify-between text-xs animate-in fade-in">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-white text-[#00A389] flex items-center justify-center shadow-2xs font-bold">
                       <UserCheck className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-slate-900">
+                        <span className="font-bold text-[#1A1D20]">
                           {receiver.user?.fullName || 'TransMoney User'}
                         </span>
-                        <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold text-[#00A389] bg-white px-1.5 py-0.5 rounded shadow-2xs">
                           Verified
                         </span>
                       </div>
-                      <span className="text-[11px] text-slate-500 font-mono">
+                      <span className="text-[11px] text-[#5F6773] font-mono">
                         {receiver.accountNumber} • {receiver.currency} • {receiver.shard}
                       </span>
                     </div>
@@ -419,7 +419,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
               )}
 
               {recipientQuery.trim() !== '' && !receiver && (
-                <div className="p-3 rounded-xl border border-amber-200 bg-amber-50/70 text-xs text-amber-800 flex items-center gap-2">
+                <div className="p-3 rounded-2xl border border-amber-200 bg-amber-50/70 text-xs text-amber-800 flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0 text-amber-600" />
                   <span>Account not found. Please double-check the recipient's account number or email.</span>
                 </div>
@@ -429,11 +429,11 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             {/* Step 3: Enter Amount */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700 block">
+                <label className="text-xs font-semibold text-[#1A1D20] block">
                   Amount
                 </label>
-                <span className="text-xs text-slate-500">
-                  Currency: <strong className="text-black">{sender?.currency || 'PKR'}</strong>
+                <span className="text-xs text-[#5F6773]">
+                  Currency: <strong className="text-[#FF6651] font-bold">{sender?.currency || 'PKR'}</strong>
                 </span>
               </div>
 
@@ -445,9 +445,9 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full px-4 py-3.5 rounded-xl bg-white border border-slate-300 text-black text-xl font-bold font-mono focus:outline-none focus:border-black transition"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-white border border-[#EBE5DF] text-[#1A1D20] text-2xl font-black font-mono focus:outline-none focus:border-[#FF6651] focus:ring-1 focus:ring-[#FF6651] transition"
                 />
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-sm text-slate-400">
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-sm text-[#9CA3AF]">
                   {sender?.currency || 'PKR'}
                 </div>
               </div>
@@ -459,7 +459,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                     key={val}
                     type="button"
                     onClick={() => handlePresetAmount(val)}
-                    className="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                    className="px-3 py-1.5 rounded-xl text-xs font-mono font-semibold bg-[#FAF7F4] hover:bg-[#FFEAE5] hover:text-[#FF6651] text-[#1A1D20] border border-[#EBE5DF] transition cursor-pointer"
                   >
                     +{val.toLocaleString()}
                   </button>
@@ -467,7 +467,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 <button
                   type="button"
                   onClick={handleMaxAmount}
-                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-slate-200 hover:bg-slate-300 text-black transition cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-[#FFEAE5] hover:bg-[#ffd6cd] text-[#FF6651] border border-[#FF6651]/30 transition cursor-pointer"
                 >
                   Max
                 </button>
@@ -476,31 +476,31 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
             {/* Step 4: Reference Note (Optional) */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-700 block">
-                Reference Note <span className="font-normal text-slate-400">(Optional)</span>
+              <label className="text-xs font-semibold text-[#1A1D20] block">
+                Reference Note <span className="font-normal text-[#9CA3AF]">(Optional)</span>
               </label>
               <input
                 type="text"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g. Dinner bill split, Freelance payment, Rent"
-                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-black text-xs placeholder:text-slate-400 focus:outline-none focus:border-black focus:bg-white transition"
+                className="w-full px-4 py-2.5 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] text-[#1A1D20] text-xs placeholder:text-[#9CA3AF] focus:outline-none focus:border-[#FF6651] focus:bg-white transition"
               />
             </div>
 
             {/* Fee & Security Guarantee */}
-            <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-600">
+            <div className="p-4 rounded-2xl bg-[#FAF7F4] border border-[#EBE5DF] space-y-2 text-xs">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>Transfer Fee</span>
-                <span className="font-bold text-emerald-600">Rs. 0.00 (100% Free)</span>
+                <span className="font-bold text-[#00A389]">Rs. 0.00 (100% Free)</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>Delivery Time</span>
-                <span className="font-medium text-black">Instant (&lt; 200ms)</span>
+                <span className="font-bold text-[#1A1D20]">Instant (&lt; 200ms)</span>
               </div>
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>Security</span>
-                <span className="font-medium text-emerald-700 flex items-center gap-1">
+                <span className="font-semibold text-[#00A389] flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" /> Atomic 2PC Protected
                 </span>
               </div>
@@ -510,7 +510,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
             <button
               type="submit"
               disabled={loading || !receiver || !amount || Number(amount) <= 0}
-              className="w-full py-3.5 px-6 rounded-2xl bg-black hover:bg-neutral-800 disabled:bg-slate-300 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition cursor-pointer disabled:cursor-not-allowed"
+              className="w-full py-4 px-6 rounded-full bg-[#FF6651] hover:bg-[#E54D34] active:scale-98 disabled:bg-[#D1C7BD] text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-[#FF6651]/25 hover:shadow-xl transition cursor-pointer disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>

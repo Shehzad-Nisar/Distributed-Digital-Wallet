@@ -16,6 +16,35 @@ import { walletSocket } from './api/websocket';
 import type { Account, SystemHealth, User } from './types';
 import { RefreshCw, X } from 'lucide-react';
 
+export const pathToTab = (pathname: string, hash: string): AppTab => {
+  const cleanPath = (pathname || '').toLowerCase().replace(/^\/+|\/+$/g, '');
+  const cleanHash = (hash || '').toLowerCase().replace(/^#+/, '').replace(/^\/+|\/+$/g, '');
+  const target = cleanHash || cleanPath;
+
+  if (target === 'dashboard' || target === 'home' || target === 'console') return 'console';
+  if (target === 'send' || target === 'transfer') return 'transfer';
+  if (target === 'merchants' || target === 'merchant') return 'merchant';
+  if (target === 'exchange' || target === 'fx') return 'exchange';
+  if (target === 'activity' || target === 'ledger' || target === 'statements') return 'ledger';
+  if (target === 'core' || target === 'core-banking') return 'core';
+  if (target === 'simulator') return 'simulator';
+  return 'landing';
+};
+
+export const tabToPath = (tab: AppTab): string => {
+  switch (tab) {
+    case 'console': return '/dashboard';
+    case 'transfer': return '/send';
+    case 'merchant': return '/merchants';
+    case 'exchange': return '/exchange';
+    case 'ledger': return '/activity';
+    case 'core': return '/core-banking';
+    case 'simulator': return '/simulator';
+    case 'landing':
+    default: return '/';
+  }
+};
+
 export function App() {
   const [health, setHealth] = useState<SystemHealth | null>(null);
   const [accounts, setAccounts] = useState<Account[]>([]);
@@ -26,8 +55,18 @@ export function App() {
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [liveToast, setLiveToast] = useState<{ message: string; type: string } | null>(null);
 
-  // Active view: landing (SadaPay Coral/Orange UI), console (Wallet Home), transfer, merchant, ledger, exchange, core
-  const [activeTab, setActiveTab] = useState<AppTab>('landing');
+  // Active view: synced with browser URL (/dashboard, /send, /merchants, etc.)
+  const [activeTab, setActiveTab] = useState<AppTab>(() => {
+    return pathToTab(window.location.pathname, window.location.hash);
+  });
+
+  const handleNavigateTab = (tab: AppTab) => {
+    setActiveTab(tab);
+    const targetPath = tabToPath(tab);
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({ tab }, '', targetPath);
+    }
+  };
 
   // Modal states
   const [authModalOpen, setAuthModalOpen] = useState<boolean>(false);
@@ -47,16 +86,23 @@ export function App() {
       setAccounts(accs);
       setUsers(usrs);
 
-      // Restore user session if stored
+      // Restore user session if stored, or fallback to first available user for rich dashboard
       const savedUserId = localStorage.getItem('transmoney_active_user_id');
+      let targetUser: User | null = null;
       if (savedUserId && usrs.length > 0) {
-        const found = usrs.find((u) => u.id === Number(savedUserId));
-        if (found) {
-          setCurrentUser(found);
-          const userAcc = accs.find((a) => a.user?.id === found.id);
-          if (userAcc) {
-            setSelectedAccountId(userAcc.id);
-          }
+        targetUser = usrs.find((u) => u.id === Number(savedUserId)) || null;
+      }
+      if (!targetUser && usrs.length > 0) {
+        targetUser = usrs[0];
+      }
+
+      if (targetUser) {
+        setCurrentUser(targetUser);
+        const userAcc = accs.find((a) => a.user?.id === targetUser.id);
+        if (userAcc) {
+          setSelectedAccountId(userAcc.id);
+        } else if (accs.length > 0) {
+          setSelectedAccountId(accs[0].id);
         }
       }
     } catch (err) {
@@ -69,6 +115,13 @@ export function App() {
   useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 12000);
+
+    // Browser navigation back/forward support
+    const onPopState = () => {
+      const tab = pathToTab(window.location.pathname, window.location.hash);
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', onPopState);
 
     // Real-Time WebSocket stream integration
     walletSocket.connect();
@@ -84,6 +137,7 @@ export function App() {
 
     return () => {
       clearInterval(interval);
+      window.removeEventListener('popstate', onPopState);
       unbind();
     };
   }, []);
@@ -107,6 +161,7 @@ export function App() {
     setCurrentUser(null);
     removeToken();
     localStorage.removeItem('transmoney_active_user_id');
+    handleNavigateTab('landing');
   };
 
   const handleStatusToggle = async (acc: Account) => {
@@ -152,22 +207,22 @@ export function App() {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#FAF7F4] text-[#1A1D20] flex flex-col font-sans">
       {/* Real-Time WebSocket Toast Notification */}
       {liveToast && (
-        <div className="fixed top-16 right-4 z-50 max-w-md bg-slate-900 text-white p-3.5 rounded-2xl shadow-2xl border border-slate-800 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2">
+        <div className="fixed top-16 right-4 z-50 max-w-md bg-[#1A1D20] text-white p-3.5 rounded-2xl shadow-2xl border border-white/10 flex items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2">
           <div className="flex items-center gap-2.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping shrink-0" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#00A389] animate-ping shrink-0" />
             <div>
-              <span className="text-[10px] text-emerald-400 font-bold block uppercase tracking-wider font-mono">
+              <span className="text-[10px] text-[#00A389] font-bold block uppercase tracking-wider font-mono">
                 Live Transaction Update
               </span>
-              <span className="text-xs text-slate-200 block truncate">{liveToast.message}</span>
+              <span className="text-xs text-white/90 block truncate">{liveToast.message}</span>
             </div>
           </div>
           <button
             onClick={() => setLiveToast(null)}
-            className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition cursor-pointer"
+            className="text-white/60 hover:text-white p-1 rounded-lg hover:bg-white/10 transition cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -180,13 +235,13 @@ export function App() {
           accounts={accounts}
           users={users}
           currentUser={currentUser}
-          onEnterConsole={() => setActiveTab('console')}
+          onEnterConsole={() => handleNavigateTab('console')}
           onOpenAuth={(mode) => {
             setAuthModalMode(mode);
             setAuthModalOpen(true);
           }}
           onNavigateTab={(tab) => {
-            setActiveTab(tab);
+            handleNavigateTab(tab as AppTab);
           }}
           onSelectAccount={(id) => setSelectedAccountId(id)}
         />
@@ -206,20 +261,20 @@ export function App() {
             onOpenCreateAccount={() => setCreateAccountModalOpen(true)}
             onLogout={handleLogout}
             activeTab={activeTab}
-            setActiveTab={setActiveTab}
+            setActiveTab={handleNavigateTab}
           />
 
           <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-8">
           {initialLoading ? (
             <div className="flex flex-col items-center justify-center py-24 text-slate-400 space-y-3 font-mono">
-              <RefreshCw className="w-7 h-7 animate-spin text-emerald-600" />
-              <span className="text-xs tracking-wider text-slate-500 font-medium">
+              <RefreshCw className="w-7 h-7 animate-spin text-[#FF6651]" />
+              <span className="text-xs tracking-wider text-[#4B5563] font-medium">
                 Loading your account balances...
               </span>
             </div>
           ) : (
             <>
-              {/* View 1: Main Wallet Home (SadaPay & Wise Model) */}
+              {/* View 1: Main Wallet Dashboard (SadaPay & Wise Neobank Model) */}
               {activeTab === 'console' && (
               <WalletHome
                 accounts={accounts}
@@ -236,11 +291,11 @@ export function App() {
                 }}
                 onOpenCreateAccount={() => setCreateAccountModalOpen(true)}
                 onNavigateTab={(tab) => {
-                  if (tab === 'transfer') setActiveTab('transfer');
-                  else if (tab === 'merchant') setActiveTab('merchant');
-                  else if (tab === 'exchange') setActiveTab('exchange');
-                  else if (tab === 'ledger') setActiveTab('ledger');
-                  else if (tab === 'core') setActiveTab('core');
+                  if (tab === 'transfer') handleNavigateTab('transfer');
+                  else if (tab === 'merchant') handleNavigateTab('merchant');
+                  else if (tab === 'exchange') handleNavigateTab('exchange');
+                  else if (tab === 'ledger') handleNavigateTab('ledger');
+                  else if (tab === 'core') handleNavigateTab('core');
                 }}
                 onStatusToggle={handleStatusToggle}
                 refreshTrigger={refreshTrigger}
@@ -282,12 +337,12 @@ export function App() {
                   refreshTrigger={refreshTrigger}
                 />
 
-                <div className="pt-4 border-t border-slate-200">
+                <div className="pt-4 border-t border-[#EBE5DF]">
                   <div className="mb-4">
-                    <h3 className="text-base font-bold text-black">
+                    <h3 className="text-base font-bold text-[#1A1D20]">
                       Account Statement &amp; Transaction History
                     </h3>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-[#5F6773]">
                       Search, filter, and inspect verified transaction records across all regional nodes
                     </p>
                   </div>
@@ -329,49 +384,49 @@ export function App() {
         </main>
 
       {/* Global Clean FinTech Footer */}
-      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-sans">
+      <footer className="border-t border-[#EBE5DF] bg-[#FAF7F4] py-6 text-center text-xs text-[#5F6773] font-sans">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-black font-mono">TransMoney</span>
+            <span className="font-extrabold text-[#1A1D20]">TransMoney</span>
             <span>•</span>
             <span>Next-Generation Multi-Currency Digital Wallet</span>
           </div>
-          <div className="flex items-center gap-4 text-slate-600">
+          <div className="flex items-center gap-4 text-[#4B5563]">
             <button
-              onClick={() => setActiveTab('landing')}
-              className="hover:text-black cursor-pointer text-[#FF6651] font-semibold"
+              onClick={() => handleNavigateTab('landing')}
+              className="hover:text-[#1A1D20] cursor-pointer text-[#FF6651] font-semibold"
             >
               Overview
             </button>
             <button
-              onClick={() => setActiveTab('console')}
-              className="hover:text-black cursor-pointer"
+              onClick={() => handleNavigateTab('console')}
+              className="hover:text-[#1A1D20] cursor-pointer font-medium"
             >
-              Wallet Home
+              Dashboard
             </button>
             <button
-              onClick={() => setActiveTab('transfer')}
-              className="hover:text-black cursor-pointer"
+              onClick={() => handleNavigateTab('transfer')}
+              className="hover:text-[#1A1D20] cursor-pointer font-medium"
             >
               Send Money
             </button>
             <button
-              onClick={() => setActiveTab('merchant')}
-              className="hover:text-black cursor-pointer"
+              onClick={() => handleNavigateTab('merchant')}
+              className="hover:text-[#1A1D20] cursor-pointer font-medium"
             >
               Merchants
             </button>
             <button
-              onClick={() => setActiveTab('core')}
-              className="hover:text-black cursor-pointer font-mono text-[11px]"
+              onClick={() => handleNavigateTab('core')}
+              className="hover:text-[#1A1D20] cursor-pointer font-mono text-[11px]"
             >
               Core Banking
             </button>
             <a
-              href="http://localhost:8080/swagger-ui.html"
+              href="http://localhost:8080/swagger-ui/index.html"
               target="_blank"
               rel="noreferrer"
-              className="hover:text-black font-mono text-[11px]"
+              className="hover:text-[#1A1D20] font-mono text-[11px]"
             >
               API Docs
             </a>

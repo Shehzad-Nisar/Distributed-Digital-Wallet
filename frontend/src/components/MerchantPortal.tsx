@@ -316,48 +316,48 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
   return (
     <div className="space-y-6 font-sans">
       {/* Top Banner & Mode Selector */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 sm:p-7 shadow-xs flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5">
-            <span className="p-2 bg-slate-900 text-white rounded-xl shadow-2xs">
+            <span className="p-2.5 bg-[#FFEAE5] text-[#FF6651] rounded-2xl shadow-xs">
               <Store className="w-5 h-5" />
             </span>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">Merchant Services &amp; QR Pay</h1>
-            <span className="text-xs px-2.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200/80 rounded-full font-semibold">
+            <h1 className="text-xl sm:text-2xl font-black text-[#1A1D20] tracking-tight">Merchant Services &amp; QR Pay</h1>
+            <span className="text-xs px-2.5 py-0.5 bg-[#E5F7F3] text-[#00A389] border border-[#00A389]/20 rounded-full font-bold">
               Instant Settlement
             </span>
           </div>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-[#5F6773] mt-1">
             Scan and pay in-store merchants, generate dynamic POS invoices, and track daily business payouts
           </p>
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-2xl text-xs font-semibold">
+        <div className="flex items-center gap-1.5 p-1 bg-[#FAF7F4] border border-[#EBE5DF] rounded-2xl text-xs font-bold">
           <button
             onClick={() => setSubTab('scan')}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-2 transition cursor-pointer font-medium ${
-              subTab === 'scan' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition cursor-pointer font-bold ${
+              subTab === 'scan' ? 'bg-[#FF6651] text-white shadow-xs' : 'text-[#5F6773] hover:text-[#1A1D20]'
             }`}
           >
             <Scan className="w-3.5 h-3.5" />
-            <span>Scan & Pay</span>
+            <span>Scan &amp; Pay</span>
           </button>
 
           <button
             onClick={() => setSubTab('pos')}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-2 transition cursor-pointer font-medium ${
-              subTab === 'pos' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition cursor-pointer font-bold ${
+              subTab === 'pos' ? 'bg-[#FF6651] text-white shadow-xs' : 'text-[#5F6773] hover:text-[#1A1D20]'
             }`}
           >
             <QrCode className="w-3.5 h-3.5" />
-            <span>POS & Generator</span>
+            <span>POS &amp; Generator</span>
           </button>
 
           <button
             onClick={() => setSubTab('settlement')}
-            className={`px-3.5 py-1.5 rounded-md flex items-center gap-2 transition cursor-pointer font-medium ${
-              subTab === 'settlement' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'
+            className={`px-3.5 py-2 rounded-xl flex items-center gap-2 transition cursor-pointer font-bold ${
+              subTab === 'settlement' ? 'bg-[#FF6651] text-white shadow-xs' : 'text-[#5F6773] hover:text-[#1A1D20]'
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
@@ -387,13 +387,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Left Column: QR Input & Demo Invoice Presets */}
           <div className="lg:col-span-6 space-y-6">
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs">
+            <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 shadow-xs">
               <div className="flex items-center justify-between mb-3">
-                <label className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                  <Scan className="w-3.5 h-3.5 text-indigo-600" />
+                <label className="text-xs font-bold text-[#1A1D20] uppercase tracking-wider flex items-center gap-1.5">
+                  <Scan className="w-3.5 h-3.5 text-[#FF6651]" />
                   <span>Scan or Paste QR Code Payload</span>
                 </label>
-                <span className="text-[11px] font-mono text-slate-400">HMAC-SHA256 Token</span>
+                <span className="text-[11px] font-mono text-[#8C939E]">HMAC-SHA256 Token</span>
               </div>
 
               <textarea
@@ -401,15 +401,15 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 onChange={(e) => setRawPayloadInput(e.target.value)}
                 placeholder="Paste Base64 URL QR Payload or JSON token here..."
                 rows={4}
-                className="w-full text-xs font-mono p-3 bg-slate-50 border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 text-slate-800"
+                className="w-full text-xs font-mono p-3.5 bg-[#FAF7F4] border border-[#EBE5DF] rounded-2xl focus:outline-none focus:border-[#FF6651] text-[#1A1D20]"
               />
 
-              <div className="mt-3 flex items-center justify-between">
+              <div className="mt-3.5 flex items-center justify-between">
                 <button
                   type="button"
                   onClick={() => handleVerifyPayload()}
                   disabled={loading || !rawPayloadInput.trim()}
-                  className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-medium hover:bg-slate-800 disabled:opacity-50 transition flex items-center gap-2 cursor-pointer"
+                  className="px-4 py-2.5 bg-[#FF6651] hover:bg-[#E54D34] text-white rounded-full text-xs font-bold disabled:opacity-50 transition flex items-center gap-2 cursor-pointer shadow-xs"
                 >
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Verify QR Cryptography</span>
@@ -422,7 +422,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                       setScannedDetails(null);
                       setPaymentResult(null);
                     }}
-                    className="text-xs text-slate-500 hover:text-slate-800 cursor-pointer font-mono"
+                    className="text-xs text-[#5F6773] hover:text-[#1A1D20] cursor-pointer font-medium"
                   >
                     Clear
                   </button>
@@ -431,62 +431,62 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
             </div>
 
             {/* Quick Demo Invoices */}
-            <div className="bg-slate-50 border border-slate-200 rounded-xl p-5">
-              <h3 className="text-xs font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-1.5 mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+            <div className="bg-[#FAF7F4] border border-[#EBE5DF] rounded-3xl p-6">
+              <h3 className="text-xs font-bold text-[#1A1D20] uppercase tracking-wider flex items-center gap-1.5 mb-2">
+                <Sparkles className="w-3.5 h-3.5 text-[#FF6651]" />
                 <span>One-Click Merchant QR Invoices (Test Hub)</span>
               </h3>
-              <p className="text-[11px] text-slate-500 font-mono mb-3">
+              <p className="text-[11px] text-[#5F6773] mb-3">
                 Select a merchant invoice below to automatically generate a signed QR code and decode it into the terminal:
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <button
                   onClick={() => handleSelectPreset('MCH-FP-001', 850, 'ORD-FP-LUNCH', true)}
-                  className="p-3 bg-white border border-slate-200 hover:border-indigo-400 rounded-lg text-left transition cursor-pointer group shadow-2xs"
+                  className="p-3.5 bg-white border border-[#EBE5DF] hover:border-[#FF6651]/50 rounded-2xl text-left transition cursor-pointer group shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-900">FoodPanda Express</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 bg-rose-50 text-rose-600 rounded">DINING</span>
+                    <span className="text-xs font-bold text-[#1A1D20]">FoodPanda Express</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#FFEAE5] text-[#FF6651] rounded-full">DINING</span>
                   </div>
-                  <div className="mt-1 text-sm font-bold text-slate-900 font-mono">850.00 PKR</div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">Fixed Dynamic Invoice (15m)</div>
+                  <div className="mt-1 text-sm font-black text-[#1A1D20] font-mono">850.00 PKR</div>
+                  <div className="text-[10px] text-[#5F6773] mt-0.5">Fixed Dynamic Invoice (15m)</div>
                 </button>
 
                 <button
                   onClick={() => handleSelectPreset('MCH-DARAZ-002', 4200, 'ORD-DZ-AIRPODS', true)}
-                  className="p-3 bg-white border border-slate-200 hover:border-indigo-400 rounded-lg text-left transition cursor-pointer group shadow-2xs"
+                  className="p-3.5 bg-white border border-[#EBE5DF] hover:border-[#FF6651]/50 rounded-2xl text-left transition cursor-pointer group shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-900">Daraz Online</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded">ECOMMERCE</span>
+                    <span className="text-xs font-bold text-[#1A1D20]">Daraz Online</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#E5F7F3] text-[#00A389] rounded-full">ECOMMERCE</span>
                   </div>
-                  <div className="mt-1 text-sm font-bold text-slate-900 font-mono">4,200.00 PKR</div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">Wireless Earbuds Checkout</div>
+                  <div className="mt-1 text-sm font-black text-[#1A1D20] font-mono">4,200.00 PKR</div>
+                  <div className="text-[10px] text-[#5F6773] mt-0.5">Wireless Earbuds Checkout</div>
                 </button>
 
                 <button
                   onClick={() => handleSelectPreset('MCH-KE-003', 12850, 'INV-KE-OCT', true)}
-                  className="p-3 bg-white border border-slate-200 hover:border-indigo-400 rounded-lg text-left transition cursor-pointer group shadow-2xs"
+                  className="p-3.5 bg-white border border-[#EBE5DF] hover:border-[#FF6651]/50 rounded-2xl text-left transition cursor-pointer group shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-900">K-Electric Bill</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded">UTILITY</span>
+                    <span className="text-xs font-bold text-[#1A1D20]">K-Electric Bill</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-amber-50 text-amber-700 rounded-full">UTILITY</span>
                   </div>
-                  <div className="mt-1 text-sm font-bold text-slate-900 font-mono">12,850.00 PKR</div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">Monthly Power Tariff</div>
+                  <div className="mt-1 text-sm font-black text-[#1A1D20] font-mono">12,850.00 PKR</div>
+                  <div className="text-[10px] text-[#5F6773] mt-0.5">Monthly Power Tariff</div>
                 </button>
 
                 <button
                   onClick={() => handleSelectPreset('MCH-FP-001', 0, 'TIP-JAR', false)}
-                  className="p-3 bg-white border border-slate-200 hover:border-indigo-400 rounded-lg text-left transition cursor-pointer group shadow-2xs"
+                  className="p-3.5 bg-white border border-[#EBE5DF] hover:border-[#FF6651]/50 rounded-2xl text-left transition cursor-pointer group shadow-xs"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-slate-900">Static Table QR</span>
-                    <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-50 text-emerald-700 rounded">OPEN</span>
+                    <span className="text-xs font-bold text-[#1A1D20]">Static Table QR</span>
+                    <span className="text-[10px] font-bold px-1.5 py-0.5 bg-[#E5F7F3] text-[#00A389] rounded-full">OPEN</span>
                   </div>
-                  <div className="mt-1 text-sm font-bold text-emerald-600 font-mono">Open Amount</div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">Table POS / Tip Jar (No Expiry)</div>
+                  <div className="mt-1 text-sm font-black text-[#00A389] font-mono">Open Amount</div>
+                  <div className="text-[10px] text-[#5F6773] mt-0.5">Table POS / Tip Jar (No Expiry)</div>
                 </button>
               </div>
             </div>
@@ -495,14 +495,14 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
           {/* Right Column: Decoded Payload & Payment Confirmation */}
           <div className="lg:col-span-6 space-y-6">
             {scannedDetails ? (
-              <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="bg-white border border-[#EBE5DF] rounded-3xl p-6 shadow-xs space-y-4">
+                <div className="flex items-center justify-between border-b border-[#F7F3EE] pb-3">
                   <div>
-                    <span className="text-[11px] font-mono text-indigo-600 uppercase font-semibold">Verified Merchant Invoice</span>
-                    <h3 className="text-base font-bold text-slate-900">{scannedDetails.merchantName}</h3>
+                    <span className="text-[11px] font-mono text-[#FF6651] uppercase font-bold">Verified Merchant Invoice</span>
+                    <h3 className="text-base font-black text-[#1A1D20]">{scannedDetails.merchantName}</h3>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] font-mono px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded font-semibold flex items-center gap-1">
+                    <span className="text-[10px] font-bold px-2 py-0.5 bg-[#E5F7F3] text-[#00A389] border border-[#00A389]/20 rounded-full flex items-center gap-1">
                       <ShieldCheck className="w-3 h-3" />
                       <span>CRYPTOGRAPHIC SIGNATURE VALID</span>
                     </span>
@@ -510,37 +510,37 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 {/* Amount Display & Breakdown */}
-                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
-                  <div className="text-xs font-mono text-slate-500">Payable Purchase Amount</div>
+                <div className="bg-[#FAF7F4] border border-[#EBE5DF] rounded-2xl p-4">
+                  <div className="text-xs text-[#5F6773] font-medium">Payable Purchase Amount</div>
                   {scannedDetails.isDynamic && scannedDetails.amount ? (
-                    <div className="text-2xl font-bold font-mono text-slate-900 mt-1">
+                    <div className="text-2xl font-black font-mono text-[#1A1D20] mt-1">
                       {scannedDetails.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })} {scannedDetails.currency}
                     </div>
                   ) : (
                     <div className="mt-2">
-                      <label className="text-xs text-slate-600 block mb-1">Enter Custom Amount ({scannedDetails.currency}):</label>
+                      <label className="text-xs text-[#5F6773] block mb-1">Enter Custom Amount ({scannedDetails.currency}):</label>
                       <input
                         type="number"
                         min="1"
                         value={customPayAmount}
                         onChange={(e) => setCustomPayAmount(e.target.value)}
                         placeholder="e.g. 500"
-                        className="w-full text-base font-mono font-bold p-2 bg-white border border-slate-300 rounded-lg text-slate-900 focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+                        className="w-full text-base font-mono font-bold p-2 bg-white border border-[#EBE5DF] rounded-xl text-[#1A1D20] focus:outline-none focus:border-[#FF6651]"
                       />
                     </div>
                   )}
 
                   {/* Fee Breakdown Note */}
-                  <div className="mt-3 pt-3 border-t border-slate-200 grid grid-cols-2 text-[11px] font-mono text-slate-600">
+                  <div className="mt-3 pt-3 border-t border-[#EBE5DF] grid grid-cols-2 text-[11px] text-[#5F6773]">
                     <div>
                       <span>Platform MDR Fee ({scannedDetails.feeRatePercent}%):</span>
-                      <div className="font-semibold text-slate-800">
+                      <div className="font-bold text-[#1A1D20]">
                         {scannedDetails.estimatedFee ? scannedDetails.estimatedFee.toFixed(2) : (parseFloat(customPayAmount || '0') * (scannedDetails.feeRatePercent || 1.5) / 100).toFixed(2)} {scannedDetails.currency}
                       </div>
                     </div>
                     <div>
                       <span>Net Merchant Credited:</span>
-                      <div className="font-semibold text-emerald-700">
+                      <div className="font-bold text-[#00A389]">
                         {scannedDetails.estimatedNetAmount ? scannedDetails.estimatedNetAmount.toFixed(2) : (parseFloat(customPayAmount || '0') * (1 - (scannedDetails.feeRatePercent || 1.5) / 100)).toFixed(2)} {scannedDetails.currency}
                       </div>
                     </div>
@@ -548,29 +548,29 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                 </div>
 
                 {/* Routing & Metadata */}
-                <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">DESTINATION ACCOUNT</span>
-                    <span className="font-semibold text-slate-800">{scannedDetails.merchantAccountNumber}</span>
-                    <span className="text-[10px] text-indigo-600 block mt-0.5">{scannedDetails.merchantShard}</span>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                    <span className="text-[10px] text-[#8C939E] block font-medium">DESTINATION ACCOUNT</span>
+                    <span className="font-bold text-[#1A1D20] font-mono">{scannedDetails.merchantAccountNumber}</span>
+                    <span className="text-[10px] text-[#FF6651] block mt-0.5 font-bold">{scannedDetails.merchantShard}</span>
                   </div>
 
-                  <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <span className="text-[10px] text-slate-400 block">INVOICE ORDER REF</span>
-                    <span className="font-semibold text-slate-800">{scannedDetails.orderRef || 'OPEN-POS'}</span>
-                    <span className="text-[10px] text-slate-500 block mt-0.5">{scannedDetails.isDynamic ? 'Dynamic Expirable' : 'Static Persistent'}</span>
+                  <div className="p-3 bg-[#FAF7F4] rounded-2xl border border-[#EBE5DF]">
+                    <span className="text-[10px] text-[#8C939E] block font-medium">INVOICE ORDER REF</span>
+                    <span className="font-bold text-[#1A1D20] font-mono">{scannedDetails.orderRef || 'OPEN-POS'}</span>
+                    <span className="text-[10px] text-[#5F6773] block mt-0.5">{scannedDetails.isDynamic ? 'Dynamic Expirable' : 'Static Persistent'}</span>
                   </div>
                 </div>
 
                 {/* Select Payer Account */}
                 <div>
-                  <label className="text-xs font-semibold text-slate-700 block mb-1 font-mono">
+                  <label className="text-xs font-bold text-[#1A1D20] block mb-1">
                     PAY WITH ACCOUNT:
                   </label>
                   <select
                     value={scanPayerAccountId}
                     onChange={(e) => setScanPayerAccountId(Number(e.target.value))}
-                    className="w-full text-xs font-mono p-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-hidden text-slate-800"
+                    className="w-full text-xs font-mono p-2.5 bg-[#FAF7F4] border border-[#EBE5DF] rounded-xl focus:outline-none focus:border-[#FF6651] text-[#1A1D20]"
                   >
                     {accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
@@ -582,7 +582,7 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
 
                 {/* 2PC Live Progress Stepper during payment */}
                 {payingState !== 'idle' && (
-                  <div className="p-3 bg-slate-900 text-white rounded-lg font-mono text-xs space-y-2">
+                  <div className="p-3 bg-slate-900 text-white rounded-2xl font-mono text-xs space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="font-bold flex items-center gap-1.5 text-amber-400">
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -592,13 +592,13 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                     </div>
 
                     <div className="grid grid-cols-3 gap-2 text-center text-[10px]">
-                      <div className={`p-1.5 rounded ${payingState === 'initiating' ? 'bg-amber-500/20 text-amber-300 font-bold' : 'bg-slate-800 text-slate-400'}`}>
+                      <div className={`p-1.5 rounded-lg ${payingState === 'initiating' ? 'bg-[#FF6651] text-white font-bold' : 'bg-slate-800 text-slate-400'}`}>
                         1. Lock Rows
                       </div>
-                      <div className={`p-1.5 rounded ${payingState === 'preparing' ? 'bg-amber-500/20 text-amber-300 font-bold' : 'bg-slate-800 text-slate-400'}`}>
+                      <div className={`p-1.5 rounded-lg ${payingState === 'preparing' ? 'bg-[#FF6651] text-white font-bold' : 'bg-slate-800 text-slate-400'}`}>
                         2. Phase 1 (Prepare)
                       </div>
-                      <div className={`p-1.5 rounded ${payingState === 'committing' ? 'bg-emerald-500/20 text-emerald-300 font-bold' : 'bg-slate-800 text-slate-400'}`}>
+                      <div className={`p-1.5 rounded-lg ${payingState === 'committing' ? 'bg-[#00A389] text-white font-bold' : 'bg-slate-800 text-slate-400'}`}>
                         3. Phase 2 (Commit)
                       </div>
                     </div>
@@ -610,17 +610,17 @@ export const MerchantPortal: React.FC<MerchantPortalProps> = ({
                   type="button"
                   onClick={handleExecuteQrPayment}
                   disabled={payingState !== 'idle' || loading || scannedDetails.isExpired}
-                  className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm disabled:opacity-50"
+                  className="w-full py-3.5 bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white rounded-full text-sm font-black transition flex items-center justify-center gap-2 cursor-pointer shadow-md shadow-[#FF6651]/25 disabled:opacity-50"
                 >
                   <DollarSign className="w-4 h-4" />
                   <span>Execute 2PC QR Payment</span>
                 </button>
               </div>
             ) : (
-              <div className="bg-slate-50 border border-dashed border-slate-300 rounded-xl p-12 text-center text-slate-500 font-mono text-xs">
-                <QrCode className="w-12 h-12 mx-auto text-slate-400 mb-3 stroke-[1.2]" />
-                <div className="font-semibold text-slate-700">No QR Code Decoded</div>
-                <div className="text-[11px] text-slate-400 mt-1 max-w-sm mx-auto">
+              <div className="bg-[#FAF7F4] border border-dashed border-[#EBE5DF] rounded-3xl p-12 text-center text-[#5F6773] text-xs">
+                <QrCode className="w-12 h-12 mx-auto text-[#8C939E] mb-3 stroke-[1.2]" />
+                <div className="font-bold text-[#1A1D20]">No QR Code Decoded</div>
+                <div className="text-[11px] text-[#5F6773] mt-1 max-w-sm mx-auto">
                   Paste a QR payload on the left or click any One-Click Demo Invoice to preview cryptographic verification and cross-shard settlement.
                 </div>
               </div>
