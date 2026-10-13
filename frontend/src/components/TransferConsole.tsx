@@ -23,6 +23,7 @@ interface TransferConsoleProps {
   currentUser?: User | null;
   activeAccountId: number | null;
   onTransferComplete: () => void;
+  onNavigateDashboard?: () => void;
   onOpenAuth?: (mode: 'signin' | 'signup') => void;
 }
 
@@ -31,6 +32,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
   currentUser,
   activeAccountId,
   onTransferComplete,
+  onNavigateDashboard,
   onOpenAuth,
 }) => {
   // Only accounts belonging to the current user can be paid from
@@ -629,53 +631,67 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
 
       {/* Official Transaction Success Receipt Modal */}
       {showReceipt && lastTx && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 text-black font-sans space-y-6">
+        <div
+          onClick={() => {
+            setShowReceipt(false);
+            if (onNavigateDashboard) {
+              onNavigateDashboard();
+            } else {
+              window.history.pushState({}, '', '/dashboard');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }
+          }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-[#EBE5DF] text-[#1A1D20] font-sans space-y-6"
+          >
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
+              <div className="w-14 h-14 bg-[#E5F7F3] text-[#00A389] rounded-2xl flex items-center justify-center mx-auto shadow-xs">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold text-black">
+              <h3 className="text-xl font-black text-[#1A1D20]">
                 Transfer Successful!
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-[#5F6773]">
                 Funds have been transferred instantly via atomic 2PC consensus.
               </p>
             </div>
 
             {/* Receipt Summary Box */}
-            <div className="bg-slate-50 rounded-xl p-5 border border-slate-200 space-y-3 font-mono text-xs">
-              <div className="text-center pb-3 border-b border-slate-200">
-                <span className="text-2xl font-black text-black">
+            <div className="bg-[#FAF7F4] rounded-2xl p-5 border border-[#EBE5DF] space-y-3 font-mono text-xs">
+              <div className="text-center pb-3 border-b border-[#EBE5DF]">
+                <span className="text-2xl font-black text-[#1A1D20]">
                   {Number(lastTx.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })} {lastTx.currency}
                 </span>
-                <span className="text-[11px] text-emerald-600 font-bold block mt-0.5">
+                <span className="text-[11px] text-[#00A389] font-bold block mt-0.5">
                   STATUS: {lastTx.status}
                 </span>
               </div>
 
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>To:</span>
-                <span className="font-bold text-slate-900">
+                <span className="font-bold text-[#1A1D20]">
                   {receiver?.user?.fullName || receiver?.accountNumber}
                 </span>
               </div>
 
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>From:</span>
-                <span className="font-bold text-slate-900">
+                <span className="font-bold text-[#1A1D20]">
                   {sender?.user?.fullName || sender?.accountNumber}
                 </span>
               </div>
 
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>Reference:</span>
-                <span className="text-[11px] text-slate-800">{(lastTx as any).transactionReference || lastTx.transactionId}</span>
+                <span className="text-[11px] text-[#1A1D20]">{(lastTx as any).transactionReference || lastTx.transactionId}</span>
               </div>
 
-              <div className="flex justify-between text-slate-600">
+              <div className="flex justify-between text-[#5F6773]">
                 <span>Timestamp:</span>
-                <span className="text-[11px] text-slate-800">{new Date((lastTx as any).createdAt || lastTx.timestamp || Date.now()).toLocaleString()}</span>
+                <span className="text-[11px] text-[#1A1D20]">{new Date((lastTx as any).createdAt || lastTx.timestamp || Date.now()).toLocaleString()}</span>
               </div>
             </div>
 
@@ -686,7 +702,7 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 onClick={() => {
                   window.print();
                 }}
-                className="flex-1 py-2.5 rounded-xl border border-slate-300 hover:border-black text-black font-semibold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
+                className="flex-1 py-3 rounded-full border border-[#EBE5DF] bg-[#FAF7F4] hover:bg-[#F2ECE5] text-[#1A1D20] font-bold text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Save Receipt</span>
@@ -696,8 +712,17 @@ export const TransferConsole: React.FC<TransferConsoleProps> = ({
                 type="button"
                 onClick={() => {
                   setShowReceipt(false);
+                  setRecipientQuery('');
+                  setReceiverId(null);
+                  setDescription('');
+                  if (onNavigateDashboard) {
+                    onNavigateDashboard();
+                  } else {
+                    window.history.pushState({}, '', '/dashboard');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }
                 }}
-                className="flex-1 py-2.5 rounded-xl bg-black hover:bg-neutral-800 text-white font-semibold text-xs transition cursor-pointer shadow-xs"
+                className="flex-1 py-3 rounded-full bg-[#FF6651] hover:bg-[#E54D34] active:scale-95 text-white font-bold text-xs transition cursor-pointer shadow-md shadow-[#FF6651]/25"
               >
                 Done
               </button>

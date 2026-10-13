@@ -310,6 +310,7 @@ export function App() {
                   currentUser={currentUser}
                   activeAccountId={selectedAccountId}
                   onTransferComplete={handleTransferComplete}
+                  onNavigateDashboard={() => handleNavigateTab('console')}
                   onOpenAuth={(mode) => {
                     setAuthModalMode(mode);
                     setAuthModalOpen(true);
